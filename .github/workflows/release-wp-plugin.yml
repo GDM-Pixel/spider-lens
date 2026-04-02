@@ -1,0 +1,93 @@
+name: Build & Release WP Plugin
+
+on:
+  push:
+    tags:
+      - 'wp-v*'   # Déclenché sur : git tag wp-v0.7.0 && git push --tags
+
+jobs:
+  build:
+    name: Build plugin ZIP
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── Checkout ──────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── Node.js + cache npm ───────────────────────────────────
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: wp-plugin/admin/package-lock.json
+
+      # ── Build React ───────────────────────────────────────────
+      - name: Install npm dependencies
+        working-directory: wp-plugin/admin
+        run: npm ci
+
+      - name: Build React admin
+        working-directory: wp-plugin/admin
+        run: npm run build
+
+      # ── Extraire la version depuis le tag ─────────────────────
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF_NAME#wp-v}" >> $GITHUB_OUTPUT
+
+      # ── Créer le ZIP ──────────────────────────────────────────
+      - name: Create plugin ZIP
+        run: |
+          mkdir -p staging/spider-lens
+
+          # Fichiers PHP
+          cp wp-plugin/spider-lens.php staging/spider-lens/
+          cp -r wp-plugin/includes     staging/spider-lens/
+
+          # Build React compilé
+          mkdir -p staging/spider-lens/admin
+          cp -r wp-plugin/admin/dist   staging/spider-lens/admin/
+
+          # Langues (si présent)
+          [ -d wp-plugin/languages ] && cp -r wp-plugin/languages staging/spider-lens/
+
+          # Nettoyage
+          find staging -name "*.map"     -delete
+          find staging -name ".DS_Store" -delete
+
+          # Zip
+          cd staging
+          zip -r9 "../spider-lens-wp-${{ steps.version.outputs.VERSION }}.zip" spider-lens/
+
+      # ── Publier la Release GitHub ──────────────────────────────
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Spider-Lens WP Plugin v${{ steps.version.outputs.VERSION }}"
+          tag_name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          body: |
+            ## Spider-Lens WP Plugin v${{ steps.version.outputs.VERSION }}
+
+            Plugin WordPress d'analyse de trafic — fonctionne sans accès aux logs serveur.
+
+            ### Installation
+            1. Télécharger `spider-lens-wp-${{ steps.version.outputs.VERSION }}.zip` ci-dessous
+            2. WordPress Admin → **Extensions → Ajouter → Téléverser une extension**
+            3. Sélectionner le fichier `.zip` et cliquer **Installer**
+            4. **Activer** le plugin
+
+            ### Prérequis
+            - WordPress 6.0+
+            - PHP 7.4+
+            - MySQL 5.7+ / MariaDB 10.3+
+
+            ### Nouveautés
+            Voir le [CHANGELOG](https://github.com/GDM-Pixel/spider-lens/blob/main/CHANGELOG.md) pour le détail des changements.
+          files: |
+            spider-lens-wp-${{ steps.version.outputs.VERSION }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
