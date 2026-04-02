@@ -1,0 +1,39 @@
+# Dépendances
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Base de données
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Variables d'environnement (JAMAIS commiter)
+.env
+.env.local
+.env.production
+
+# Build frontend
+client/dist/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Tests
+coverage/
+
+# Notes de session
+tasks/
+
+# Templates de référence (non applicatif)
+Templates/

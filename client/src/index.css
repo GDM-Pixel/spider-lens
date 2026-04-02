@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Font fallback (réduction CLS) ─────────────────────── */
+@font-face {
+  font-family: "Open Sans Fallback";
+  src: local("Arial");
+  size-adjust: 104.42%;
+  ascent-override: 102.36%;
+  descent-override: 28.06%;
+  line-gap-override: 0%;
+}
+
+/* ── Base ───────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: "Open Sans", "Open Sans Fallback", Arial, sans-serif;
+  font-size: 16px;
+  background-color: #171c27; /* prussian-700 */
+  color: #ffffff;
+}
+
+/* ── Scrollbar dark ─────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #171c27; }
+::-webkit-scrollbar-thumb { background: #273043; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #35415a; }
+
+/* ── Utilitaires layout ─────────────────────────────────── */
+@layer utilities {
+  .sidebar-width { width: 260px; }
+  .sidebar-collapsed { width: 72px; }
+  .content-margin { margin-left: 260px; }
+  .content-margin-collapsed { margin-left: 72px; }
+}
+
+/* ── Transitions ────────────────────────────────────────── */
+.sidebar-transition { transition: width 200ms ease, margin 200ms ease; }
+
+/* ── Boutons GDM-Pixel ──────────────────────────────────── */
+.btn-red {
+  background: linear-gradient(to right, #e13d5e, #9f1934);
+  border-radius: 99px;
+  color: white;
+  font-weight: 700;
+  transition: box-shadow 300ms ease;
+}
+.btn-red:hover { box-shadow: 0 20px 40px rgba(0,0,0,0.25); }
+
+.btn-blue {
+  background: linear-gradient(to right, #00d8f5, #007e8f);
+  border-radius: 99px;
+  color: white;
+  font-weight: 700;
+  transition: box-shadow 300ms ease;
+}
+.btn-blue:hover { box-shadow: 0 20px 40px rgba(0,0,0,0.25); }
+
+/* ── Recharts personnalisation ──────────────────────────── */
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  background: #262e40 !important;
+  border: 1px solid #273043 !important;
+  border-radius: 8px !important;
+  color: #fff !important;
+}
+.recharts-cartesian-grid line { stroke: #273043 !important; }

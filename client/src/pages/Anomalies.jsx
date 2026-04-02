@@ -1,0 +1,205 @@
+import React, { useEffect, useState, useCallback } from 'react'
+import { Icon } from '@iconify/react'
+import BeginnerBanner from '../components/ui/BeginnerBanner'
+import { useSite } from '../context/SiteContext'
+import api from '../api/client'
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+import 'dayjs/locale/fr'
+import clsx from 'clsx'
+
+dayjs.extend(relativeTime)
+dayjs.locale('fr')
+
+const PAGE_SIZE = 50
+
+const TYPE_LABELS = {
+  traffic_spike:    { label: 'Spike de trafic',        icon: 'ph:trend-up',           color: 'text-orange-400' },
+  error_rate_spike: { label: 'Taux d\'erreurs élevé',  icon: 'ph:warning-circle',     color: 'text-dustyred-400' },
+  googlebot_absent: { label: 'Googlebot absent',        icon: 'ph:robot',              color: 'text-yellow-400' },
+  unknown_bot_spike:{ label: 'Bots inconnus élevés',   icon: 'ph:question',           color: 'text-purple-400' },
+}
+
+function AnomalyRow({ row }) {
+  const info = TYPE_LABELS[row.type] || { label: row.type, icon: 'ph:info', color: 'text-errorgrey' }
+  const isCritical = row.severity === 'critical'
+
+  return (
+    <div className={clsx(
+      'bg-prussian-600 rounded-xl border p-4 flex items-start gap-4',
+      isCritical ? 'border-dustyred-700' : 'border-prussian-500'
+    )}>
+      <div className={clsx(
+        'w-10 h-10 rounded-lg flex items-center justify-center shrink-0',
+        isCritical ? 'bg-dustyred-400/10' : 'bg-prussian-500'
+      )}>
+        <Icon icon={info.icon} className={clsx('text-xl', info.color)} />
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className={clsx('font-semibold text-sm', info.color)}>{info.label}</span>
+          {isCritical && (
+            <span className="text-xs bg-dustyred-400/10 text-dustyred-300 border border-dustyred-700 rounded-full px-2 py-0.5">
+              critique
+            </span>
+          )}
+          {row.site_name && (
+            <span className="text-xs bg-prussian-500 text-errorgrey rounded-full px-2 py-0.5">
+              {row.site_name}
+            </span>
+          )}
+        </div>
+
+        <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-xs text-errorgrey">
+          {row.value_observed != null && row.baseline_mean != null && row.type !== 'googlebot_absent' && (
+            <>
+              <span>
+                Observé : <strong className="text-white">
+                  {row.type.includes('rate') || row.type.includes('bot_spike')
+                    ? `${Math.round(row.value_observed * 100)}%`
+                    : Math.round(row.value_observed).toLocaleString()}
+                </strong>
+              </span>
+              <span>
+                Baseline : <strong className="text-white">
+                  {row.type.includes('rate') || row.type.includes('bot_spike')
+                    ? `${Math.round(row.baseline_mean * 100)}%`
+                    : Math.round(row.baseline_mean).toLocaleString()}
+                </strong>
+                {row.baseline_stddev != null && (
+                  <span className="text-prussian-300"> ±{
+                    row.type.includes('rate') || row.type.includes('bot_spike')
+                      ? `${Math.round(row.baseline_stddev * 100)}%`
+                      : Math.round(row.baseline_stddev).toLocaleString()
+                  }</span>
+                )}
+              </span>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div className="text-right text-xs text-errorgrey shrink-0">
+        <div>{dayjs(row.detected_at).format('DD/MM/YYYY HH:mm')}</div>
+        <div className="text-prussian-300">{dayjs(row.detected_at).fromNow()}</div>
+      </div>
+    </div>
+  )
+}
+
+export default function Anomalies() {
+  const { activeSiteId } = useSite()
+  const [rows, setRows]         = useState([])
+  const [total, setTotal]       = useState(0)
+  const [offset, setOffset]     = useState(0)
+  const [loading, setLoading]   = useState(true)
+  const [typeFilter, setTypeFilter] = useState('')
+
+  const fetchData = useCallback(() => {
+    setLoading(true)
+    const params = { limit: PAGE_SIZE, offset }
+    if (activeSiteId) params.siteId = activeSiteId
+    if (typeFilter) params.type = typeFilter
+    api.get('/alerts/anomalies', { params })
+      .then(r => { setRows(r.data.rows); setTotal(r.data.total) })
+      .finally(() => setLoading(false))
+  }, [activeSiteId, offset, typeFilter])
+
+  useEffect(() => { fetchData() }, [fetchData])
+  useEffect(() => { setOffset(0) }, [activeSiteId, typeFilter])
+
+  return (
+    <div className="flex flex-col gap-6">
+      <BeginnerBanner
+        icon="ph:warning-diamond"
+        title="Anomalies détectées"
+        tips={[
+          'Spider-Lens analyse votre trafic chaque heure et compare les volumes aux 7 derniers jours.',
+          'Une anomalie est déclenchée quand une valeur dépasse la moyenne + 2,5 fois l\'écart-type.',
+          'Les anomalies critiques déclenchent un email — les warnings sont enregistrées silencieusement.',
+          'Il faut au moins 3 jours de données historiques pour que la détection soit fiable.',
+        ]}
+      />
+
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 className="text-white font-bold text-xl">Anomalies</h2>
+          <p className="text-errorgrey text-sm">Détection automatique de comportements anormaux</p>
+        </div>
+        <span className="text-errorgrey text-sm">{total.toLocaleString()} anomalie{total !== 1 ? 's' : ''}</span>
+      </div>
+
+      {/* Filtres par type */}
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={() => setTypeFilter('')}
+          className={clsx(
+            'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border',
+            typeFilter === ''
+              ? 'bg-moonstone-400/20 text-moonstone-300 border-moonstone-600'
+              : 'bg-prussian-600 text-errorgrey border-prussian-500 hover:text-white'
+          )}
+        >Tous</button>
+        {Object.entries(TYPE_LABELS).map(([key, val]) => (
+          <button
+            key={key}
+            onClick={() => setTypeFilter(key)}
+            className={clsx(
+              'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border',
+              typeFilter === key
+                ? 'bg-moonstone-400/20 text-moonstone-300 border-moonstone-600'
+                : 'bg-prussian-600 text-errorgrey border-prussian-500 hover:text-white'
+            )}
+          >
+            <Icon icon={val.icon} className={clsx('text-sm', val.color)} />
+            {val.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Liste */}
+      {loading && (
+        <div className="flex justify-center py-12">
+          <div className="w-8 h-8 border-2 border-moonstone-400 border-t-transparent rounded-full animate-spin" />
+        </div>
+      )}
+
+      {!loading && rows.length === 0 && (
+        <div className="bg-prussian-600 rounded-xl border border-prussian-500 p-12 text-center">
+          <Icon icon="ph:check-circle" className="text-green-400 text-4xl mx-auto mb-3" />
+          <p className="text-white font-semibold">Aucune anomalie détectée</p>
+          <p className="text-errorgrey text-sm mt-1">
+            {total === 0
+              ? 'Tout semble normal — la détection s\'améliore avec plus de données historiques.'
+              : 'Aucun résultat pour ce filtre.'}
+          </p>
+        </div>
+      )}
+
+      {!loading && rows.length > 0 && (
+        <div className="flex flex-col gap-3">
+          {rows.map(row => <AnomalyRow key={row.id} row={row} />)}
+        </div>
+      )}
+
+      {total > PAGE_SIZE && (
+        <div className="flex items-center justify-between">
+          <button
+            disabled={offset === 0}
+            onClick={() => setOffset(o => Math.max(0, o - PAGE_SIZE))}
+            className="px-4 py-2 bg-prussian-600 text-white rounded-lg text-sm disabled:opacity-40 hover:bg-prussian-500 transition-colors"
+          >← Précédent</button>
+          <span className="text-errorgrey text-sm">
+            {offset + 1}–{Math.min(offset + PAGE_SIZE, total)} / {total.toLocaleString()}
+          </span>
+          <button
+            disabled={offset + PAGE_SIZE >= total}
+            onClick={() => setOffset(o => o + PAGE_SIZE)}
+            className="px-4 py-2 bg-prussian-600 text-white rounded-lg text-sm disabled:opacity-40 hover:bg-prussian-500 transition-colors"
+          >Suivant →</button>
+        </div>
+      )}
+    </div>
+  )
+}

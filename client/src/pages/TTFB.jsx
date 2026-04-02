@@ -1,0 +1,425 @@
+import React, { useEffect, useState } from 'react'
+import {
+  AreaChart, Area, LineChart, Line, BarChart, Bar,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  ResponsiveContainer, ReferenceLine, Cell,
+} from 'recharts'
+import { Icon } from '@iconify/react'
+import * as XLSX from 'xlsx'
+import DateRangePicker from '../components/ui/DateRangePicker'
+import InfoBubble from '../components/ui/InfoBubble'
+import BeginnerBanner from '../components/ui/BeginnerBanner'
+import KPICard from '../components/ui/KPICard'
+import { usePersistentRange } from '../hooks/usePersistentRange'
+import { useSite } from '../context/SiteContext'
+import api from '../api/client'
+import dayjs from 'dayjs'
+import clsx from 'clsx'
+
+const DEFAULT_FROM = dayjs().subtract(30, 'day').format('YYYY-MM-DD')
+const DEFAULT_TO   = dayjs().format('YYYY-MM-DD')
+
+// Seuils TTFB (Google Core Web Vitals + convention SEO)
+const THRESHOLD_FAST = 200   // vert  : excellent
+const THRESHOLD_OK   = 800   // orange: acceptable
+// > 800ms = lent (rouge)
+
+function ttfbColor(ms) {
+  if (ms <= THRESHOLD_FAST) return '#10b981'  // emerald
+  if (ms <= THRESHOLD_OK)   return '#f59e0b'  // amber
+  return '#d62246'                             // dustyred
+}
+
+function ttfbLabel(ms) {
+  if (ms <= THRESHOLD_FAST) return { label: 'Rapide',     cls: 'bg-emerald-400/15 text-emerald-300 border-emerald-800' }
+  if (ms <= THRESHOLD_OK)   return { label: 'Acceptable', cls: 'bg-amber-400/15 text-amber-300 border-amber-800' }
+  return                           { label: 'Lent',       cls: 'bg-dustyred-400/15 text-dustyred-300 border-dustyred-800' }
+}
+
+const PAGE_SIZE = 50
+
+export default function TTFB() {
+  const { activeSiteId } = useSite()
+  const [range, setRange]           = usePersistentRange('ttfb')
+  const [threshold, setThreshold]   = useState(800)   // seuil "lent" configurable
+  const [overview, setOverview]     = useState(null)
+  const [byDay, setByDay]           = useState([])
+  const [byUrl, setByUrl]           = useState([])
+  const [urlTotal, setUrlTotal]     = useState(0)
+  const [urlPage, setUrlPage]       = useState(0)
+  const [sortBy, setSortBy]         = useState('avg_ms')
+  const [botFilter, setBotFilter]   = useState('all')
+  const [search, setSearch]         = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [onlySlow, setOnlySlow]     = useState(false)
+  const [loading, setLoading]       = useState(true)
+  const [loadingUrl, setLoadingUrl] = useState(false)
+  const [exporting, setExporting]   = useState(false)
+
+  // Debounce search
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 350)
+    return () => clearTimeout(t)
+  }, [search])
+
+  // Reset page
+  useEffect(() => { setUrlPage(0) }, [range, threshold, sortBy, botFilter, debouncedSearch, onlySlow, activeSiteId])
+
+  // Charger overview + courbe
+  useEffect(() => {
+    setLoading(true)
+    Promise.all([
+      api.get('/stats/ttfb/overview', { params: { ...range, threshold } }),
+      api.get('/stats/ttfb/by-day',   { params: range }),
+    ]).then(([ov, bd]) => {
+      setOverview(ov.data)
+      setByDay(bd.data)
+    }).finally(() => setLoading(false))
+  }, [range, threshold, activeSiteId])
+
+  // Charger tableau URLs
+  useEffect(() => {
+    setLoadingUrl(true)
+    const params = {
+      ...range,
+      sort:   sortBy,
+      limit:  PAGE_SIZE,
+      offset: urlPage * PAGE_SIZE,
+      threshold: onlySlow ? threshold : 0,
+    }
+    if (botFilter !== 'all') params.bot = botFilter
+    if (debouncedSearch)     params.search = debouncedSearch
+
+    api.get('/stats/ttfb/by-url', { params })
+      .then(r => { setByUrl(r.data); setUrlTotal(r.data.length + urlPage * PAGE_SIZE) })
+      .finally(() => setLoadingUrl(false))
+  }, [range, threshold, sortBy, botFilter, debouncedSearch, onlySlow, urlPage, activeSiteId])
+
+  // Export CSV
+  function exportCSV() {
+    setExporting(true)
+    const token = localStorage.getItem('spider_token')
+    const params = new URLSearchParams({
+      from: range.from, to: range.to,
+      threshold: onlySlow ? threshold : 0,
+    })
+    if (botFilter !== 'all') params.set('bot', botFilter)
+    fetch(`/api/stats/ttfb/by-url/export?${params}`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.blob())
+      .then(blob => {
+        const a = document.createElement('a')
+        a.href = URL.createObjectURL(blob)
+        a.download = `spider-lens-ttfb-${range.from}-${range.to}.csv`
+        a.click()
+        URL.revokeObjectURL(a.href)
+      })
+      .finally(() => setExporting(false))
+  }
+
+  // Export Excel
+  function exportExcel() {
+    setExporting(true)
+    api.get('/stats/ttfb/by-url', { params: { ...range, sort: sortBy, limit: 10000, threshold: onlySlow ? threshold : 0 } })
+      .then(r => {
+        const data = r.data.map(row => ({
+          'URL':              row.url,
+          'TTFB moyen (ms)':  row.avg_ms,
+          'TTFB min (ms)':    row.min_ms,
+          'TTFB max (ms)':    row.max_ms,
+          'Requêtes':         row.hits,
+          'Statut':           row.avg_ms <= 200 ? 'Rapide' : row.avg_ms <= 800 ? 'Acceptable' : 'Lent',
+          'Dernière vue':     dayjs(row.last_seen).format('DD/MM/YYYY HH:mm'),
+        }))
+        const ws = XLSX.utils.json_to_sheet(data)
+        ws['!cols'] = [{ wch: 55 }, { wch: 16 }, { wch: 14 }, { wch: 14 }, { wch: 12 }, { wch: 14 }, { wch: 20 }]
+        const wb = XLSX.utils.book_new()
+        XLSX.utils.book_append_sheet(wb, ws, 'TTFB')
+        XLSX.writeFile(wb, `spider-lens-ttfb-${range.from}-${range.to}.xlsx`)
+      })
+      .finally(() => setExporting(false))
+  }
+
+  function toggleSort(col) {
+    setSortBy(s => s === col ? 'avg_ms' : col)
+  }
+
+  function SortIcon({ col }) {
+    return <Icon icon={sortBy === col ? 'ph:arrow-down' : 'ph:arrows-down-up'}
+      className={clsx('text-xs ml-1', sortBy === col ? 'text-moonstone-400' : 'text-prussian-300')} />
+  }
+
+  const totalPages = Math.ceil(urlTotal / PAGE_SIZE)
+
+  return (
+    <div className="flex flex-col gap-6">
+
+      <BeginnerBanner
+        icon="ph:timer"
+        title="Temps de chargement (TTFB)"
+        tips={[
+          'Le TTFB (Time To First Byte) mesure le temps entre la requête et le premier octet renvoyé par le serveur.',
+          'Google considère un TTFB ≤ 200ms comme excellent, entre 200ms et 800ms comme acceptable, au-delà comme lent.',
+          'Un TTFB élevé peut être causé par une base de données lente, un manque de cache, ou un serveur surchargé.',
+          'Activez le filtre "Pages lentes" pour identifier rapidement les URLs prioritaires à optimiser.',
+          'Modifiez le seuil "lent" (en ms) pour adapter l\'analyse à vos objectifs de performance.',
+        ]}
+      />
+
+      {/* En-tête */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 className="text-white font-bold text-xl">Temps de chargement (TTFB)</h2>
+          <p className="text-errorgrey text-sm">Time To First Byte — temps de réponse serveur par URL</p>
+        </div>
+        <div className="flex items-center gap-3">
+          {/* Seuil "lent" configurable */}
+          <div className="flex items-center gap-2 bg-prussian-500 border border-prussian-400 rounded-lg px-3 py-2">
+            <Icon icon="ph:timer" className="text-errorgrey text-base shrink-0" />
+            <span className="text-errorgrey text-xs whitespace-nowrap">Seuil lent :</span>
+            <input
+              type="number" min="100" max="5000" step="100"
+              value={threshold}
+              onChange={e => setThreshold(parseInt(e.target.value) || 1000)}
+              className="w-16 bg-transparent text-white text-sm focus:outline-none"
+            />
+            <span className="text-errorgrey text-xs">ms</span>
+          </div>
+          <DateRangePicker from={range.from} to={range.to} onChange={setRange} />
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center h-48">
+          <div className="w-8 h-8 border-2 border-moonstone-400 border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : (
+        <>
+          {/* KPIs */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <KPICard
+              label="TTFB moyen"
+              value={`${overview?.avg_ms?.toLocaleString('fr-FR')} ms`}
+              icon="ph:gauge"
+              color={overview?.avg_ms <= 200 ? 'green' : overview?.avg_ms <= 800 ? 'amber' : 'dustyred'}
+              info="Temps moyen entre la requête HTTP et le premier octet reçu par le client. Objectif : < 200ms (excellent) ou < 800ms (acceptable)."
+            />
+            <KPICard
+              label={`Pages lentes (> ${threshold}ms)`}
+              value={overview?.slow_count?.toLocaleString('fr-FR')}
+              icon="ph:snail"
+              color="dustyred"
+              info={`Nombre de requêtes ayant dépassé le seuil de ${threshold}ms. Ces pages dégradent l'expérience utilisateur et peuvent nuire au SEO.`}
+            />
+            <KPICard
+              label="% requêtes lentes"
+              value={`${overview?.slow_pct}%`}
+              icon="ph:warning"
+              color={parseFloat(overview?.slow_pct) > 20 ? 'dustyred' : 'amber'}
+              info="Part des requêtes dépassant le seuil configuré."
+            />
+            <KPICard
+              label="Pages rapides (≤ 200ms)"
+              value={overview?.fast_count?.toLocaleString('fr-FR')}
+              icon="ph:lightning"
+              color="green"
+              info="Requêtes avec un TTFB excellent (≤ 200ms). Objectif : maximiser ce chiffre."
+            />
+          </div>
+
+          {/* Répartition rapide/ok/lent */}
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { label: '≤ 200ms — Rapide',     count: overview?.fast_count, color: '#10b981', pct: overview?.total > 0 ? (overview.fast_count / overview.total * 100).toFixed(1) : 0 },
+              { label: '201–800ms — Acceptable', count: overview?.ok_count,   color: '#f59e0b', pct: overview?.total > 0 ? (overview.ok_count  / overview.total * 100).toFixed(1) : 0 },
+              { label: `> 800ms — Lent`,         count: overview?.warn_count, color: '#d62246', pct: overview?.total > 0 ? (overview.warn_count / overview.total * 100).toFixed(1) : 0 },
+            ].map(({ label, count, color, pct }) => (
+              <div key={label} className="bg-prussian-500 border border-prussian-400 rounded-xl p-4 flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-errorgrey font-semibold">{label}</span>
+                  <span className="text-white font-bold text-lg">{pct}%</span>
+                </div>
+                <div className="w-full h-1.5 bg-prussian-400 rounded-full overflow-hidden">
+                  <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: color }} />
+                </div>
+                <span className="text-errorgrey text-xs">{count?.toLocaleString('fr-FR')} requêtes</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Courbe évolution */}
+          <div className="bg-prussian-500 rounded-xl border border-prussian-400 p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <h3 className="text-white font-bold text-sm">Évolution du TTFB moyen par jour</h3>
+              <InfoBubble
+                title="TTFB dans le temps"
+                content="Évolution du temps de réponse moyen de votre serveur. Un pic peut indiquer une surcharge serveur, une mise en production problématique, ou une attaque."
+                impact="Google mesure le TTFB pour évaluer la performance serveur. Un TTFB > 800ms peut impacter le crawl et le classement."
+                action="En cas de pic : vérifiez les logs serveur, les ressources CPU/RAM, et les requêtes de base de données lentes."
+              />
+            </div>
+            {byDay.length > 0 ? (
+              <ResponsiveContainer width="100%" height={240}>
+                <AreaChart data={byDay} margin={{ top: 5, right: 10, bottom: 5, left: 0 }}>
+                  <defs>
+                    <linearGradient id="ttfbGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%"  stopColor="#00c6e0" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="#00c6e0" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#273043" />
+                  <XAxis dataKey="day" tick={{ fill: '#898989', fontSize: 11 }} tickFormatter={v => dayjs(v).format('DD/MM')} />
+                  <YAxis tick={{ fill: '#898989', fontSize: 11 }} unit="ms" />
+                  <Tooltip
+                    contentStyle={{ background: '#262e40', border: '1px solid #273043', borderRadius: 8, color: '#fff' }}
+                    labelFormatter={v => dayjs(v).format('DD/MM/YYYY')}
+                    formatter={(v, name) => [`${Math.round(v)} ms`, name]}
+                  />
+                  <Legend wrapperStyle={{ fontSize: 12, color: '#d1d1d1' }} />
+                  {/* Lignes de référence */}
+                  <ReferenceLine y={200} stroke="#10b981" strokeDasharray="4 4" label={{ value: '200ms', fill: '#10b981', fontSize: 10, position: 'right' }} />
+                  <ReferenceLine y={800} stroke="#f59e0b" strokeDasharray="4 4" label={{ value: '800ms', fill: '#f59e0b', fontSize: 10, position: 'right' }} />
+                  <ReferenceLine y={threshold} stroke="#d62246" strokeDasharray="4 4" label={{ value: `${threshold}ms`, fill: '#d62246', fontSize: 10, position: 'right' }} />
+                  <Area type="monotone" dataKey="avg_ms" name="TTFB moyen" stroke="#00c6e0" strokeWidth={2} fill="url(#ttfbGrad)" dot={false} />
+                  <Line type="monotone" dataKey="max_ms" name="TTFB max" stroke="#d62246" strokeWidth={1} dot={false} strokeDasharray="3 3" />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-40">
+                <p className="text-errorgrey text-sm">Aucune donnée</p>
+              </div>
+            )}
+          </div>
+
+          {/* Tableau URLs */}
+          <div className="bg-prussian-500 rounded-xl border border-prussian-400 overflow-hidden">
+
+            {/* Barre filtres */}
+            <div className="p-4 border-b border-prussian-400 flex flex-wrap gap-3 items-center">
+
+              {/* N'afficher que les pages lentes */}
+              <button
+                onClick={() => setOnlySlow(s => !s)}
+                className={clsx(
+                  'flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all',
+                  onlySlow
+                    ? 'bg-dustyred-400 border-dustyred-400 text-white'
+                    : 'bg-transparent border-prussian-400 text-errorgrey hover:text-white'
+                )}
+              >
+                <Icon icon="ph:snail" className="text-base" />
+                Pages lentes ({'>'} {threshold}ms)
+              </button>
+
+              {/* Filtre bots */}
+              <div className="flex gap-1 bg-prussian-600 rounded-lg p-1">
+                {[{ val: 'all', label: 'Tous' }, { val: '0', label: 'Humains' }, { val: '1', label: 'Bots' }].map(opt => (
+                  <button key={opt.val} onClick={() => setBotFilter(opt.val)}
+                    className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors ${botFilter === opt.val ? 'bg-prussian-400 text-white' : 'text-errorgrey hover:text-white'}`}>
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Tri */}
+              <div className="flex gap-1 bg-prussian-600 rounded-lg p-1">
+                {[
+                  { val: 'avg_ms', label: 'Moy.' },
+                  { val: 'max_ms', label: 'Max' },
+                  { val: 'hits',   label: 'Hits' },
+                ].map(opt => (
+                  <button key={opt.val} onClick={() => setSortBy(opt.val)}
+                    className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors ${sortBy === opt.val ? 'bg-prussian-400 text-white' : 'text-errorgrey hover:text-white'}`}>
+                    Trier par {opt.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Recherche */}
+              <div className="relative flex-1 min-w-[160px]">
+                <Icon icon="ph:magnifying-glass" className="absolute left-3 top-1/2 -translate-y-1/2 text-errorgrey text-sm" />
+                <input
+                  type="text" placeholder="Filtrer par URL…" value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="w-full bg-prussian-600 border border-prussian-400 rounded-lg pl-8 pr-3 py-1.5 text-white text-sm placeholder:text-errorgrey focus:outline-none focus:border-moonstone-600 transition-colors"
+                />
+                {search && <button onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-errorgrey hover:text-white"><Icon icon="ph:x" className="text-sm" /></button>}
+              </div>
+
+              {/* Exports */}
+              <div className="flex gap-2 ml-auto">
+                <button onClick={exportCSV} disabled={exporting}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-prussian-400 hover:bg-prussian-300 border border-prussian-300 rounded-lg text-xs font-semibold text-white transition-colors disabled:opacity-50">
+                  <Icon icon="ph:file-csv" className="text-base text-moonstone-400" />CSV
+                </button>
+                <button onClick={exportExcel} disabled={exporting}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-prussian-400 hover:bg-prussian-300 border border-prussian-300 rounded-lg text-xs font-semibold text-white transition-colors disabled:opacity-50">
+                  <Icon icon="ph:microsoft-excel-logo" className="text-base text-emerald-400" />Excel
+                </button>
+              </div>
+            </div>
+
+            {/* Loader + compteur */}
+            <div className="flex items-center justify-between px-5 py-2 border-b border-prussian-400 bg-prussian-600/30">
+              <p className="text-errorgrey text-xs">
+                {loadingUrl ? '…' : <><span className="text-white font-semibold">{byUrl.length}</span> URLs affichées{onlySlow && <span className="text-dustyred-300"> · pages lentes uniquement</span>}</>}
+              </p>
+              {loadingUrl && <div className="w-4 h-4 border-2 border-moonstone-400 border-t-transparent rounded-full animate-spin" />}
+            </div>
+
+            {/* Tableau */}
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[700px]">
+                <thead>
+                  <tr className="border-b border-prussian-400 bg-prussian-600/20">
+                    <th className="text-left text-xs font-semibold text-errorgrey px-5 py-3">URL</th>
+                    <th className="text-right text-xs font-semibold text-errorgrey px-3 py-3 cursor-pointer hover:text-white select-none" onClick={() => setSortBy('avg_ms')}>
+                      <span className="inline-flex items-center">Moy. <SortIcon col="avg_ms" /></span>
+                    </th>
+                    <th className="text-right text-xs font-semibold text-errorgrey px-3 py-3">Min</th>
+                    <th className="text-right text-xs font-semibold text-errorgrey px-3 py-3 cursor-pointer hover:text-white select-none" onClick={() => setSortBy('max_ms')}>
+                      <span className="inline-flex items-center">Max <SortIcon col="max_ms" /></span>
+                    </th>
+                    <th className="text-center text-xs font-semibold text-errorgrey px-3 py-3">Statut</th>
+                    <th className="text-right text-xs font-semibold text-errorgrey px-3 py-3 cursor-pointer hover:text-white select-none" onClick={() => setSortBy('hits')}>
+                      <span className="inline-flex items-center">Hits <SortIcon col="hits" /></span>
+                    </th>
+                    <th className="text-right text-xs font-semibold text-errorgrey px-5 py-3">Dernière vue</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {byUrl.length === 0 && !loadingUrl ? (
+                    <tr><td colSpan={7} className="text-center text-errorgrey text-sm py-14">
+                      <Icon icon="ph:gauge" className="text-3xl mb-2 block mx-auto text-prussian-400" />
+                      Aucune donnée
+                    </td></tr>
+                  ) : byUrl.map((row, i) => {
+                    const badge = ttfbLabel(row.avg_ms)
+                    return (
+                      <tr key={row.url} className={clsx('border-b border-prussian-400/40 hover:bg-prussian-400/20 transition-colors', i % 2 !== 0 && 'bg-prussian-600/20')}>
+                        <td className="px-5 py-2.5">
+                          <span className="text-moonstone-400 text-xs font-mono">{row.url}</span>
+                        </td>
+                        <td className="px-3 py-2.5 text-right">
+                          <span className="font-bold text-sm" style={{ color: ttfbColor(row.avg_ms) }}>{row.avg_ms} ms</span>
+                        </td>
+                        <td className="px-3 py-2.5 text-right text-errorgrey text-sm">{row.min_ms} ms</td>
+                        <td className="px-3 py-2.5 text-right text-errorgrey text-sm">{row.max_ms} ms</td>
+                        <td className="px-3 py-2.5 text-center">
+                          <span className={`inline-block px-2 py-0.5 rounded text-xs font-semibold border ${badge.cls}`}>{badge.label}</span>
+                        </td>
+                        <td className="px-3 py-2.5 text-right text-white text-sm font-semibold">{row.hits.toLocaleString('fr-FR')}</td>
+                        <td className="px-5 py-2.5 text-right text-errorgrey text-xs whitespace-nowrap">
+                          {dayjs(row.last_seen).format('DD/MM/YYYY HH:mm')}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
