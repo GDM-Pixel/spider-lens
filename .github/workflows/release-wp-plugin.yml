@@ -58,8 +58,9 @@ jobs:
           find staging -name ".DS_Store" -delete
 
           # Zip
+          # Le zip doit s'appeler spider-lens.zip pour que WP décompresse dans spider-lens/
           cd staging
-          zip -r9 "../spider-lens-wp-${{ steps.version.outputs.VERSION }}.zip" spider-lens/
+          zip -r9 "../spider-lens.zip" spider-lens/
 
       # ── Publier la Release GitHub ──────────────────────────────
       - name: Create GitHub Release
@@ -88,6 +89,6 @@ jobs:
             ### Nouveautés
             Voir le [CHANGELOG](https://github.com/GDM-Pixel/spider-lens/blob/main/CHANGELOG.md) pour le détail des changements.
           files: |
-            spider-lens-wp-${{ steps.version.outputs.VERSION }}.zip
+            spider-lens.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

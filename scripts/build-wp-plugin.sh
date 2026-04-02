@@ -13,7 +13,9 @@ set -euo pipefail
 PLUGIN_DIR="wp-plugin"
 DIST_DIR="dist"
 VERSION=$(grep "Version:" "$PLUGIN_DIR/spider-lens.php" | head -1 | sed "s/.*Version: *//;s/ *$//")
-ZIP_NAME="spider-lens-wp-${VERSION}.zip"
+# Le zip DOIT s'appeler spider-lens.zip pour que WP décompresse dans spider-lens/
+# (WP utilise le nom du zip comme dossier de destination)
+ZIP_NAME="spider-lens.zip"
 TMP_DIR=$(mktemp -d)
 SKIP_BUILD=false
 
