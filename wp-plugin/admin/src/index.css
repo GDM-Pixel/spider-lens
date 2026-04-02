@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Reset dans le conteneur WP admin */
+#spider-lens-root {
+  font-family: 'Open Sans', Arial, sans-serif;
+  color: #d1d1d1;
+  min-height: 100vh;
+  background: #171c27;
+}
+
+#spider-lens-root * {
+  box-sizing: border-box;
+}
+
+/* Masquer le titre de page WP par défaut sur notre page */
+.spider-lens-page .wrap > h1:first-child {
+  display: none;
+}

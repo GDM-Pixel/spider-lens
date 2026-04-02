@@ -37,3 +37,7 @@ tasks/
 
 # Templates de référence (non applicatif)
 Templates/
+
+# WP Plugin — build frontend
+wp-plugin/admin/dist/
+wp-plugin/admin/node_modules/
