@@ -194,13 +194,21 @@ router.get('/url-detail', (req, res) => {
   const ipWhere     = ipFilter ? 'AND ip = ?' : ''
   const ipParams    = ipFilter ? [ipFilter] : []
   const uaFilter    = req.query.ua
-  const uaWhere     = uaFilter ? 'AND (user_agent LIKE ? OR user_agent LIKE ?)' : ''
-  const uaParams    = uaFilter ? [`%${uaFilter}%`, `%\\x22${uaFilter}%`] : []
+  const uaWhere     = uaFilter ? 'AND user_agent = ?' : ''
+  const uaParams    = uaFilter ? [uaFilter] : []
 
   const where = `timestamp BETWEEN ? AND ? ${statusWhere} ${botWhere} ${searchWhere} ${ipWhere} ${uaWhere} ${sf}`
   const params = [from, to, ...statusParams, ...searchParams, ...ipParams, ...uaParams, ...sp]
 
-  // Requête principale — agrégée par URL + status_code
+  // Sous-requête top_ua : si filtre UA actif, on retourne directement ce UA
+  const topUaSubquery = uaFilter
+    ? `? AS top_ua`
+    : `(SELECT user_agent FROM log_entries le2
+       WHERE le2.url = le.url AND le2.status_code = le.status_code
+         AND le2.timestamp BETWEEN ? AND ? ${sf}
+       GROUP BY user_agent ORDER BY COUNT(*) DESC LIMIT 1) AS top_ua`
+  const topUaParams = uaFilter ? [uaFilter] : [from, to, ...sp]
+
   const rows = db.prepare(`
     SELECT
       url,
@@ -209,16 +217,13 @@ router.get('/url-detail', (req, res) => {
       SUM(CASE WHEN is_bot = 1 THEN 1 ELSE 0 END)          AS bot_hits,
       SUM(CASE WHEN is_bot = 0 THEN 1 ELSE 0 END)          AS human_hits,
       MAX(timestamp)                                        AS last_seen,
-      (SELECT user_agent FROM log_entries le2
-       WHERE le2.url = le.url AND le2.status_code = le.status_code
-         AND le2.timestamp BETWEEN ? AND ? ${sf}
-       GROUP BY user_agent ORDER BY COUNT(*) DESC LIMIT 1)  AS top_ua
+      ${topUaSubquery}
     FROM log_entries le
     WHERE ${where}
     GROUP BY url, status_code
     ORDER BY ${sortBy} ${sortDir}
     LIMIT ? OFFSET ?
-  `).all(from, to, ...sp, ...params, limit, offset)
+  `).all(...topUaParams, ...params, limit, offset)
 
   // Total pour pagination
   const total = db.prepare(`
