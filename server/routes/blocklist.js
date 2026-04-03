@@ -31,11 +31,21 @@ router.get('/', (req, res) => {
   res.json({ rows, total, limit, offset })
 })
 
+// Validation du format IP (IPv4 ou IPv6 ou CIDR)
+function isValidIp(ip) {
+  const ipv4 = /^(\d{1,3}\.){3}\d{1,3}(\/\d{1,2})?$/
+  const ipv6 = /^[\da-fA-F:]+(%[\w]+)?(\/\d{1,3})?$/
+  return ipv4.test(ip) || ipv6.test(ip)
+}
+
 // POST /api/blocklist — ajouter une IP
 router.post('/', (req, res) => {
   const { ip, reason, siteId } = req.body
   if (!ip || typeof ip !== 'string' || ip.trim().length === 0) {
     return res.status(400).json({ error: 'IP requise' })
+  }
+  if (!isValidIp(ip.trim())) {
+    return res.status(400).json({ error: 'Format IP invalide' })
   }
 
   const db = getDb()

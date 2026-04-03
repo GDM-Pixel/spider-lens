@@ -1,12 +1,23 @@
 import { Router } from 'express'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import rateLimit from 'express-rate-limit'
 import { getDb } from '../db/database.js'
+import { requireAuth } from '../middleware/auth.js'
 
 const router = Router()
 
+// Rate limiter : 10 tentatives par 15 minutes par IP
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Trop de tentatives de connexion. Réessayez dans 15 minutes.' },
+})
+
 // POST /api/auth/login
-router.post('/login', (req, res) => {
+router.post('/login', loginLimiter, (req, res) => {
   const { username, password } = req.body
 
   if (!username || !password) {
@@ -34,11 +45,11 @@ router.post('/login', (req, res) => {
   res.json({ token, username: user.username })
 })
 
-// POST /api/auth/change-password
-router.post('/change-password', (req, res) => {
-  const { username, currentPassword, newPassword } = req.body
+// POST /api/auth/change-password (authentification requise)
+router.post('/change-password', requireAuth, (req, res) => {
+  const { currentPassword, newPassword } = req.body
 
-  if (!username || !currentPassword || !newPassword) {
+  if (!currentPassword || !newPassword) {
     return res.status(400).json({ error: 'Champs manquants' })
   }
   if (newPassword.length < 8) {
@@ -46,7 +57,7 @@ router.post('/change-password', (req, res) => {
   }
 
   const db = getDb()
-  const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username)
+  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id)
   if (!user || !bcrypt.compareSync(currentPassword, user.password_hash)) {
     return res.status(401).json({ error: 'Mot de passe actuel incorrect' })
   }

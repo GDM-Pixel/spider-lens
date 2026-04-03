@@ -9,6 +9,20 @@ import bcrypt from 'bcryptjs'
 
 dotenv.config()
 
+// ── Validation des secrets critiques ─────────────────────
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+  console.error('[FATAL] JWT_SECRET manquant ou trop court (minimum 32 caractères). Arrêt.')
+  process.exit(1)
+}
+if (!process.env.ADMIN_PASS || process.env.ADMIN_PASS === 'spider-lens-change-me') {
+  if (process.env.NODE_ENV === 'production') {
+    console.error('[FATAL] ADMIN_PASS par défaut détecté en production. Changez-le dans .env. Arrêt.')
+    process.exit(1)
+  } else {
+    console.warn('[warn] ADMIN_PASS par défaut — à changer avant mise en production.')
+  }
+}
+
 import { getDb } from './db/database.js'
 import authRoutes from './routes/auth.js'
 import statsRoutes from './routes/stats.js'
@@ -23,7 +37,20 @@ const app = express()
 const PORT = process.env.PORT || 3000
 
 // ── Middlewares ───────────────────────────────────────────
-app.use(helmet({ contentSecurityPolicy: false }))
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],   // unsafe-inline requis pour Vite en dev
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", 'data:', 'blob:'],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'", 'data:'],
+      objectSrc: ["'none'"],
+      frameAncestors: ["'none'"],
+    },
+  },
+}))
 app.use(cors({ origin: process.env.NODE_ENV === 'development' ? 'http://localhost:5173' : false }))
 app.use(express.json())
 
@@ -58,8 +85,7 @@ function ensureAdminUser() {
     const password = process.env.ADMIN_PASS || 'spider-lens-change-me'
     const hash = bcrypt.hashSync(password, 10)
     db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)').run(username, hash)
-    console.log(`[init] Utilisateur créé : ${username} / ${password}`)
-    console.log('[init] ⚠️  Changez ce mot de passe dans Settings dès la première connexion !')
+    console.log(`[init] Utilisateur admin créé : "${username}" — changez le mot de passe dans Settings.`)
   }
 }
 
