@@ -307,7 +307,7 @@ export default function HttpCodes() {
                     )}
                     style={activeFilter === g.key ? { backgroundColor: g.color, borderColor: g.color } : {}}
                   >
-                    {t(`httpCodes.filter${g.key === 'all' ? 'All' : g.key}`)}
+                    {g.key === 'all' ? t('httpCodes.filterAll') : g.label}
                   </button>
                 ))}
               </div>
