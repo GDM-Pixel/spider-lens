@@ -24,10 +24,13 @@ router.get('/overview', (req, res) => {
   const db = getDb()
   const { from, to } = getDateRange(req)
   const { clause: sf, params: sp } = getSiteFilter(req)
+  const uaFilter = req.query.ua
+  const uaWhere  = uaFilter ? 'AND user_agent = ?' : ''
+  const uaParams = uaFilter ? [uaFilter] : []
 
   const total = db.prepare(`
-    SELECT COUNT(*) as cnt FROM log_entries WHERE timestamp BETWEEN ? AND ? ${sf}
-  `).get(from, to, ...sp)?.cnt || 0
+    SELECT COUNT(*) as cnt FROM log_entries WHERE timestamp BETWEEN ? AND ? ${sf} ${uaWhere}
+  `).get(from, to, ...sp, ...uaParams)?.cnt || 0
 
   const byStatus = db.prepare(`
     SELECT
@@ -35,18 +38,18 @@ router.get('/overview', (req, res) => {
       SUM(CASE WHEN status_code BETWEEN 300 AND 399 THEN 1 ELSE 0 END) as s3xx,
       SUM(CASE WHEN status_code BETWEEN 400 AND 499 THEN 1 ELSE 0 END) as s4xx,
       SUM(CASE WHEN status_code BETWEEN 500 AND 599 THEN 1 ELSE 0 END) as s5xx
-    FROM log_entries WHERE timestamp BETWEEN ? AND ? ${sf}
-  `).get(from, to, ...sp)
+    FROM log_entries WHERE timestamp BETWEEN ? AND ? ${sf} ${uaWhere}
+  `).get(from, to, ...sp, ...uaParams)
 
   const bots = db.prepare(`
     SELECT COUNT(*) as cnt FROM log_entries
-    WHERE is_bot = 1 AND timestamp BETWEEN ? AND ? ${sf}
-  `).get(from, to, ...sp)?.cnt || 0
+    WHERE is_bot = 1 AND timestamp BETWEEN ? AND ? ${sf} ${uaWhere}
+  `).get(from, to, ...sp, ...uaParams)?.cnt || 0
 
   const notFound = db.prepare(`
     SELECT COUNT(DISTINCT url) as cnt FROM log_entries
-    WHERE status_code = 404 AND timestamp BETWEEN ? AND ? ${sf}
-  `).get(from, to, ...sp)?.cnt || 0
+    WHERE status_code = 404 AND timestamp BETWEEN ? AND ? ${sf} ${uaWhere}
+  `).get(from, to, ...sp, ...uaParams)?.cnt || 0
 
   res.json({
     total,
@@ -66,6 +69,9 @@ router.get('/http-codes', (req, res) => {
   const db = getDb()
   const { from, to } = getDateRange(req)
   const { clause: sf, params: sp } = getSiteFilter(req)
+  const uaFilter = req.query.ua
+  const uaWhere  = uaFilter ? 'AND user_agent = ?' : ''
+  const uaParams = uaFilter ? [uaFilter] : []
 
   const rows = db.prepare(`
     SELECT
@@ -75,10 +81,10 @@ router.get('/http-codes', (req, res) => {
       SUM(CASE WHEN status_code BETWEEN 400 AND 499 THEN 1 ELSE 0 END) as s4xx,
       SUM(CASE WHEN status_code BETWEEN 500 AND 599 THEN 1 ELSE 0 END) as s5xx
     FROM log_entries
-    WHERE timestamp BETWEEN ? AND ? ${sf}
+    WHERE timestamp BETWEEN ? AND ? ${sf} ${uaWhere}
     GROUP BY day
     ORDER BY day ASC
-  `).all(from, to, ...sp)
+  `).all(from, to, ...sp, ...uaParams)
 
   res.json(rows)
 })
