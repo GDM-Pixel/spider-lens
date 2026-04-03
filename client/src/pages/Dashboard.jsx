@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
+import { kpiVariants } from '../components/ui/KPICard'
 import { useTranslation } from 'react-i18next'
 import { Icon } from '@iconify/react'
 import { Link } from 'react-router-dom'
@@ -85,7 +87,12 @@ export default function Dashboard() {
       ) : (
         <>
           {/* KPIs */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <motion.div
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 my-4"
+            initial="hidden"
+            animate="visible"
+            variants={{ visible: { transition: { staggerChildren: 0.07 } } }}
+          >
             <KPICard
               label={t('dashboard.totalRequests')}
               value={overview?.total?.toLocaleString('fr-FR') || '0'}
@@ -139,7 +146,7 @@ export default function Dashboard() {
               color="dustyred"
               info={t('dashboard.unique404Info')}
             />
-          </div>
+          </motion.div>
 
           {/* Graphes */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

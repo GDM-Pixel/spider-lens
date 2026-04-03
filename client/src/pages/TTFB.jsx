@@ -12,10 +12,14 @@ import InfoBubble from '../components/ui/InfoBubble'
 import BeginnerBanner from '../components/ui/BeginnerBanner'
 import KPICard from '../components/ui/KPICard'
 import { usePersistentRange } from '../hooks/usePersistentRange'
+import { useSort } from '../hooks/useSort'
+import SortableHeader from '../components/ui/SortableHeader'
 import { useSite } from '../context/SiteContext'
 import api from '../api/client'
 import dayjs from 'dayjs'
 import clsx from 'clsx'
+import { motion } from 'framer-motion'
+import { kpiVariants } from '../components/ui/KPICard'
 
 const DEFAULT_FROM = dayjs().subtract(30, 'day').format('YYYY-MM-DD')
 const DEFAULT_TO   = dayjs().format('YYYY-MM-DD')
@@ -49,7 +53,7 @@ export default function TTFB() {
   const [byUrl, setByUrl]           = useState([])
   const [urlTotal, setUrlTotal]     = useState(0)
   const [urlPage, setUrlPage]       = useState(0)
-  const [sortBy, setSortBy]         = useState('avg_ms')
+  const { sort: sortState, toggleSort } = useSort('avg_ms', 'desc')
   const [botFilter, setBotFilter]   = useState('all')
   const [search, setSearch]         = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -65,7 +69,7 @@ export default function TTFB() {
   }, [search])
 
   // Reset page
-  useEffect(() => { setUrlPage(0) }, [range, threshold, sortBy, botFilter, debouncedSearch, onlySlow, activeSiteId])
+  useEffect(() => { setUrlPage(0) }, [range, threshold, sortState, botFilter, debouncedSearch, onlySlow, activeSiteId])
 
   // Charger overview + courbe
   useEffect(() => {
@@ -84,7 +88,8 @@ export default function TTFB() {
     setLoadingUrl(true)
     const params = {
       ...range,
-      sort:   sortBy,
+      sort:   sortState.by,
+      dir:    sortState.dir,
       limit:  PAGE_SIZE,
       offset: urlPage * PAGE_SIZE,
       threshold: onlySlow ? threshold : 0,
@@ -95,7 +100,7 @@ export default function TTFB() {
     api.get('/stats/ttfb/by-url', { params })
       .then(r => { setByUrl(r.data); setUrlTotal(r.data.length + urlPage * PAGE_SIZE) })
       .finally(() => setLoadingUrl(false))
-  }, [range, threshold, sortBy, botFilter, debouncedSearch, onlySlow, urlPage, activeSiteId])
+  }, [range, threshold, sortState, botFilter, debouncedSearch, onlySlow, urlPage, activeSiteId])
 
   // Export CSV
   function exportCSV() {
@@ -121,7 +126,7 @@ export default function TTFB() {
   // Export Excel
   function exportExcel() {
     setExporting(true)
-    api.get('/stats/ttfb/by-url', { params: { ...range, sort: sortBy, limit: 10000, threshold: onlySlow ? threshold : 0 } })
+    api.get('/stats/ttfb/by-url', { params: { ...range, sort: sortState.by, dir: sortState.dir, limit: 10000, threshold: onlySlow ? threshold : 0 } })
       .then(r => {
         const data = r.data.map(row => ({
           'URL':              row.url,
@@ -139,15 +144,6 @@ export default function TTFB() {
         XLSX.writeFile(wb, `spider-lens-ttfb-${range.from}-${range.to}.xlsx`)
       })
       .finally(() => setExporting(false))
-  }
-
-  function toggleSort(col) {
-    setSortBy(s => s === col ? 'avg_ms' : col)
-  }
-
-  function SortIcon({ col }) {
-    return <Icon icon={sortBy === col ? 'ph:arrow-down' : 'ph:arrows-down-up'}
-      className={clsx('text-xs ml-1', sortBy === col ? 'text-moonstone-400' : 'text-prussian-300')} />
   }
 
   const totalPages = Math.ceil(urlTotal / PAGE_SIZE)
@@ -197,7 +193,12 @@ export default function TTFB() {
       ) : (
         <>
           {/* KPIs */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <motion.div
+            className="grid grid-cols-2 lg:grid-cols-4 gap-4 my-4"
+            initial="hidden"
+            animate="visible"
+            variants={{ visible: { transition: { staggerChildren: 0.07 } } }}
+          >
             <KPICard
               label={t('ttfb.kpiAvgTTFB')}
               value={`${overview?.avg_ms?.toLocaleString('fr-FR')} ms`}
@@ -226,7 +227,7 @@ export default function TTFB() {
               color="green"
               info={t('ttfb.kpiFastPagesInfo')}
             />
-          </div>
+          </motion.div>
 
           {/* Répartition rapide/ok/lent */}
           <div className="grid grid-cols-3 gap-3">
@@ -326,20 +327,6 @@ export default function TTFB() {
                 ))}
               </div>
 
-              {/* Tri */}
-              <div className="flex gap-1 bg-prussian-600 rounded-lg p-1">
-                {[
-                  { val: 'avg_ms', label: t('ttfb.sortAvg') },
-                  { val: 'max_ms', label: t('ttfb.sortMax') },
-                  { val: 'hits',   label: t('ttfb.sortHits') },
-                ].map(opt => (
-                  <button key={opt.val} onClick={() => setSortBy(opt.val)}
-                    className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors ${sortBy === opt.val ? 'bg-prussian-400 text-white' : 'text-errorgrey hover:text-white'}`}>
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-
               {/* Recherche */}
               <div className="relative flex-1 min-w-[160px]">
                 <Icon icon="ph:magnifying-glass" className="absolute left-3 top-1/2 -translate-y-1/2 text-errorgrey text-sm" />
@@ -369,7 +356,12 @@ export default function TTFB() {
               <p className="text-errorgrey text-xs">
                 {loadingUrl ? '…' : <><><span className="text-white font-semibold">{byUrl.length}</span> {t('ttfb.urlsCount', { count: byUrl.length })}</>{onlySlow && <span className="text-dustyred-300"> · {t('ttfb.slowOnly')}</span>}</>}
               </p>
-              {loadingUrl && <div className="w-4 h-4 border-2 border-moonstone-400 border-t-transparent rounded-full animate-spin" />}
+              {loadingUrl && (
+                <div className="flex items-center gap-2 text-moonstone-300 text-xs font-semibold">
+                  <div className="w-4 h-4 border-2 border-moonstone-400 border-t-transparent rounded-full animate-spin" />
+                  {t('common.loading')}
+                </div>
+              )}
             </div>
 
             {/* Tableau */}
@@ -377,19 +369,25 @@ export default function TTFB() {
               <table className="w-full min-w-[700px]">
                 <thead>
                   <tr className="border-b border-prussian-400 bg-prussian-600/20">
-                    <th className="text-left text-xs font-semibold text-errorgrey px-5 py-3">{t('ttfb.headerUrl')}</th>
-                    <th className="text-right text-xs font-semibold text-errorgrey px-3 py-3 cursor-pointer hover:text-white select-none" onClick={() => setSortBy('avg_ms')}>
-                      <span className="inline-flex items-center">{t('ttfb.headerAvg')} <SortIcon col="avg_ms" /></span>
-                    </th>
-                    <th className="text-right text-xs font-semibold text-errorgrey px-3 py-3">{t('ttfb.headerMin')}</th>
-                    <th className="text-right text-xs font-semibold text-errorgrey px-3 py-3 cursor-pointer hover:text-white select-none" onClick={() => setSortBy('max_ms')}>
-                      <span className="inline-flex items-center">{t('ttfb.headerMax')} <SortIcon col="max_ms" /></span>
-                    </th>
+                    <SortableHeader col="url" sort={sortState} onSort={toggleSort} align="left" className="px-5">
+                      {t('ttfb.headerUrl')}
+                    </SortableHeader>
+                    <SortableHeader col="avg_ms" sort={sortState} onSort={toggleSort}>
+                      {t('ttfb.headerAvg')}
+                    </SortableHeader>
+                    <SortableHeader col="min_ms" sort={sortState} onSort={toggleSort}>
+                      {t('ttfb.headerMin')}
+                    </SortableHeader>
+                    <SortableHeader col="max_ms" sort={sortState} onSort={toggleSort}>
+                      {t('ttfb.headerMax')}
+                    </SortableHeader>
                     <th className="text-center text-xs font-semibold text-errorgrey px-3 py-3">{t('ttfb.headerStatus')}</th>
-                    <th className="text-right text-xs font-semibold text-errorgrey px-3 py-3 cursor-pointer hover:text-white select-none" onClick={() => setSortBy('hits')}>
-                      <span className="inline-flex items-center">{t('ttfb.headerHits')} <SortIcon col="hits" /></span>
-                    </th>
-                    <th className="text-right text-xs font-semibold text-errorgrey px-5 py-3">{t('ttfb.headerLastSeen')}</th>
+                    <SortableHeader col="hits" sort={sortState} onSort={toggleSort}>
+                      {t('ttfb.headerHits')}
+                    </SortableHeader>
+                    <SortableHeader col="last_seen" sort={sortState} onSort={toggleSort} className="px-5">
+                      {t('ttfb.headerLastSeen')}
+                    </SortableHeader>
                   </tr>
                 </thead>
                 <tbody>

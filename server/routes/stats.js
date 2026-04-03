@@ -94,7 +94,9 @@ router.get('/top-404', (req, res) => {
   const db = getDb()
   const { from, to } = getDateRange(req)
   const { clause: sf, params: sp } = getSiteFilter(req)
-  const limit = parseInt(req.query.limit || '20', 10)
+  const limit   = parseInt(req.query.limit || '20', 10)
+  const sortBy  = ['hits','bot_hits','last_seen','url'].includes(req.query.sort) ? req.query.sort : 'hits'
+  const sortDir = req.query.dir === 'asc' ? 'ASC' : 'DESC'
 
   const rows = db.prepare(`
     SELECT
@@ -105,7 +107,7 @@ router.get('/top-404', (req, res) => {
     FROM log_entries
     WHERE status_code = 404 AND timestamp BETWEEN ? AND ? ${sf}
     GROUP BY url
-    ORDER BY hits DESC
+    ORDER BY ${sortBy} ${sortDir}
     LIMIT ?
   `).all(from, to, ...sp, limit)
 
@@ -117,7 +119,9 @@ router.get('/top-pages', (req, res) => {
   const db = getDb()
   const { from, to } = getDateRange(req)
   const { clause: sf, params: sp } = getSiteFilter(req)
-  const limit = parseInt(req.query.limit || '20', 10)
+  const limit   = parseInt(req.query.limit || '20', 10)
+  const sortBy  = ['hits','bot_hits','human_hits','url'].includes(req.query.sort) ? req.query.sort : 'hits'
+  const sortDir = req.query.dir === 'asc' ? 'ASC' : 'DESC'
 
   const rows = db.prepare(`
     SELECT
@@ -128,7 +132,7 @@ router.get('/top-pages', (req, res) => {
     FROM log_entries
     WHERE status_code = 200 AND timestamp BETWEEN ? AND ? ${sf}
     GROUP BY url
-    ORDER BY hits DESC
+    ORDER BY ${sortBy} ${sortDir}
     LIMIT ?
   `).all(from, to, ...sp, limit)
 
@@ -167,7 +171,7 @@ router.get('/url-detail', (req, res) => {
   const search       = req.query.search   // recherche dans l'URL
   const limit        = Math.min(parseInt(req.query.limit  || '200', 10), 2000)
   const offset       = parseInt(req.query.offset || '0', 10)
-  const sortBy       = ['hits','last_seen','url'].includes(req.query.sort) ? req.query.sort : 'hits'
+  const sortBy       = ['hits','last_seen','url','status_code','bot_hits','human_hits'].includes(req.query.sort) ? req.query.sort : 'hits'
   const sortDir      = req.query.dir === 'asc' ? 'ASC' : 'DESC'
 
   // Construction dynamique du WHERE sur status_code
@@ -359,7 +363,8 @@ router.get('/ttfb/by-url', (req, res) => {
   const { clause: sf, params: sp } = getSiteFilter(req)
   const limit     = Math.min(parseInt(req.query.limit || '50', 10), 500)
   const threshold = parseInt(req.query.threshold || '0', 10)
-  const sortBy    = req.query.sort === 'max' ? 'max_ms' : req.query.sort === 'hits' ? 'hits' : 'avg_ms'
+  const sortBy    = { avg: 'avg_ms', max: 'max_ms', min: 'min_ms', hits: 'hits', last_seen: 'last_seen', url: 'url' }[req.query.sort] ?? 'avg_ms'
+  const sortDir   = req.query.dir === 'asc' ? 'ASC' : 'DESC'
   const botFilter = req.query.bot
   const ipFilter  = req.query.ip
 
@@ -383,7 +388,7 @@ router.get('/ttfb/by-url', (req, res) => {
       ${ipWhere}
     GROUP BY url
     HAVING avg_ms > ?
-    ORDER BY ${sortBy} DESC
+    ORDER BY ${sortBy} ${sortDir}
     LIMIT ?
   `).all(from, to, ...sp, ...ipParams, threshold, limit)
 

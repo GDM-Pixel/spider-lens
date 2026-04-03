@@ -5,6 +5,8 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 
 import DateRangePicker from '../components/ui/DateRangePicker'
 import BeginnerBanner from '../components/ui/BeginnerBanner'
 import { usePersistentRange } from '../hooks/usePersistentRange'
+import { useSort } from '../hooks/useSort'
+import SortableHeader from '../components/ui/SortableHeader'
 import { useSite } from '../context/SiteContext'
 import api from '../api/client'
 import dayjs from 'dayjs'
@@ -222,6 +224,7 @@ function IpsTab({ range, siteId }) {
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [blockedIps, setBlockedIps] = useState(new Set())
   const [blockModal, setBlockModal] = useState(null) // ip à bloquer
+  const { sort: ipSort, toggleSort: toggleIpSort } = useSort('hits', 'desc')
 
   // Chargement initial de la blocklist (IPs bloquées)
   useEffect(() => {
@@ -253,14 +256,14 @@ function IpsTab({ range, siteId }) {
 
   const fetchData = useCallback(() => {
     setLoading(true)
-    const params = { ...range, limit: PAGE_SIZE, offset }
+    const params = { ...range, limit: PAGE_SIZE, offset, sort: ipSort.by, dir: ipSort.dir }
     if (botFilter !== '') params.bot = botFilter
     if (debouncedSearch) params.search = debouncedSearch
     if (siteId) params.siteId = siteId
     api.get('/network/ips', { params })
       .then(r => { setRows(r.data.rows); setTotal(r.data.total) })
       .finally(() => setLoading(false))
-  }, [range, offset, botFilter, debouncedSearch, siteId])
+  }, [range, offset, botFilter, debouncedSearch, siteId, ipSort])
 
   function exportCSV() {
     setExporting(true)
@@ -282,7 +285,7 @@ function IpsTab({ range, siteId }) {
   }
 
   useEffect(() => { fetchData() }, [fetchData])
-  useEffect(() => { setOffset(0); setExpanded(null) }, [range, botFilter, debouncedSearch, siteId])
+  useEffect(() => { setOffset(0); setExpanded(null) }, [range, botFilter, debouncedSearch, siteId, ipSort])
 
   return (
     <div className="flex flex-col gap-4">
@@ -335,14 +338,14 @@ function IpsTab({ range, siteId }) {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-prussian-700 text-errorgrey text-xs uppercase tracking-wide">
-              <th className="text-left px-4 py-3">{t('network.headerIp')}</th>
+              <SortableHeader col="ip" sort={ipSort} onSort={toggleIpSort} align="left" className="px-4">{t('network.headerIp')}</SortableHeader>
               <th className="text-left px-4 py-3 hidden md:table-cell">{t('network.headerCountry')}</th>
-              <th className="text-right px-4 py-3">{t('network.headerHits')}</th>
-              <th className="text-right px-4 py-3 hidden md:table-cell">{t('network.headerBots')}</th>
-              <th className="text-right px-4 py-3 hidden md:table-cell">{t('network.headerHumans')}</th>
+              <SortableHeader col="hits" sort={ipSort} onSort={toggleIpSort} className="px-4">{t('network.headerHits')}</SortableHeader>
+              <SortableHeader col="bot_hits" sort={ipSort} onSort={toggleIpSort} className="px-4 hidden md:table-cell">{t('network.headerBots')}</SortableHeader>
+              <SortableHeader col="human_hits" sort={ipSort} onSort={toggleIpSort} className="px-4 hidden md:table-cell">{t('network.headerHumans')}</SortableHeader>
               <th className="text-center px-4 py-3 hidden lg:table-cell">{t('network.headerCodes')}</th>
-              <th className="text-left px-4 py-3 hidden lg:table-cell">{t('network.headerBotName')}</th>
-              <th className="text-right px-4 py-3 hidden sm:table-cell">{t('network.headerLastVisit')}</th>
+              <SortableHeader col="bot_name" sort={ipSort} onSort={toggleIpSort} align="left" className="px-4 hidden lg:table-cell">{t('network.headerBotName')}</SortableHeader>
+              <SortableHeader col="last_seen" sort={ipSort} onSort={toggleIpSort} className="px-4 hidden sm:table-cell">{t('network.headerLastVisit')}</SortableHeader>
               <th className="px-3 py-3 w-10"></th>
             </tr>
           </thead>
@@ -409,18 +412,18 @@ function IpsTab({ range, siteId }) {
                     {isBlocked ? (
                       <button
                         onClick={() => handleUnblock(row.ip)}
-                        title="Débloquer"
-                        className="text-errorgrey hover:text-green-400 transition-colors p-1"
+                        title={t('blocklist.unblockTitle')}
+                        className="text-green-400 hover:text-green-300 transition-colors p-1"
                       >
                         <Icon icon="ph:lock-open" className="text-base" />
                       </button>
                     ) : (
                       <button
                         onClick={() => setBlockModal(row.ip)}
-                        title="Bloquer"
-                        className="text-errorgrey hover:text-dustyred-400 transition-colors p-1"
+                        title={t('network.blockModalTitle')}
+                        className="text-errorgrey hover:text-moonstone-400 transition-colors p-1"
                       >
-                        <Icon icon="ph:prohibit" className="text-base" />
+                        <Icon icon="ph:plus-circle" className="text-base" />
                       </button>
                     )}
                   </td>
@@ -471,6 +474,7 @@ function UserAgentsTab({ range, siteId }) {
   const [search, setSearch]       = useState('')
   const [botFilter, setBotFilter] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
+  const { sort: uaSort, toggleSort: toggleUaSort } = useSort('hits', 'desc')
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 300)
@@ -479,14 +483,14 @@ function UserAgentsTab({ range, siteId }) {
 
   const fetchData = useCallback(() => {
     setLoading(true)
-    const params = { ...range, limit: PAGE_SIZE, offset }
+    const params = { ...range, limit: PAGE_SIZE, offset, sort: uaSort.by, dir: uaSort.dir }
     if (botFilter !== '') params.bot = botFilter
     if (debouncedSearch) params.search = debouncedSearch
     if (siteId) params.siteId = siteId
     api.get('/network/user-agents', { params })
       .then(r => { setRows(r.data.rows); setTotal(r.data.total) })
       .finally(() => setLoading(false))
-  }, [range, offset, botFilter, debouncedSearch, siteId])
+  }, [range, offset, botFilter, debouncedSearch, siteId, uaSort])
 
   function exportCSV() {
     setExporting(true)
@@ -508,7 +512,7 @@ function UserAgentsTab({ range, siteId }) {
   }
 
   useEffect(() => { fetchData() }, [fetchData])
-  useEffect(() => { setOffset(0) }, [range, botFilter, debouncedSearch, siteId])
+  useEffect(() => { setOffset(0) }, [range, botFilter, debouncedSearch, siteId, uaSort])
 
   return (
     <div className="flex flex-col gap-4">
@@ -555,9 +559,9 @@ function UserAgentsTab({ range, siteId }) {
             <tr className="bg-prussian-700 text-errorgrey text-xs uppercase tracking-wide">
               <th className="text-left px-4 py-3">{t('network.headerUa')}</th>
               <th className="text-center px-4 py-3">{t('network.headerType')}</th>
-              <th className="text-left px-4 py-3 hidden md:table-cell">{t('network.headerBotName')}</th>
-              <th className="text-right px-4 py-3">{t('network.headerHits')}</th>
-              <th className="text-right px-4 py-3 hidden sm:table-cell">{t('network.headerLastVisit')}</th>
+              <SortableHeader col="bot_name" sort={uaSort} onSort={toggleUaSort} align="left" className="px-4 hidden md:table-cell">{t('network.headerBotName')}</SortableHeader>
+              <SortableHeader col="hits" sort={uaSort} onSort={toggleUaSort} className="px-4">{t('network.headerHits')}</SortableHeader>
+              <SortableHeader col="last_seen" sort={uaSort} onSort={toggleUaSort} className="px-4 hidden sm:table-cell">{t('network.headerLastVisit')}</SortableHeader>
             </tr>
           </thead>
           <tbody>

@@ -8,9 +8,11 @@ router.use(requireAuth)
 // GET /api/blocklist — liste paginée
 router.get('/', (req, res) => {
   const db = getDb()
-  const limit  = Math.min(parseInt(req.query.limit  || '100', 10), 1000)
-  const offset = parseInt(req.query.offset || '0', 10)
-  const search = req.query.search
+  const limit   = Math.min(parseInt(req.query.limit  || '100', 10), 1000)
+  const offset  = parseInt(req.query.offset || '0', 10)
+  const search  = req.query.search
+  const sortBy  = req.query.sort === 'ip' ? 'b.ip' : 'b.blocked_at'
+  const sortDir = req.query.dir === 'asc' ? 'ASC' : 'DESC'
 
   const where        = search ? 'WHERE ip LIKE ?' : ''
   const searchParams = search ? [`%${search}%`]   : []
@@ -20,7 +22,7 @@ router.get('/', (req, res) => {
     FROM ip_blocklist b
     LEFT JOIN sites s ON s.id = b.site_id
     ${where}
-    ORDER BY b.blocked_at DESC
+    ORDER BY ${sortBy} ${sortDir}
     LIMIT ? OFFSET ?
   `).all(...searchParams, limit, offset)
 

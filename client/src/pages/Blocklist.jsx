@@ -3,9 +3,34 @@ import { useTranslation } from 'react-i18next'
 import { Icon } from '@iconify/react'
 import { Link } from 'react-router-dom'
 import BeginnerBanner from '../components/ui/BeginnerBanner'
+import { useSort } from '../hooks/useSort'
+import SortableHeader from '../components/ui/SortableHeader'
 import api from '../api/client'
 import dayjs from 'dayjs'
 import clsx from 'clsx'
+
+function CopySnippet({ code }) {
+  const { t } = useTranslation()
+  const [copied, setCopied] = useState(false)
+  function handleCopy() {
+    navigator.clipboard.writeText(code).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
+  return (
+    <div className="flex items-center gap-2 bg-prussian-700 rounded-lg px-3 py-2.5">
+      <code className="flex-1 text-xs text-lightgrey font-mono overflow-x-auto">{code}</code>
+      <button
+        onClick={handleCopy}
+        className="shrink-0 text-errorgrey hover:text-moonstone-400 transition-colors"
+        title={t('blocklist.copySnippet')}
+      >
+        <Icon icon={copied ? 'ph:check' : 'ph:copy'} className={clsx('text-base', copied && 'text-green-400')} />
+      </button>
+    </div>
+  )
+}
 
 const PAGE_SIZE = 50
 
@@ -17,6 +42,7 @@ export default function Blocklist() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch]   = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
+  const { sort, toggleSort }  = useSort('blocked_at', 'desc')
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 300)
@@ -25,15 +51,15 @@ export default function Blocklist() {
 
   const fetchData = useCallback(() => {
     setLoading(true)
-    const params = { limit: PAGE_SIZE, offset }
+    const params = { limit: PAGE_SIZE, offset, sort: sort.by, dir: sort.dir }
     if (debouncedSearch) params.search = debouncedSearch
     api.get('/blocklist', { params })
       .then(r => { setRows(r.data.rows); setTotal(r.data.total) })
       .finally(() => setLoading(false))
-  }, [offset, debouncedSearch])
+  }, [offset, debouncedSearch, sort])
 
   useEffect(() => { fetchData() }, [fetchData])
-  useEffect(() => { setOffset(0) }, [debouncedSearch])
+  useEffect(() => { setOffset(0) }, [debouncedSearch, sort])
 
   async function handleUnblock(ip) {
     if (!confirm(t('blocklist.unblockTitle', { ip }))) return
@@ -69,6 +95,61 @@ export default function Blocklist() {
         ]}
       />
 
+      {/* Bandeau "comment ça fonctionne" */}
+      <div className="bg-prussian-600 border border-prussian-500 rounded-xl p-5">
+        <h3 className="text-white font-bold text-sm flex items-center gap-2 mb-4">
+          <Icon icon="ph:info" className="text-moonstone-400 text-base" />
+          {t('blocklist.howItWorksTitle')}
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+          <div className="flex gap-3">
+            <div className="w-7 h-7 rounded-full bg-moonstone-400/10 border border-moonstone-600/50 flex items-center justify-center shrink-0 mt-0.5">
+              <Icon icon="ph:network" className="text-moonstone-400 text-sm" />
+            </div>
+            <div>
+              <p className="text-white text-xs font-semibold mb-0.5">{t('blocklist.step1Title')}</p>
+              <p className="text-errorgrey text-xs">{t('blocklist.step1Body')}</p>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <div className="w-7 h-7 rounded-full bg-moonstone-400/10 border border-moonstone-600/50 flex items-center justify-center shrink-0 mt-0.5">
+              <Icon icon="ph:download-simple" className="text-moonstone-400 text-sm" />
+            </div>
+            <div>
+              <p className="text-white text-xs font-semibold mb-0.5">{t('blocklist.step2Title')}</p>
+              <p className="text-errorgrey text-xs">{t('blocklist.step2Body')}</p>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <div className="w-7 h-7 rounded-full bg-moonstone-400/10 border border-moonstone-600/50 flex items-center justify-center shrink-0 mt-0.5">
+              <Icon icon="ph:terminal" className="text-moonstone-400 text-sm" />
+            </div>
+            <div>
+              <p className="text-white text-xs font-semibold mb-0.5">{t('blocklist.step3Title')}</p>
+              <p className="text-errorgrey text-xs">{t('blocklist.step3Body')}</p>
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => exportRules('nginx')}
+            disabled={total === 0}
+            className="flex items-center gap-2 px-4 py-2 bg-moonstone-600/20 border border-moonstone-600/50 rounded-lg text-sm font-semibold text-moonstone-300 hover:bg-moonstone-600/30 hover:text-white disabled:opacity-40 transition-colors"
+          >
+            <Icon icon="ph:download-simple" className="text-base" />
+            {t('blocklist.exportNginx')}
+          </button>
+          <button
+            onClick={() => exportRules('apache')}
+            disabled={total === 0}
+            className="flex items-center gap-2 px-4 py-2 bg-moonstone-600/20 border border-moonstone-600/50 rounded-lg text-sm font-semibold text-moonstone-300 hover:bg-moonstone-600/30 hover:text-white disabled:opacity-40 transition-colors"
+          >
+            <Icon icon="ph:download-simple" className="text-base" />
+            {t('blocklist.exportApache')}
+          </button>
+        </div>
+      </div>
+
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-white font-bold text-xl">Blocklist</h2>
@@ -77,24 +158,6 @@ export default function Blocklist() {
               <span>{t('blocklist.subtitleMany', { total, plural: total > 1 ? 's' : '' })}</span>
             ) : t('blocklist.subtitleNone')}
           </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => exportRules('nginx')}
-            disabled={total === 0}
-            className="flex items-center gap-2 px-4 py-2 bg-prussian-600 border border-prussian-500 rounded-lg text-sm font-semibold text-errorgrey hover:text-white disabled:opacity-40 transition-colors"
-          >
-            <Icon icon="ph:download-simple" className="text-base" />
-            {t('blocklist.exportNginx')}
-          </button>
-          <button
-            onClick={() => exportRules('apache')}
-            disabled={total === 0}
-            className="flex items-center gap-2 px-4 py-2 bg-prussian-600 border border-prussian-500 rounded-lg text-sm font-semibold text-errorgrey hover:text-white disabled:opacity-40 transition-colors"
-          >
-            <Icon icon="ph:download-simple" className="text-base" />
-            {t('blocklist.exportApache')}
-          </button>
         </div>
       </div>
 
@@ -120,10 +183,10 @@ export default function Blocklist() {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-prussian-700 text-errorgrey text-xs uppercase tracking-wide">
-              <th className="text-left px-4 py-3">{t('blocklist.headerIp')}</th>
+              <SortableHeader col="ip" sort={sort} onSort={toggleSort} align="left" className="px-4">{t('blocklist.headerIp')}</SortableHeader>
               <th className="text-left px-4 py-3 hidden md:table-cell">{t('blocklist.headerReason')}</th>
               <th className="text-left px-4 py-3 hidden lg:table-cell">{t('blocklist.headerSite')}</th>
-              <th className="text-left px-4 py-3 hidden sm:table-cell">{t('blocklist.headerBlockedAt')}</th>
+              <SortableHeader col="blocked_at" sort={sort} onSort={toggleSort} align="left" className="px-4 hidden sm:table-cell">{t('blocklist.headerBlockedAt')}</SortableHeader>
               <th className="text-left px-4 py-3 hidden sm:table-cell">{t('blocklist.headerBlockedBy')}</th>
               <th className="px-4 py-3 w-10"></th>
             </tr>
@@ -208,25 +271,23 @@ export default function Blocklist() {
         </div>
       )}
 
-      {/* Guide export */}
-      {total > 0 && (
-        <div className="bg-prussian-600 border border-prussian-500 rounded-xl p-5 flex flex-col gap-3">
-          <h3 className="text-white font-bold text-sm flex items-center gap-2">
-            <Icon icon="ph:info" className="text-moonstone-400 text-base" />
-            {t('blocklist.guideTitle')}
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-errorgrey text-xs font-semibold uppercase tracking-wide mb-2">nginx</p>
-              <pre className="bg-prussian-700 rounded-lg px-3 py-2.5 text-xs text-lightgrey font-mono overflow-x-auto">{t('blocklist.guideNginx')}</pre>
-            </div>
-            <div>
-              <p className="text-errorgrey text-xs font-semibold uppercase tracking-wide mb-2">Apache</p>
-              <pre className="bg-prussian-700 rounded-lg px-3 py-2.5 text-xs text-lightgrey font-mono overflow-x-auto">{t('blocklist.guideApache')}</pre>
-            </div>
+      {/* Guide snippets */}
+      <div className="bg-prussian-600 border border-prussian-500 rounded-xl p-5 flex flex-col gap-4">
+        <h3 className="text-white font-bold text-sm flex items-center gap-2">
+          <Icon icon="ph:code" className="text-moonstone-400 text-base" />
+          {t('blocklist.guideTitle')}
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <p className="text-errorgrey text-xs font-semibold uppercase tracking-wide mb-2">{t('blocklist.guideNginxLabel')}</p>
+            <CopySnippet code={t('blocklist.guideNginxSnippet')} />
+          </div>
+          <div>
+            <p className="text-errorgrey text-xs font-semibold uppercase tracking-wide mb-2">{t('blocklist.guideApacheLabel')}</p>
+            <CopySnippet code={t('blocklist.guideApacheSnippet')} />
           </div>
         </div>
-      )}
+      </div>
     </div>
   )
 }

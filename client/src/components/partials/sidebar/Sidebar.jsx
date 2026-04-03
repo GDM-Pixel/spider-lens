@@ -13,7 +13,7 @@ const NAV_ITEMS = [
   { key: "ttfb",      icon: "ph:gauge",                 path: "/ttfb" },
   { key: "network",   icon: "ph:network",               path: "/network" },
   { key: "anomalies", icon: "ph:warning-diamond",       path: "/anomalies" },
-  { key: "blocklist", icon: "ph:prohibit",              path: "/blocklist" },
+  { key: "blocklist", icon: "ph:export",                path: "/blocklist" },
   { key: "settings",  icon: "ph:gear-six",              path: "/settings" },
 ];
 

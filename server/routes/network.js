@@ -40,6 +40,8 @@ router.get('/ips', (req, res) => {
   const search    = req.query.search
   const limit     = Math.min(parseInt(req.query.limit  || '100', 10), 1000)
   const offset    = parseInt(req.query.offset || '0', 10)
+  const sortBy    = ['hits','bot_hits','human_hits','last_seen','bot_name','ip'].includes(req.query.sort) ? req.query.sort : 'hits'
+  const sortDir   = req.query.dir === 'asc' ? 'ASC' : 'DESC'
 
   const botWhere    = botFilter !== undefined ? `AND is_bot = ${botFilter === '1' ? 1 : 0}` : ''
   const searchWhere = search ? 'AND ip LIKE ?' : ''
@@ -63,7 +65,7 @@ router.get('/ips', (req, res) => {
     FROM log_entries
     WHERE ${where}
     GROUP BY ip
-    ORDER BY hits DESC
+    ORDER BY ${sortBy} ${sortDir}
     LIMIT ? OFFSET ?
   `).all(...params, limit, offset)
 
@@ -239,6 +241,8 @@ router.get('/user-agents', (req, res) => {
   const search    = req.query.search
   const limit     = Math.min(parseInt(req.query.limit  || '100', 10), 1000)
   const offset    = parseInt(req.query.offset || '0', 10)
+  const sortBy    = ['hits','last_seen','bot_name'].includes(req.query.sort) ? req.query.sort : 'hits'
+  const sortDir   = req.query.dir === 'asc' ? 'ASC' : 'DESC'
 
   const botWhere    = botFilter !== undefined ? `AND is_bot = ${botFilter === '1' ? 1 : 0}` : ''
   const searchWhere = search ? 'AND user_agent LIKE ?' : ''
@@ -257,7 +261,7 @@ router.get('/user-agents', (req, res) => {
     FROM log_entries
     WHERE ${where}
     GROUP BY user_agent, is_bot
-    ORDER BY hits DESC
+    ORDER BY ${sortBy} ${sortDir}
     LIMIT ? OFFSET ?
   `).all(...params, limit, offset)
 

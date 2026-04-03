@@ -5,6 +5,8 @@ import DateRangePicker from '../components/ui/DateRangePicker'
 import InfoBubble from '../components/ui/InfoBubble'
 import BeginnerBanner from '../components/ui/BeginnerBanner'
 import { usePersistentRange } from '../hooks/usePersistentRange'
+import { useSort } from '../hooks/useSort'
+import SortableHeader from '../components/ui/SortableHeader'
 import { useSite } from '../context/SiteContext'
 import api from '../api/client'
 import dayjs from 'dayjs'
@@ -21,6 +23,15 @@ function EmptyTable({ message }) {
 
 function Table404({ data }) {
   const { t } = useTranslation()
+  const { sort, toggleSort } = useSort('hits', 'desc')
+
+  const sorted = [...data].sort((a, b) => {
+    const aVal = a[sort.by] ?? ''
+    const bVal = b[sort.by] ?? ''
+    if (sort.dir === 'asc') return aVal > bVal ? 1 : aVal < bVal ? -1 : 0
+    return aVal < bVal ? 1 : aVal > bVal ? -1 : 0
+  })
+
   return (
     <>
       <div className="flex items-center justify-between px-5 py-4 border-b border-prussian-400">
@@ -42,14 +53,14 @@ function Table404({ data }) {
           <table className="w-full">
             <thead>
               <tr className="border-b border-prussian-400">
-                <th className="text-left text-xs font-semibold text-errorgrey px-5 py-3">{t('topPages.headerUrl')}</th>
-                <th className="text-right text-xs font-semibold text-errorgrey px-5 py-3">{t('topPages.headerHits')}</th>
-                <th className="text-right text-xs font-semibold text-errorgrey px-5 py-3">{t('topPages.headerBots')}</th>
-                <th className="text-right text-xs font-semibold text-errorgrey px-5 py-3">{t('topPages.headerLastSeen')}</th>
+                <SortableHeader col="url" sort={sort} onSort={toggleSort} align="left" className="px-5">{t('topPages.headerUrl')}</SortableHeader>
+                <SortableHeader col="hits" sort={sort} onSort={toggleSort} className="px-5">{t('topPages.headerHits')}</SortableHeader>
+                <SortableHeader col="bot_hits" sort={sort} onSort={toggleSort} className="px-5">{t('topPages.headerBots')}</SortableHeader>
+                <SortableHeader col="last_seen" sort={sort} onSort={toggleSort} className="px-5">{t('topPages.headerLastSeen')}</SortableHeader>
               </tr>
             </thead>
             <tbody>
-              {data.map((row, i) => (
+              {sorted.map((row, i) => (
                 <tr key={i} className={clsx('border-b border-prussian-400/50 hover:bg-prussian-400/30 transition-colors', i % 2 === 0 ? 'bg-prussian-500' : 'bg-prussian-600/30')}>
                   <td className="px-5 py-3 text-sm text-moonstone-400 font-mono max-w-xs truncate">{row.url}</td>
                   <td className="px-5 py-3 text-right">
@@ -71,6 +82,15 @@ function Table404({ data }) {
 
 function TablePages({ data }) {
   const { t } = useTranslation()
+  const { sort, toggleSort } = useSort('hits', 'desc')
+
+  const sorted = [...data].sort((a, b) => {
+    const aVal = a[sort.by] ?? ''
+    const bVal = b[sort.by] ?? ''
+    if (sort.dir === 'asc') return aVal > bVal ? 1 : aVal < bVal ? -1 : 0
+    return aVal < bVal ? 1 : aVal > bVal ? -1 : 0
+  })
+
   return (
     <>
       <div className="flex items-center justify-between px-5 py-4 border-b border-prussian-400">
@@ -84,14 +104,14 @@ function TablePages({ data }) {
           <table className="w-full">
             <thead>
               <tr className="border-b border-prussian-400">
-                <th className="text-left text-xs font-semibold text-errorgrey px-5 py-3">{t('topPages.headerUrl')}</th>
-                <th className="text-right text-xs font-semibold text-errorgrey px-5 py-3">{t('topPages.headerHumans')}</th>
-                <th className="text-right text-xs font-semibold text-errorgrey px-5 py-3">{t('topPages.headerBots')}</th>
-                <th className="text-right text-xs font-semibold text-errorgrey px-5 py-3">{t('topPages.headerTotal')}</th>
+                <SortableHeader col="url" sort={sort} onSort={toggleSort} align="left" className="px-5">{t('topPages.headerUrl')}</SortableHeader>
+                <SortableHeader col="human_hits" sort={sort} onSort={toggleSort} className="px-5">{t('topPages.headerHumans')}</SortableHeader>
+                <SortableHeader col="bot_hits" sort={sort} onSort={toggleSort} className="px-5">{t('topPages.headerBots')}</SortableHeader>
+                <SortableHeader col="hits" sort={sort} onSort={toggleSort} className="px-5">{t('topPages.headerTotal')}</SortableHeader>
               </tr>
             </thead>
             <tbody>
-              {data.map((row, i) => (
+              {sorted.map((row, i) => (
                 <tr key={i} className={clsx('border-b border-prussian-400/50 hover:bg-prussian-400/30 transition-colors', i % 2 === 0 ? 'bg-prussian-500' : 'bg-prussian-600/30')}>
                   <td className="px-5 py-3 text-sm text-moonstone-400 font-mono max-w-xs truncate">{row.url}</td>
                   <td className="px-5 py-3 text-right text-sm text-white font-semibold">{row.human_hits?.toLocaleString('fr-FR') || 0}</td>

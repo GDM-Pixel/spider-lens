@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
+import { kpiVariants } from '../components/ui/KPICard'
 import { useTranslation } from 'react-i18next'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts'
 import { Icon } from '@iconify/react'
@@ -93,7 +95,12 @@ export default function Bots() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <motion.div
+            className="grid grid-cols-2 lg:grid-cols-4 gap-4 my-4"
+            initial="hidden"
+            animate="visible"
+            variants={{ visible: { transition: { staggerChildren: 0.07 } } }}
+          >
             <KPICard label={t('bots.kpiBotRequests')} value={totalBotHits.toLocaleString('fr-FR')} icon="ph:robot" color="purple"
               info={t('bots.kpiBotRequestsInfo')} />
             <KPICard label={t('bots.kpiGooglebot')} value={googlebotHits.toLocaleString('fr-FR')} icon="ph:google-logo" color="moonstone"
@@ -101,7 +108,7 @@ export default function Bots() {
             <KPICard label={t('bots.kpiBotRatio')} value={`${crawlBudgetRatio}%`} icon="ph:chart-pie-slice" color="amber"
               info={t('bots.kpiBotRatioInfo')} />
             <KPICard label={t('bots.kpiBotTypes')} value={bots.length} icon="ph:list-bullets" color="green" />
-          </div>
+          </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Camembert */}

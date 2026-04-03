@@ -1,7 +1,19 @@
 import React from 'react'
+import { motion } from 'framer-motion'
 import { Icon } from '@iconify/react'
 import clsx from 'clsx'
 import InfoBubble from './InfoBubble'
+import { useCountUp } from '../../hooks/useCountUp'
+
+// Variantes d'animation pour chaque carte (utilisées avec staggerChildren du parent)
+export const kpiVariants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.35, ease: 'easeOut' },
+  },
+}
 
 export default function KPICard({ label, value, icon, color = 'moonstone', trend, trendLabel, info }) {
   const colorMap = {
@@ -12,9 +24,13 @@ export default function KPICard({ label, value, icon, color = 'moonstone', trend
     purple:    { icon: 'text-purple-400',    bg: 'bg-purple-400/10'    },
   }
   const c = colorMap[color] || colorMap.moonstone
+  const animated = useCountUp(value)
 
   return (
-    <div className="bg-prussian-500 rounded-xl border border-prussian-400 p-5 flex flex-col gap-3">
+    <motion.div
+      variants={kpiVariants}
+      className="bg-prussian-500 rounded-xl border border-prussian-400 p-5 flex flex-col gap-3"
+    >
       <div className="flex items-start justify-between">
         <div className={clsx('w-10 h-10 rounded-lg flex items-center justify-center', c.bg)}>
           {icon && <Icon icon={icon} className={clsx('text-xl', c.icon)} />}
@@ -23,7 +39,7 @@ export default function KPICard({ label, value, icon, color = 'moonstone', trend
       </div>
 
       <div>
-        <p className="text-3xl font-extrabold text-white leading-none">{value ?? '—'}</p>
+        <p className="text-3xl font-extrabold text-white leading-none">{animated ?? '—'}</p>
         <p className="text-sm text-errorgrey mt-1 font-semibold">{label}</p>
       </div>
 
@@ -33,6 +49,6 @@ export default function KPICard({ label, value, icon, color = 'moonstone', trend
           <span>{trendLabel || `${Math.abs(trend)}%`}</span>
         </div>
       )}
-    </div>
+    </motion.div>
   )
 }
