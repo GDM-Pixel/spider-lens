@@ -29,10 +29,11 @@ class Collector {
      * Appelé sur shutdown (après que WP a envoyé la réponse).
      */
     public static function capture(): void {
-        // Ignorer les requêtes admin WP standard (hors notre page plugin)
-        if (is_admin() && !wp_doing_ajax() && !self::is_plugin_rest()) {
-            return;
-        }
+        // Ignorer tout le trafic backend WP (admin, ajax, cron, REST hors notre namespace)
+        if (is_admin()) return;
+        if (wp_doing_ajax()) return;
+        if (wp_doing_cron()) return;
+        if (defined('REST_REQUEST') && REST_REQUEST && !self::is_plugin_rest()) return;
 
         $url = isset($_SERVER['REQUEST_URI']) ? esc_url_raw(wp_unslash($_SERVER['REQUEST_URI'])) : '/';
 

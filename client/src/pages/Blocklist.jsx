@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Icon } from '@iconify/react'
 import { Link } from 'react-router-dom'
 import BeginnerBanner from '../components/ui/BeginnerBanner'
@@ -9,6 +10,7 @@ import clsx from 'clsx'
 const PAGE_SIZE = 50
 
 export default function Blocklist() {
+  const { t } = useTranslation()
   const [rows, setRows]       = useState([])
   const [total, setTotal]     = useState(0)
   const [offset, setOffset]   = useState(0)
@@ -34,7 +36,7 @@ export default function Blocklist() {
   useEffect(() => { setOffset(0) }, [debouncedSearch])
 
   async function handleUnblock(ip) {
-    if (!confirm(`Débloquer l'IP ${ip} ?`)) return
+    if (!confirm(t('blocklist.unblockTitle', { ip }))) return
     await api.delete(`/blocklist/${encodeURIComponent(ip)}`)
     fetchData()
   }
@@ -58,12 +60,12 @@ export default function Blocklist() {
     <div className="flex flex-col gap-6">
       <BeginnerBanner
         icon="ph:prohibit"
-        title="Blocklist IPs"
+        title={t('blocklist.welcomeTitle')}
         tips={[
-          'Cette liste contient les IPs que vous avez marquées comme bloquées depuis la page Réseau.',
-          'Exportez les règles nginx ou Apache pour les appliquer sur votre serveur web.',
-          'Spider-Lens ne bloque pas directement les IPs — il génère des règles à copier dans votre config serveur.',
-          'Pour bloquer une nouvelle IP, rendez-vous dans Réseau et cliquez sur l\'icône 🚫 en face de l\'IP.',
+          t('blocklist.tip1'),
+          t('blocklist.tip2'),
+          t('blocklist.tip3'),
+          t('blocklist.tip4'),
         ]}
       />
 
@@ -72,8 +74,8 @@ export default function Blocklist() {
           <h2 className="text-white font-bold text-xl">Blocklist</h2>
           <p className="text-errorgrey text-sm">
             {total > 0 ? (
-              <span><span className="text-white font-semibold">{total}</span> IP{total > 1 ? 's' : ''} bloquée{total > 1 ? 's' : ''}</span>
-            ) : 'Aucune IP bloquée'}
+              <span>{t('blocklist.subtitleMany', { total, plural: total > 1 ? 's' : '' })}</span>
+            ) : t('blocklist.subtitleNone')}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -83,7 +85,7 @@ export default function Blocklist() {
             className="flex items-center gap-2 px-4 py-2 bg-prussian-600 border border-prussian-500 rounded-lg text-sm font-semibold text-errorgrey hover:text-white disabled:opacity-40 transition-colors"
           >
             <Icon icon="ph:download-simple" className="text-base" />
-            nginx
+            {t('blocklist.exportNginx')}
           </button>
           <button
             onClick={() => exportRules('apache')}
@@ -91,7 +93,7 @@ export default function Blocklist() {
             className="flex items-center gap-2 px-4 py-2 bg-prussian-600 border border-prussian-500 rounded-lg text-sm font-semibold text-errorgrey hover:text-white disabled:opacity-40 transition-colors"
           >
             <Icon icon="ph:download-simple" className="text-base" />
-            Apache
+            {t('blocklist.exportApache')}
           </button>
         </div>
       </div>
@@ -101,7 +103,7 @@ export default function Blocklist() {
         <Icon icon="ph:magnifying-glass" className="text-errorgrey shrink-0" />
         <input
           type="text"
-          placeholder="Rechercher une IP…"
+          placeholder={t('blocklist.searchPlaceholder')}
           value={search}
           onChange={e => setSearch(e.target.value)}
           className="bg-transparent text-white text-sm flex-1 outline-none placeholder-errorgrey"
@@ -118,11 +120,11 @@ export default function Blocklist() {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-prussian-700 text-errorgrey text-xs uppercase tracking-wide">
-              <th className="text-left px-4 py-3">Adresse IP</th>
-              <th className="text-left px-4 py-3 hidden md:table-cell">Raison</th>
-              <th className="text-left px-4 py-3 hidden lg:table-cell">Site</th>
-              <th className="text-left px-4 py-3 hidden sm:table-cell">Bloquée le</th>
-              <th className="text-left px-4 py-3 hidden sm:table-cell">Par</th>
+              <th className="text-left px-4 py-3">{t('blocklist.headerIp')}</th>
+              <th className="text-left px-4 py-3 hidden md:table-cell">{t('blocklist.headerReason')}</th>
+              <th className="text-left px-4 py-3 hidden lg:table-cell">{t('blocklist.headerSite')}</th>
+              <th className="text-left px-4 py-3 hidden sm:table-cell">{t('blocklist.headerBlockedAt')}</th>
+              <th className="text-left px-4 py-3 hidden sm:table-cell">{t('blocklist.headerBlockedBy')}</th>
               <th className="px-4 py-3 w-10"></th>
             </tr>
           </thead>
@@ -158,7 +160,7 @@ export default function Blocklist() {
                 <td className="px-4 py-3 text-right">
                   <button
                     onClick={() => handleUnblock(row.ip)}
-                    title="Débloquer cette IP"
+                    title={t('blocklist.unblockTitle', { ip: row.ip })}
                     className="text-errorgrey hover:text-green-400 transition-colors p-1 rounded"
                   >
                     <Icon icon="ph:lock-open" className="text-base" />
@@ -172,11 +174,11 @@ export default function Blocklist() {
                   <div className="flex flex-col items-center gap-3">
                     <Icon icon="ph:shield-check" className="text-4xl text-green-400/50" />
                     <p className="text-errorgrey text-sm">
-                      {debouncedSearch ? 'Aucune IP correspond à cette recherche.' : 'Aucune IP bloquée pour l\'instant.'}
+                      {debouncedSearch ? t('blocklist.emptySearch') : t('blocklist.emptyNoBlocks')}
                     </p>
                     {!debouncedSearch && (
                       <Link to="/network" className="text-moonstone-400 hover:text-moonstone-300 text-xs font-semibold transition-colors">
-                        Aller à la page Réseau →
+                        {t('blocklist.linkToNetwork')}
                       </Link>
                     )}
                   </div>
@@ -194,15 +196,15 @@ export default function Blocklist() {
             disabled={offset === 0}
             onClick={() => setOffset(o => Math.max(0, o - PAGE_SIZE))}
             className="px-4 py-2 bg-prussian-600 text-white rounded-lg text-sm disabled:opacity-40 hover:bg-prussian-500 transition-colors"
-          >← Précédent</button>
+          >← {t('common.previous')}</button>
           <span className="text-errorgrey text-sm">
-            {offset + 1}–{Math.min(offset + PAGE_SIZE, total)} / {total.toLocaleString()}
+            {offset + 1}–{Math.min(offset + PAGE_SIZE, total)} {t('common.of')} {total.toLocaleString()}
           </span>
           <button
             disabled={offset + PAGE_SIZE >= total}
             onClick={() => setOffset(o => o + PAGE_SIZE)}
             className="px-4 py-2 bg-prussian-600 text-white rounded-lg text-sm disabled:opacity-40 hover:bg-prussian-500 transition-colors"
-          >Suivant →</button>
+          >{t('common.next')} →</button>
         </div>
       )}
 
@@ -211,26 +213,16 @@ export default function Blocklist() {
         <div className="bg-prussian-600 border border-prussian-500 rounded-xl p-5 flex flex-col gap-3">
           <h3 className="text-white font-bold text-sm flex items-center gap-2">
             <Icon icon="ph:info" className="text-moonstone-400 text-base" />
-            Comment appliquer ces règles ?
+            {t('blocklist.guideTitle')}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-errorgrey text-xs font-semibold uppercase tracking-wide mb-2">nginx</p>
-              <pre className="bg-prussian-700 rounded-lg px-3 py-2.5 text-xs text-lightgrey font-mono overflow-x-auto">{`# Dans votre nginx.conf ou vhost :
-include /etc/nginx/spider-lens-blocklist.conf;
-
-# Dans le fichier téléchargé :
-deny 1.2.3.4;
-deny 5.6.7.8;`}</pre>
+              <pre className="bg-prussian-700 rounded-lg px-3 py-2.5 text-xs text-lightgrey font-mono overflow-x-auto">{t('blocklist.guideNginx')}</pre>
             </div>
             <div>
               <p className="text-errorgrey text-xs font-semibold uppercase tracking-wide mb-2">Apache</p>
-              <pre className="bg-prussian-700 rounded-lg px-3 py-2.5 text-xs text-lightgrey font-mono overflow-x-auto">{`# Dans votre VirtualHost ou .htaccess :
-<RequireAll>
-  Require all granted
-  Require not ip 1.2.3.4
-  Require not ip 5.6.7.8
-</RequireAll>`}</pre>
+              <pre className="bg-prussian-700 rounded-lg px-3 py-2.5 text-xs text-lightgrey font-mono overflow-x-auto">{t('blocklist.guideApache')}</pre>
             </div>
           </div>
         </div>

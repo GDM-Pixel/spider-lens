@@ -5,14 +5,14 @@ defined('ABSPATH') || exit;
 
 class RestApi {
 
-    const NAMESPACE = 'spider-lens/v1';
+    const API_NAMESPACE = 'spider-lens/v1';
 
     public static function init(): void {
         add_action('rest_api_init', [self::class, 'register_routes']);
     }
 
     public static function register_routes(): void {
-        $ns = self::NAMESPACE;
+        $ns = self::API_NAMESPACE;
 
         // Stats générales
         register_rest_route($ns, '/stats/overview',       ['methods' => 'GET', 'callback' => [self::class, 'get_overview'],       'permission_callback' => [self::class, 'check_permission']]);
@@ -289,13 +289,13 @@ class RestApi {
             GROUP BY h.ip
             ORDER BY hits DESC
             LIMIT %d OFFSET %d",
-            ...$params, $limit, $offset
+            array_merge($params, [$limit, $offset])
         ), ARRAY_A);
 
         // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         $total = (int)$wpdb->get_var($wpdb->prepare(
             "SELECT COUNT(DISTINCT ip) FROM `$t` $where",
-            ...$params
+            $params
         ));
 
         return rest_ensure_response(['rows' => $rows, 'total' => $total]);
@@ -347,13 +347,13 @@ class RestApi {
             GROUP BY user_agent, is_bot
             ORDER BY hits DESC
             LIMIT %d OFFSET %d",
-            ...$params, $limit, $offset
+            array_merge($params, [$limit, $offset])
         ), ARRAY_A);
 
         // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         $total = (int)$wpdb->get_var($wpdb->prepare(
             "SELECT COUNT(DISTINCT user_agent) FROM `$t` $where",
-            ...$params
+            $params
         ));
 
         return rest_ensure_response(['rows' => $rows, 'total' => $total]);

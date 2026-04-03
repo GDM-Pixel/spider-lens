@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Icon } from '@iconify/react'
 import api from '../api/client'
 
 export default function Login() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [form, setForm] = useState({ username: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -34,22 +36,22 @@ export default function Login() {
           <Icon icon="ph:spider" className="text-4xl text-moonstone-400" />
         </div>
         <h1 className="text-2xl font-extrabold text-white">Spider-Lens</h1>
-        <p className="text-errorgrey text-sm mt-1">Analyseur de logs orienté SEO</p>
+        <p className="text-errorgrey text-sm mt-1">{t('login.subtitle')}</p>
       </div>
 
       <div className="bg-prussian-600 border border-prussian-500 rounded-2xl p-8">
-        <h2 className="text-white font-bold text-xl mb-6">Connexion</h2>
+        <h2 className="text-white font-bold text-xl mb-6">{t('login.title')}</h2>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
-            <label className="text-lightgrey text-sm font-semibold block mb-2">Identifiant</label>
+            <label className="text-lightgrey text-sm font-semibold block mb-2">{t('login.username')}</label>
             <div className="relative">
               <Icon icon="ph:user" className="absolute left-3 top-1/2 -translate-y-1/2 text-errorgrey text-lg" />
               <input
                 type="text"
                 value={form.username}
                 onChange={e => setForm(f => ({ ...f, username: e.target.value }))}
-                placeholder="admin"
+                placeholder={t('login.usernamePlaceholder')}
                 required
                 autoFocus
                 className="w-full bg-prussian-500 border border-prussian-400 rounded-lg px-4 pl-10 py-2.5 text-white text-sm placeholder:text-errorgrey focus:outline-none focus:border-moonstone-500 transition-colors"
@@ -58,14 +60,14 @@ export default function Login() {
           </div>
 
           <div>
-            <label className="text-lightgrey text-sm font-semibold block mb-2">Mot de passe</label>
+            <label className="text-lightgrey text-sm font-semibold block mb-2">{t('login.password')}</label>
             <div className="relative">
               <Icon icon="ph:lock-key" className="absolute left-3 top-1/2 -translate-y-1/2 text-errorgrey text-lg" />
               <input
                 type={showPass ? 'text' : 'password'}
                 value={form.password}
                 onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                placeholder="••••••••"
+                placeholder={t('login.passwordPlaceholder')}
                 required
                 className="w-full bg-prussian-500 border border-prussian-400 rounded-lg px-4 pl-10 pr-10 py-2.5 text-white text-sm placeholder:text-errorgrey focus:outline-none focus:border-moonstone-500 transition-colors"
               />
@@ -96,7 +98,7 @@ export default function Login() {
             ) : (
               <>
                 <Icon icon="ph:sign-in" className="text-base" />
-                <span>Se connecter</span>
+                <span>{t('login.submit')}</span>
               </>
             )}
           </button>
@@ -104,7 +106,7 @@ export default function Login() {
       </div>
 
       <p className="text-errorgrey text-xs text-center mt-4">
-        Spider-Lens — Données 100% locales · Aucun tracking
+        {t('login.footer')}
       </p>
     </div>
   )

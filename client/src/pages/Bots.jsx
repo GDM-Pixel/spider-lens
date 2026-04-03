@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts'
 import { Icon } from '@iconify/react'
 import DateRangePicker from '../components/ui/DateRangePicker'
@@ -14,6 +15,7 @@ import clsx from 'clsx'
 const BOT_COLORS = ['#00c6e0', '#d62246', '#8b5cf6', '#f59e0b', '#10b981', '#6366f1', '#ec4899', '#14b8a6']
 
 export default function Bots() {
+  const { t } = useTranslation()
   const { activeSiteId } = useSite()
   const [range, setRange] = usePersistentRange('bots')
   const [data, setData] = useState([])
@@ -58,19 +60,19 @@ export default function Bots() {
 
       <BeginnerBanner
         icon="ph:robot"
-        title="Bots & Crawlers"
+        title={t('bots.welcomeTitle')}
         tips={[
-          'Les bots sont des robots automatiques qui visitent votre site — certains sont utiles (Googlebot), d\'autres non.',
-          'Googlebot est le robot d\'indexation de Google : s\'il n\'apparaît plus, votre site risque de ne plus être indexé.',
-          'Un ratio bots/humains élevé peut indiquer du scraping ou des attaques — surveillez les pics inhabituels.',
-          'Le "budget de crawl" est la capacité de Googlebot à explorer votre site : optimisez-le en corrigeant les erreurs 404 et 5xx.',
+          t('bots.tip1'),
+          t('bots.tip2'),
+          t('bots.tip3'),
+          t('bots.tip4'),
         ]}
       />
 
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-white font-bold text-xl">Bots & Crawlers</h2>
-          <p className="text-errorgrey text-sm">Analyse des robots d'indexation détectés</p>
+          <h2 className="text-white font-bold text-xl">{t('bots.welcomeTitle')}</h2>
+          <p className="text-errorgrey text-sm">{t('bots.welcomeTitle')}</p>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -79,7 +81,7 @@ export default function Bots() {
             className="flex items-center gap-1.5 px-3 py-1.5 bg-prussian-600 border border-prussian-500 rounded-lg text-xs font-semibold text-errorgrey hover:text-white transition-colors disabled:opacity-40"
           >
             <Icon icon="ph:download-simple" className="text-sm" />
-            {exporting ? 'Export…' : 'CSV'}
+            {exporting ? t('common.exporting') : t('common.csv')}
           </button>
           <DateRangePicker from={range.from} to={range.to} onChange={setRange} />
         </div>
@@ -92,24 +94,24 @@ export default function Bots() {
       ) : (
         <>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <KPICard label="Requêtes bots" value={totalBotHits.toLocaleString('fr-FR')} icon="ph:robot" color="purple"
-              info="Total des requêtes émises par des robots d'indexation détectés." />
-            <KPICard label="Googlebot" value={googlebotHits.toLocaleString('fr-FR')} icon="ph:google-logo" color="moonstone"
-              info="Nombre de passages de Googlebot. Un nombre faible peut indiquer un problème de crawlabilité." />
-            <KPICard label="Ratio bots / total" value={`${crawlBudgetRatio}%`} icon="ph:chart-pie-slice" color="amber"
-              info="Pourcentage du trafic consommé par les bots. Un ratio élevé peut indiquer du crawling agressif ou des attaques." />
-            <KPICard label="Types de bots" value={bots.length} icon="ph:list-bullets" color="green" />
+            <KPICard label={t('bots.kpiBotRequests')} value={totalBotHits.toLocaleString('fr-FR')} icon="ph:robot" color="purple"
+              info={t('bots.kpiBotRequestsInfo')} />
+            <KPICard label={t('bots.kpiGooglebot')} value={googlebotHits.toLocaleString('fr-FR')} icon="ph:google-logo" color="moonstone"
+              info={t('bots.kpiGooglebotInfo')} />
+            <KPICard label={t('bots.kpiBotRatio')} value={`${crawlBudgetRatio}%`} icon="ph:chart-pie-slice" color="amber"
+              info={t('bots.kpiBotRatioInfo')} />
+            <KPICard label={t('bots.kpiBotTypes')} value={bots.length} icon="ph:list-bullets" color="green" />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Camembert */}
             <div className="bg-prussian-500 rounded-xl border border-prussian-400 p-5">
               <div className="flex items-center gap-2 mb-4">
-                <h3 className="text-white font-bold text-sm">Répartition des bots</h3>
+                <h3 className="text-white font-bold text-sm">{t('bots.chartDistributionTitle')}</h3>
                 <InfoBubble
-                  title="Budget de crawl"
-                  content="Répartition des différents robots qui crawlent votre site. Idéalement Googlebot doit être dominant parmi les bots SEO."
-                  impact="Un fort ratio de bots SEO tiers (Ahrefs, Semrush) par rapport à Googlebot peut indiquer que votre site est plus surveillé par vos concurrents que crawlé par Google."
+                  title={t('bots.chartDistributionTitle')}
+                  content={t('bots.chartDistributionContent')}
+                  impact={t('bots.chartDistributionImpact')}
                 />
               </div>
               {bots.length > 0 ? (
@@ -136,14 +138,14 @@ export default function Bots() {
                 </>
               ) : (
                 <div className="flex items-center justify-center h-40">
-                  <p className="text-errorgrey text-sm">Aucun bot détecté</p>
+                  <p className="text-errorgrey text-sm">{t('bots.emptyBots')}</p>
                 </div>
               )}
             </div>
 
             {/* Barres comparatives */}
             <div className="bg-prussian-500 rounded-xl border border-prussian-400 p-5">
-              <h3 className="text-white font-bold text-sm mb-4">Volume par bot</h3>
+              <h3 className="text-white font-bold text-sm mb-4">{t('bots.chartVolumeTitle')}</h3>
               {bots.length > 0 ? (
                 <ResponsiveContainer width="100%" height={280}>
                   <BarChart data={bots} layout="vertical" margin={{ left: 0, right: 20 }}>
@@ -158,7 +160,7 @@ export default function Bots() {
                 </ResponsiveContainer>
               ) : (
                 <div className="flex items-center justify-center h-48">
-                  <p className="text-errorgrey text-sm">Aucun bot détecté</p>
+                  <p className="text-errorgrey text-sm">{t('bots.emptyBots')}</p>
                 </div>
               )}
             </div>

@@ -5,6 +5,7 @@ import {
 } from 'recharts'
 import { Icon } from '@iconify/react'
 import * as XLSX from 'xlsx'
+import { useTranslation } from 'react-i18next'
 import DateRangePicker from '../components/ui/DateRangePicker'
 import InfoBubble from '../components/ui/InfoBubble'
 import BeginnerBanner from '../components/ui/BeginnerBanner'
@@ -46,6 +47,7 @@ function statusBadge(code) {
 const PAGE_SIZE = 50
 
 export default function HttpCodes() {
+  const { t } = useTranslation()
   const { activeSiteId } = useSite()
   const [range, setRange] = usePersistentRange('http-codes')
   const [chartData, setChartData]   = useState([])
@@ -192,20 +194,20 @@ export default function HttpCodes() {
 
       <BeginnerBanner
         icon="ph:globe"
-        title="Analyse des codes HTTP"
+        title={t('httpCodes.welcomeTitle')}
         tips={[
-          'Les codes 2xx indiquent des pages chargées avec succès. Les 3xx sont des redirections.',
-          'Les 404 signalent des pages introuvables — à corriger ou rediriger pour préserver le SEO.',
-          'Les 5xx révèlent des erreurs serveur — critiques si fréquents, car ils bloquent le crawl Google.',
-          'Filtrez par code et exportez en CSV ou Excel pour travailler avec d\'autres outils (Screaming Frog, Excel...).',
+          t('httpCodes.tip1'),
+          t('httpCodes.tip2'),
+          t('httpCodes.tip3'),
+          t('httpCodes.tip4'),
         ]}
       />
 
       {/* ── En-tête ──────────────────────────────────── */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-white font-bold text-xl">Codes HTTP</h2>
-          <p className="text-errorgrey text-sm">Évolution et analyse des statuts de réponse</p>
+          <h2 className="text-white font-bold text-xl">{t('httpCodes.chartTitle')}</h2>
+          <p className="text-errorgrey text-sm">{t('httpCodes.chartInfo')}</p>
         </div>
         <DateRangePicker from={range.from} to={range.to} onChange={setRange} />
       </div>
@@ -218,36 +220,36 @@ export default function HttpCodes() {
         <>
           {/* ── KPIs ─────────────────────────────────── */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <KPICard label="2xx Succès" value={totals.s2xx?.toLocaleString('fr-FR') || '0'}
+            <KPICard label={t('httpCodes.kpi2xx')} value={totals.s2xx?.toLocaleString('fr-FR') || '0'}
               icon="ph:check-circle" color="green"
-              info="Requêtes traitées avec succès." />
-            <KPICard label="3xx Redirections" value={totals.s3xx?.toLocaleString('fr-FR') || '0'}
+              info={t('httpCodes.kpi2xxInfo')} />
+            <KPICard label={t('httpCodes.kpi3xx')} value={totals.s3xx?.toLocaleString('fr-FR') || '0'}
               icon="ph:arrows-clockwise" color="amber"
-              info="Trop de redirections gaspillent le budget de crawl. Favorisez les redirections directes." />
-            <KPICard label="4xx Erreurs client" value={totals.s4xx?.toLocaleString('fr-FR') || '0'}
+              info={t('httpCodes.kpi3xxInfo')} />
+            <KPICard label={t('httpCodes.kpi4xx')} value={totals.s4xx?.toLocaleString('fr-FR') || '0'}
               icon="ph:x-circle" color="dustyred"
-              info="Pages introuvables ou accès refusés. Les 404 crawlés par Googlebot gaspillent le budget de crawl." />
-            <KPICard label="5xx Erreurs serveur" value={totals.s5xx?.toLocaleString('fr-FR') || '0'}
+              info={t('httpCodes.kpi4xxInfo')} />
+            <KPICard label={t('httpCodes.kpi5xx')} value={totals.s5xx?.toLocaleString('fr-FR') || '0'}
               icon="ph:warning-octagon" color="dustyred"
-              info="Erreurs critiques côté serveur. À résoudre en priorité." />
+              info={t('httpCodes.kpi5xxInfo')} />
           </div>
 
           {/* ── Graphique ────────────────────────────── */}
           <div className="bg-prussian-500 rounded-xl border border-prussian-400 p-5">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <h3 className="text-white font-bold text-sm">Évolution par jour</h3>
+                <h3 className="text-white font-bold text-sm">{t('httpCodes.chartContent')}</h3>
                 <InfoBubble
-                  title="Codes HTTP dans le temps"
-                  content="Chaque point représente le volume de requêtes d'une famille de code HTTP pour un jour donné."
-                  impact="Les pics de 4xx/5xx sont souvent corrélés à des mises en production problématiques ou des attaques."
+                  title={t('httpCodes.chartTitle')}
+                  content={t('httpCodes.chartContent')}
+                  impact={t('httpCodes.chartImpact')}
                 />
               </div>
               <div className="flex items-center gap-1 bg-prussian-600 rounded-lg p-1">
                 {['line', 'bar'].map(v => (
                   <button key={v} onClick={() => setChartView(v)}
                     className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${chartView === v ? 'bg-prussian-400 text-white' : 'text-errorgrey hover:text-white'}`}>
-                    {v === 'line' ? 'Courbe' : 'Barres'}
+                    {v === 'line' ? t('httpCodes.viewLine') : t('httpCodes.viewBar')}
                   </button>
                 ))}
               </div>
@@ -283,7 +285,7 @@ export default function HttpCodes() {
               </ResponsiveContainer>
             ) : (
               <div className="flex items-center justify-center h-40">
-                <p className="text-errorgrey text-sm">Aucune donnée</p>
+                <p className="text-errorgrey text-sm">{t('common.noData')}</p>
               </div>
             )}
           </div>
@@ -305,7 +307,7 @@ export default function HttpCodes() {
                     )}
                     style={activeFilter === g.key ? { backgroundColor: g.color, borderColor: g.color } : {}}
                   >
-                    {g.label}
+                    {t(`httpCodes.filter${g.key === 'all' ? 'All' : g.key}`)}
                   </button>
                 ))}
               </div>
@@ -315,9 +317,9 @@ export default function HttpCodes() {
               {/* Filtre bots/humains */}
               <div className="flex gap-1 bg-prussian-600 rounded-lg p-1">
                 {[
-                  { val: 'all', label: 'Tous' },
-                  { val: '0',   label: 'Humains' },
-                  { val: '1',   label: 'Bots' },
+                  { val: 'all', label: t('httpCodes.filterAll') },
+                  { val: '0',   label: t('httpCodes.filterHumans') },
+                  { val: '1',   label: t('httpCodes.filterBots') },
                 ].map(opt => (
                   <button key={opt.val} onClick={() => setBotFilter(opt.val)}
                     className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors ${botFilter === opt.val ? 'bg-prussian-400 text-white' : 'text-errorgrey hover:text-white'}`}>
@@ -331,7 +333,7 @@ export default function HttpCodes() {
                 <Icon icon="ph:magnifying-glass" className="absolute left-3 top-1/2 -translate-y-1/2 text-errorgrey text-sm" />
                 <input
                   type="text"
-                  placeholder="Filtrer par URL…"
+                  placeholder={t('httpCodes.searchPlaceholder')}
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   className="w-full bg-prussian-600 border border-prussian-400 rounded-lg pl-8 pr-3 py-1.5 text-white text-sm placeholder:text-errorgrey focus:outline-none focus:border-moonstone-600 transition-colors"
@@ -348,12 +350,12 @@ export default function HttpCodes() {
                 <button onClick={exportCSV} disabled={exporting}
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-prussian-400 hover:bg-prussian-300 border border-prussian-300 rounded-lg text-xs font-semibold text-white transition-colors disabled:opacity-50">
                   <Icon icon="ph:file-csv" className="text-base text-moonstone-400" />
-                  CSV
+                  {t('common.csv')}
                 </button>
                 <button onClick={exportExcel} disabled={exporting}
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-prussian-400 hover:bg-prussian-300 border border-prussian-300 rounded-lg text-xs font-semibold text-white transition-colors disabled:opacity-50">
                   <Icon icon="ph:microsoft-excel-logo" className="text-base text-emerald-400" />
-                  Excel
+                  {t('common.excel')}
                 </button>
               </div>
             </div>
@@ -364,8 +366,8 @@ export default function HttpCodes() {
                 {loadingDrill ? '…' : (
                   <><span className="text-white font-semibold">{drillTotal.toLocaleString('fr-FR')}</span> URLs
                   {activeFilter !== 'all' && <> · filtre <span className="font-bold" style={{ color: activeGroup?.color }}>{activeFilter}</span></>}
-                  {botFilter === '1' && ' · bots seulement'}
-                  {botFilter === '0' && ' · humains seulement'}
+                  {botFilter === '1' && <> · {t('httpCodes.filterBots')} seulement</>}
+                  {botFilter === '0' && <> · {t('httpCodes.filterHumans')} seulement</>}
                   {debouncedSearch && <> · "<span className="text-white">{debouncedSearch}</span>"</>}
                   </>
                 )}
@@ -378,26 +380,26 @@ export default function HttpCodes() {
               <table className="w-full min-w-[700px]">
                 <thead>
                   <tr className="border-b border-prussian-400 bg-prussian-600/20">
-                    <th className="text-left text-xs font-semibold text-errorgrey px-5 py-3 w-[40%]">URL</th>
-                    <th className="text-center text-xs font-semibold text-errorgrey px-3 py-3">Code</th>
+                    <th className="text-left text-xs font-semibold text-errorgrey px-5 py-3 w-[40%]">{t('httpCodes.headerUrl')}</th>
+                    <th className="text-center text-xs font-semibold text-errorgrey px-3 py-3">{t('httpCodes.headerCode')}</th>
                     <th className="text-right text-xs font-semibold text-errorgrey px-3 py-3 cursor-pointer select-none hover:text-white"
                       onClick={() => toggleSort('hits')}>
-                      <span className="inline-flex items-center">Hits <SortIcon col="hits" /></span>
+                      <span className="inline-flex items-center">{t('httpCodes.headerHits')} <SortIcon col="hits" /></span>
                     </th>
-                    <th className="text-right text-xs font-semibold text-errorgrey px-3 py-3">Bots</th>
-                    <th className="text-right text-xs font-semibold text-errorgrey px-3 py-3">Humains</th>
+                    <th className="text-right text-xs font-semibold text-errorgrey px-3 py-3">{t('httpCodes.headerBots')}</th>
+                    <th className="text-right text-xs font-semibold text-errorgrey px-3 py-3">{t('httpCodes.headerHumans')}</th>
                     <th className="text-right text-xs font-semibold text-errorgrey px-5 py-3 cursor-pointer select-none hover:text-white"
                       onClick={() => toggleSort('last_seen')}>
-                      <span className="inline-flex items-center">Dernière vue <SortIcon col="last_seen" /></span>
+                      <span className="inline-flex items-center">{t('httpCodes.headerLastSeen')} <SortIcon col="last_seen" /></span>
                     </th>
-                    <th className="text-left text-xs font-semibold text-errorgrey px-5 py-3">User-Agent dominant</th>
+                    <th className="text-left text-xs font-semibold text-errorgrey px-5 py-3">{t('httpCodes.headerUserAgent')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {drillRows.length === 0 && !loadingDrill ? (
                     <tr><td colSpan={7} className="text-center text-errorgrey text-sm py-16">
                       <Icon icon="ph:magnifying-glass-minus" className="text-3xl mb-2 block mx-auto text-prussian-400" />
-                      Aucun résultat
+                      {t('common.noResults')}
                     </td></tr>
                   ) : drillRows.map((row, i) => (
                     <tr key={`${row.url}-${row.status_code}`}
@@ -428,8 +430,8 @@ export default function HttpCodes() {
             {totalPages > 1 && (
               <div className="flex items-center justify-between px-5 py-3 border-t border-prussian-400 bg-prussian-600/20">
                 <p className="text-errorgrey text-xs">
-                  Page {drillPage + 1} / {totalPages}
-                  {' '}· {drillTotal.toLocaleString('fr-FR')} résultats
+                  {t('common.page')} {drillPage + 1} {t('common.of')} {totalPages}
+                  {' '}· {drillTotal.toLocaleString('fr-FR')} {t('common.results')}
                 </p>
                 <div className="flex gap-1">
                   <PagBtn onClick={() => setDrillPage(0)} disabled={drillPage === 0} icon="ph:caret-double-left" />

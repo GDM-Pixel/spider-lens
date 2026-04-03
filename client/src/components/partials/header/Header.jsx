@@ -2,23 +2,16 @@ import React from 'react'
 import { useLocation } from 'react-router-dom'
 import { Icon } from '@iconify/react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { useBeginnerMode } from '../../../hooks/useBeginnerMode'
 import { useSite } from '../../../context/SiteContext'
-
-const PAGE_TITLES = {
-  '/dashboard':  { title: 'Dashboard',            subtitle: 'Vue globale de votre trafic' },
-  '/http-codes': { title: 'Codes HTTP',            subtitle: 'Évolution des statuts HTTP dans le temps' },
-  '/top-pages':  { title: 'Top Pages',             subtitle: 'Pages les plus vues & erreurs 404' },
-  '/bots':       { title: 'Bots & Crawlers',       subtitle: "Analyse des robots d'indexation" },
-  '/ttfb':       { title: 'Temps de chargement',   subtitle: 'TTFB — Time To First Byte par URL' },
-  '/network':    { title: 'Réseau',                subtitle: 'IPs et User-Agents' },
-  '/anomalies':  { title: 'Anomalies',             subtitle: 'Comportements anormaux détectés' },
-  '/settings':   { title: 'Paramètres',            subtitle: 'Configuration de Spider-Lens' },
-}
+import LanguageSwitcher from '../../ui/LanguageSwitcher'
 
 export default function Header({ collapsed, onToggle }) {
   const location  = useLocation()
-  const pageInfo  = PAGE_TITLES[location.pathname] || { title: 'Spider-Lens', subtitle: '' }
+  const { t }     = useTranslation()
+  const pageKey   = location.pathname.replace('/', '') || 'dashboard'
+  const pageInfo  = t(`header.pages.${pageKey}`, { returnObjects: true }) || { title: 'Spider-Lens', subtitle: '' }
   const username  = localStorage.getItem('spider_username') || 'Admin'
   const { beginner, toggle } = useBeginnerMode()
   const { sites, activeSiteId, setActiveSiteId } = useSite()
@@ -29,7 +22,7 @@ export default function Header({ collapsed, onToggle }) {
         <button
           onClick={onToggle}
           className="text-errorgrey hover:text-white transition-colors"
-          aria-label={collapsed ? 'Ouvrir le menu' : 'Réduire le menu'}
+          aria-label={collapsed ? t('header.openMenu') : t('header.closeMenu')}
         >
           <Icon icon="ph:list" className="text-xl" />
         </button>
@@ -53,7 +46,7 @@ export default function Header({ collapsed, onToggle }) {
               onChange={e => setActiveSiteId(e.target.value ? parseInt(e.target.value, 10) : null)}
               className="bg-prussian-500 text-white text-xs font-semibold focus:outline-none cursor-pointer max-w-[140px]"
             >
-              <option value="">Tous les sites</option>
+              <option value="">{t('header.allSites')}</option>
               {sites.map(s => (
                 <option key={s.id} value={s.id}>{s.name}</option>
               ))}
@@ -69,10 +62,10 @@ export default function Header({ collapsed, onToggle }) {
               ? 'bg-moonstone-400/15 border-moonstone-600 text-moonstone-300'
               : 'bg-prussian-500 border-prussian-400 text-errorgrey hover:text-white hover:border-prussian-300'
           }`}
-          title={beginner ? 'Mode débutant actif — cliquez pour désactiver' : 'Activer le mode débutant'}
+          title={beginner ? t('header.beginnerActive') : t('header.beginnerInactive')}
         >
           <Icon icon={beginner ? 'ph:graduation-cap-fill' : 'ph:graduation-cap'} className="text-base" />
-          <span className="hidden sm:block">{beginner ? 'Débutant' : 'Expert'}</span>
+          <span className="hidden sm:block">{beginner ? t('header.beginner') : t('header.expert')}</span>
 
           {beginner && (
             <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-moonstone-400">
@@ -96,8 +89,10 @@ export default function Header({ collapsed, onToggle }) {
         {/* Badge version */}
         <span className="hidden md:inline-flex items-center gap-1 bg-prussian-500 text-moonstone-400 text-xs font-semibold px-2.5 py-1 rounded-full border border-prussian-400">
           <Icon icon="ph:spider" className="text-sm" />
-          v0.3.0
+          v1.0.0
         </span>
+
+        <LanguageSwitcher />
 
         {/* Utilisateur */}
         <div className="flex items-center gap-2 bg-prussian-500 px-3 py-1.5 rounded-full border border-prussian-400">

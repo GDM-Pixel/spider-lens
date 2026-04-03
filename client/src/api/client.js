@@ -23,9 +23,10 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err.response?.status === 401) {
+    if (err.response?.status === 401 && !window.location.pathname.includes('/login')) {
       localStorage.removeItem('spider_token')
-      window.location.href = '/login'
+      localStorage.removeItem('spider_username')
+      window.dispatchEvent(new Event('spider:unauthorized'))
     }
     return Promise.reject(err)
   }

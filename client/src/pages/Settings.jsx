@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { Icon } from '@iconify/react'
+import { useTranslation } from 'react-i18next'
 import api from '../api/client'
 import { useSite } from '../context/SiteContext'
 
 const EMPTY_SITE_FORM = { name: '', log_file_path: '' }
 
 export default function Settings() {
+  const { t } = useTranslation()
   const [config, setConfig] = useState(null)
   const [saved, setSaved] = useState(false)
   const [testResult, setTestResult] = useState(null)
@@ -137,7 +139,7 @@ export default function Settings() {
   }
 
   async function handleDeleteSite(id) {
-    if (!confirm('Supprimer ce site ? Les données de logs associées seront conservées.')) return
+    if (!confirm(t('settings.confirmDeleteSite'))) return
     await api.delete(`/sites/${id}`)
     await reloadSites()
   }
@@ -158,8 +160,8 @@ export default function Settings() {
   return (
     <div className="flex flex-col gap-6 max-w-2xl">
       <div>
-        <h2 className="text-white font-bold text-xl">Paramètres</h2>
-        <p className="text-errorgrey text-sm">Configuration de Spider-Lens</p>
+        <h2 className="text-white font-bold text-xl">{t('settings.title')}</h2>
+        <p className="text-errorgrey text-sm">{t('settings.subtitle')}</p>
       </div>
 
       {/* ── Sites à surveiller ─────────────────────────── */}
@@ -169,8 +171,8 @@ export default function Settings() {
             <Icon icon="ph:globe" className="text-moonstone-400 text-base" />
           </div>
           <div>
-            <h3 className="text-white font-bold text-sm">Sites à surveiller</h3>
-            <p className="text-errorgrey text-xs">Chaque site correspond à un fichier de log Apache ou Nginx</p>
+            <h3 className="text-white font-bold text-sm">{t('settings.sectionSites')}</h3>
+            <p className="text-errorgrey text-xs">{t('settings.sectionSitesDesc')}</p>
           </div>
         </div>
 
@@ -189,10 +191,10 @@ export default function Settings() {
                 <div className="flex items-center gap-2 shrink-0">
                   <button
                     onClick={() => handleToggleSite(site)}
-                    title={site.active ? 'Désactiver le parsing' : 'Activer le parsing'}
+                    title={site.active ? t('settings.toggleDisable') : t('settings.toggleEnable')}
                     className={`text-xs px-2 py-1 rounded border transition-colors ${site.active ? 'border-emerald-700 text-emerald-400 hover:bg-emerald-400/10' : 'border-prussian-300 text-errorgrey hover:text-white'}`}
                   >
-                    {site.active ? 'Actif' : 'Inactif'}
+                    {site.active ? t('settings.statusActive') : t('settings.statusInactive')}
                   </button>
                   <button
                     onClick={() => startEditSite(site)}
@@ -215,26 +217,26 @@ export default function Settings() {
         {/* Formulaire ajouter / éditer */}
         <form onSubmit={handleSaveSite} className="flex flex-col gap-4">
           <p className="text-lightgrey text-xs font-semibold uppercase tracking-wider">
-            {editingSiteId ? 'Modifier le site' : 'Ajouter un site'}
+            {editingSiteId ? t('settings.editSite') : t('settings.addSite')}
           </p>
           <div className="grid grid-cols-2 gap-4">
             <Field
-              label="Nom du site"
+              label={t('settings.siteName')}
               value={siteForm.name}
               onChange={v => setSiteForm(f => ({ ...f, name: v }))}
-              placeholder="gdm-pixel.com"
+              placeholder={t('settings.siteNamePlaceholder')}
             />
             <Field
-              label="Chemin du fichier de log"
+              label={t('settings.logPath')}
               value={siteForm.log_file_path}
               onChange={v => setSiteForm(f => ({ ...f, log_file_path: v }))}
-              placeholder="/var/log/nginx/access.log"
+              placeholder={t('settings.logPathPlaceholder')}
             />
           </div>
           {siteMsg && (
             <p className={`text-sm font-semibold flex items-center gap-1.5 ${siteMsg.success ? 'text-emerald-400' : 'text-dustyred-400'}`}>
               <Icon icon={siteMsg.success ? 'ph:check-circle' : 'ph:x-circle'} />
-              {siteMsg.msg}
+              {siteMsg.success ? (editingSiteId ? t('settings.updateSuccess') : t('settings.addSuccess')) : siteMsg.msg}
             </p>
           )}
           <div className="flex items-center gap-3">
@@ -244,11 +246,11 @@ export default function Settings() {
               className="btn-blue px-5 py-2 text-sm flex items-center gap-2 disabled:opacity-60"
             >
               <Icon icon={editingSiteId ? 'ph:floppy-disk' : 'ph:plus'} className="text-base" />
-              {editingSiteId ? 'Mettre à jour' : 'Ajouter le site'}
+              {editingSiteId ? t('settings.buttonUpdate') : t('settings.buttonAdd')}
             </button>
             {editingSiteId && (
               <button type="button" onClick={cancelEditSite} className="text-errorgrey text-sm hover:text-white transition-colors">
-                Annuler
+                {t('settings.buttonCancel')}
               </button>
             )}
           </div>
@@ -261,19 +263,19 @@ export default function Settings() {
           <div className="w-8 h-8 rounded-lg bg-moonstone-400/10 flex items-center justify-center">
             <Icon icon="ph:envelope" className="text-moonstone-400 text-base" />
           </div>
-          <h3 className="text-white font-bold text-sm">Configuration SMTP</h3>
+          <h3 className="text-white font-bold text-sm">{t('settings.sectionSmtp')}</h3>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Serveur SMTP" value={config?.smtp_host || ''} onChange={v => setConfig(c => ({ ...c, smtp_host: v }))} placeholder="smtp.gmail.com" />
-          <Field label="Port" type="number" value={config?.smtp_port || 587} onChange={v => setConfig(c => ({ ...c, smtp_port: parseInt(v) }))} placeholder="587" />
-          <Field label="Utilisateur SMTP" value={config?.smtp_user || ''} onChange={v => setConfig(c => ({ ...c, smtp_user: v }))} placeholder="user@gmail.com" />
-          <Field label="Mot de passe SMTP" type="password" value="" onChange={v => setConfig(c => ({ ...c, smtp_pass: v }))} placeholder="Laisser vide pour conserver" />
+          <Field label={t('settings.smtpHost')} value={config?.smtp_host || ''} onChange={v => setConfig(c => ({ ...c, smtp_host: v }))} placeholder={t('settings.smtpHostPlaceholder')} />
+          <Field label={t('settings.smtpPort')} type="number" value={config?.smtp_port || 587} onChange={v => setConfig(c => ({ ...c, smtp_port: parseInt(v) }))} placeholder={t('settings.smtpPortPlaceholder')} />
+          <Field label={t('settings.smtpUser')} value={config?.smtp_user || ''} onChange={v => setConfig(c => ({ ...c, smtp_user: v }))} placeholder={t('settings.smtpUserPlaceholder')} />
+          <Field label={t('settings.smtpPass')} type="password" value="" onChange={v => setConfig(c => ({ ...c, smtp_pass: v }))} placeholder={t('settings.smtpPassPlaceholder')} />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Email destinataire" value={config?.alert_email || ''} onChange={v => setConfig(c => ({ ...c, alert_email: v }))} placeholder="admin@monsite.com" />
-          <Field label="Nom du site" value={config?.site_name || ''} onChange={v => setConfig(c => ({ ...c, site_name: v }))} placeholder="Mon Site" />
+          <Field label={t('settings.alertEmail')} value={config?.alert_email || ''} onChange={v => setConfig(c => ({ ...c, alert_email: v }))} placeholder={t('settings.alertEmailPlaceholder')} />
+          <Field label={t('settings.siteName')} value={config?.site_name || ''} onChange={v => setConfig(c => ({ ...c, site_name: v }))} placeholder={t('settings.siteNamePlaceholder')} />
         </div>
 
         <div className="flex items-center gap-1">
@@ -284,7 +286,7 @@ export default function Settings() {
             onChange={e => setConfig(c => ({ ...c, smtp_secure: e.target.checked ? 1 : 0 }))}
             className="accent-moonstone-400"
           />
-          <label htmlFor="smtp_secure" className="text-lightgrey text-sm ml-2">Connexion SSL/TLS (port 465)</label>
+          <label htmlFor="smtp_secure" className="text-lightgrey text-sm ml-2">{t('settings.smtpSecure')}</label>
         </div>
 
         <div className="flex items-center gap-3">
@@ -295,7 +297,7 @@ export default function Settings() {
             className="flex items-center gap-2 px-4 py-2 bg-prussian-400 hover:bg-prussian-300 border border-prussian-300 rounded-lg text-sm text-white font-semibold transition-colors disabled:opacity-60"
           >
             <Icon icon="ph:paper-plane-tilt" className="text-base" />
-            {testing ? 'Test en cours...' : 'Tester SMTP'}
+            {testing ? t('settings.testSmtpTesting') : t('settings.testSmtp')}
           </button>
           {testResult && (
             <span className={`text-sm font-semibold flex items-center gap-1.5 ${testResult.success ? 'text-emerald-400' : 'text-dustyred-400'}`}>
@@ -312,33 +314,33 @@ export default function Settings() {
           <div className="w-8 h-8 rounded-lg bg-dustyred-400/10 flex items-center justify-center">
             <Icon icon="ph:bell-ringing" className="text-dustyred-400 text-base" />
           </div>
-          <h3 className="text-white font-bold text-sm">Seuils d'alertes</h3>
+          <h3 className="text-white font-bold text-sm">{t('settings.sectionAlerts')}</h3>
         </div>
 
         <div className="flex flex-col gap-4">
           <AlertToggle
-            label="Alerte 404 spike"
+            label={t('settings.alert404Spike')}
             description={`Envoyer une alerte si plus de `}
             enabled={config?.alert_404_enabled === 1}
             threshold={config?.alert_404_threshold || 10}
-            unit="erreurs 404 / heure"
+            unit={t('settings.alert404Threshold')}
             onToggle={v => setConfig(c => ({ ...c, alert_404_enabled: v ? 1 : 0 }))}
             onThreshold={v => setConfig(c => ({ ...c, alert_404_threshold: parseInt(v) }))}
           />
           <AlertToggle
-            label="Alerte erreurs serveur (5xx)"
+            label={t('settings.alert5xx')}
             description={`Envoyer une alerte si plus de `}
             enabled={config?.alert_5xx_enabled === 1}
             threshold={config?.alert_5xx_threshold || 5}
-            unit="erreurs 5xx / heure"
+            unit={t('settings.alert5xxThreshold')}
             onToggle={v => setConfig(c => ({ ...c, alert_5xx_enabled: v ? 1 : 0 }))}
             onThreshold={v => setConfig(c => ({ ...c, alert_5xx_threshold: parseInt(v) }))}
           />
           <div className="flex items-start justify-between gap-4 py-3 border-b border-prussian-400/50">
             <div>
-              <p className="text-white text-sm font-semibold">Alerte Googlebot absent</p>
+              <p className="text-white text-sm font-semibold">{t('settings.alertGooglebotAbsent')}</p>
               <p className="text-errorgrey text-xs mt-0.5">
-                Alerter si Googlebot absent depuis{' '}
+                {t('settings.alertGooglebotDays')} {' '}
                 <input
                   type="number"
                   min="1" max="30"
@@ -361,16 +363,16 @@ export default function Settings() {
             <Icon icon="ph:calendar-check" className="text-moonstone-400 text-base" />
           </div>
           <div>
-            <h3 className="text-white font-bold text-sm">Rapport hebdomadaire</h3>
-            <p className="text-errorgrey text-xs">Envoyé automatiquement chaque lundi à 8h par email et/ou webhook</p>
+            <h3 className="text-white font-bold text-sm">{t('settings.sectionWeekly')}</h3>
+            <p className="text-errorgrey text-xs">{t('settings.weeklyDesc')}</p>
           </div>
         </div>
 
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-white text-sm font-semibold">Activer le rapport hebdomadaire</p>
+            <p className="text-white text-sm font-semibold">{t('settings.weeklyEnable')}</p>
             <p className="text-errorgrey text-xs mt-0.5">
-              Résumé de la semaine : trafic, top pages, 404, bots, anomalies, TTFB
+              {t('settings.weeklyContent')}
             </p>
           </div>
           <Toggle
@@ -387,7 +389,7 @@ export default function Settings() {
             className="flex items-center gap-2 px-4 py-2 bg-prussian-400 hover:bg-prussian-300 border border-prussian-300 rounded-lg text-sm text-white font-semibold transition-colors disabled:opacity-60"
           >
             <Icon icon="ph:paper-plane-tilt" className="text-base" />
-            {sendingReport ? 'Envoi en cours...' : 'Envoyer maintenant'}
+            {sendingReport ? t('settings.sendReportSending') : t('settings.sendReport')}
           </button>
           {weeklyReportResult && (
             <span className={`text-sm font-semibold flex items-center gap-1.5 ${weeklyReportResult.success ? 'text-emerald-400' : 'text-dustyred-400'}`}>
@@ -398,8 +400,7 @@ export default function Settings() {
         </div>
 
         <p className="text-errorgrey text-xs bg-prussian-700 rounded-lg px-3 py-2">
-          Le rapport utilise la configuration SMTP et le webhook définis ci-dessous.
-          Activez au moins l'un des deux avant d'activer le rapport.
+          {t('settings.reportHelpText')}
         </p>
       </div>
 
@@ -410,23 +411,23 @@ export default function Settings() {
             <Icon icon="ph:webhooks-logo" className="text-moonstone-400 text-base" />
           </div>
           <div>
-            <h3 className="text-white font-bold text-sm">Notifications Webhook</h3>
-            <p className="text-errorgrey text-xs">Compatible Discord, Slack, et tout endpoint HTTP POST JSON</p>
+            <h3 className="text-white font-bold text-sm">{t('settings.sectionWebhook')}</h3>
+            <p className="text-errorgrey text-xs">{t('settings.webhookDesc')}</p>
           </div>
         </div>
 
         <Field
-          label="URL du webhook"
+          label={t('settings.webhookUrl')}
           value={config?.webhook_url || ''}
           onChange={v => setConfig(c => ({ ...c, webhook_url: v }))}
-          placeholder="https://discord.com/api/webhooks/xxx/yyy"
+          placeholder={t('settings.webhookUrlPlaceholder')}
         />
 
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-white text-sm font-semibold">Activer les notifications webhook</p>
-              <p className="text-errorgrey text-xs mt-0.5">Envoie une notification à chaque anomalie détectée</p>
+              <p className="text-white text-sm font-semibold">{t('settings.webhookEnable')}</p>
+              <p className="text-errorgrey text-xs mt-0.5">{t('settings.webhookEnableDesc')}</p>
             </div>
             <Toggle
               enabled={config?.webhook_enabled === 1}
@@ -435,8 +436,8 @@ export default function Settings() {
           </div>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-white text-sm font-semibold">Inclure les avertissements</p>
-              <p className="text-errorgrey text-xs mt-0.5">Par défaut seules les anomalies critiques sont envoyées</p>
+              <p className="text-white text-sm font-semibold">{t('settings.webhookWarnings')}</p>
+              <p className="text-errorgrey text-xs mt-0.5">{t('settings.webhookWarningsDesc')}</p>
             </div>
             <Toggle
               enabled={config?.webhook_on_warning === 1}
@@ -453,7 +454,7 @@ export default function Settings() {
             className="flex items-center gap-2 px-4 py-2 bg-prussian-400 hover:bg-prussian-300 border border-prussian-300 rounded-lg text-sm text-white font-semibold transition-colors disabled:opacity-60"
           >
             <Icon icon="ph:paper-plane-tilt" className="text-base" />
-            {testingWebhook ? 'Test en cours...' : 'Tester le webhook'}
+            {testingWebhook ? t('settings.testWebhookTesting') : t('settings.testWebhook')}
           </button>
           {webhookTestResult && (
             <span className={`text-sm font-semibold flex items-center gap-1.5 ${webhookTestResult.success ? 'text-emerald-400' : 'text-dustyred-400'}`}>
@@ -464,11 +465,11 @@ export default function Settings() {
         </div>
 
         <div className="bg-prussian-700 rounded-lg p-3 text-xs text-errorgrey">
-          <p className="font-semibold text-lightgrey mb-1">Comment créer un webhook Discord ?</p>
+          <p className="font-semibold text-lightgrey mb-1">{t('settings.discordGuide')}</p>
           <ol className="list-decimal list-inside space-y-0.5">
-            <li>Ouvrez les paramètres du salon Discord cible</li>
-            <li>Intégrations → Webhooks → Nouveau webhook</li>
-            <li>Copiez l'URL et collez-la ci-dessus</li>
+            <li>{t('settings.discordStep1')}</li>
+            <li>{t('settings.discordStep2')}</li>
+            <li>{t('settings.discordStep3')}</li>
           </ol>
         </div>
       </div>
@@ -484,7 +485,7 @@ export default function Settings() {
         ) : (
           <Icon icon="ph:floppy-disk" className="text-base" />
         )}
-        {saved ? 'Sauvegardé !' : 'Enregistrer les paramètres'}
+        {saved ? t('settings.buttonSaved') : t('settings.buttonSave')}
       </button>
 
       {/* Changement de mot de passe */}
@@ -493,22 +494,22 @@ export default function Settings() {
           <div className="w-8 h-8 rounded-lg bg-prussian-400 flex items-center justify-center">
             <Icon icon="ph:lock-key" className="text-errorgrey text-base" />
           </div>
-          <h3 className="text-white font-bold text-sm">Changer le mot de passe</h3>
+          <h3 className="text-white font-bold text-sm">{t('settings.sectionPassword')}</h3>
         </div>
-        <Field label="Mot de passe actuel" type="password" value={pwdForm.currentPassword} onChange={v => setPwdForm(f => ({ ...f, currentPassword: v }))} />
+        <Field label={t('settings.currentPassword')} type="password" value={pwdForm.currentPassword} onChange={v => setPwdForm(f => ({ ...f, currentPassword: v }))} />
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Nouveau mot de passe" type="password" value={pwdForm.newPassword} onChange={v => setPwdForm(f => ({ ...f, newPassword: v }))} placeholder="Min. 8 caractères" />
-          <Field label="Confirmer" type="password" value={pwdForm.confirm} onChange={v => setPwdForm(f => ({ ...f, confirm: v }))} />
+          <Field label={t('settings.newPassword')} type="password" value={pwdForm.newPassword} onChange={v => setPwdForm(f => ({ ...f, newPassword: v }))} placeholder={t('settings.newPasswordPlaceholder')} />
+          <Field label={t('settings.confirmPassword')} type="password" value={pwdForm.confirm} onChange={v => setPwdForm(f => ({ ...f, confirm: v }))} />
         </div>
         {pwdMsg && (
           <p className={`text-sm font-semibold flex items-center gap-1.5 ${pwdMsg.success ? 'text-emerald-400' : 'text-dustyred-400'}`}>
             <Icon icon={pwdMsg.success ? 'ph:check-circle' : 'ph:x-circle'} />
-            {pwdMsg.msg}
+            {pwdMsg.success ? t('settings.passwordSuccess') : t('settings.passwordMismatch')}
           </p>
         )}
         <button type="submit" className="btn-blue px-5 py-2 text-sm w-fit flex items-center gap-2">
           <Icon icon="ph:lock-key-open" className="text-base" />
-          Changer le mot de passe
+          {t('settings.buttonChangePassword')}
         </button>
       </form>
     </div>
@@ -543,12 +544,13 @@ function Toggle({ enabled, onChange }) {
 }
 
 function AlertToggle({ label, enabled, threshold, unit, onToggle, onThreshold }) {
+  const { t } = useTranslation()
   return (
     <div className="flex items-start justify-between gap-4 py-3 border-b border-prussian-400/50">
       <div>
         <p className="text-white text-sm font-semibold">{label}</p>
         <p className="text-errorgrey text-xs mt-0.5">
-          Seuil :{' '}
+          {t('settings.alertThreshold')}{' '}
           <input
             type="number"
             min="1"

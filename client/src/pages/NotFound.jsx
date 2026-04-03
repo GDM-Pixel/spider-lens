@@ -1,10 +1,12 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Icon } from '@iconify/react'
 import { motion } from 'framer-motion'
 
 export default function NotFound() {
   const location = useLocation()
+  const { t } = useTranslation()
 
   return (
     <div className="min-h-screen bg-prussian-700 flex items-center justify-center px-6">
@@ -21,23 +23,19 @@ export default function NotFound() {
 
         {/* Code */}
         <p className="text-moonstone-400 font-mono text-sm font-semibold uppercase tracking-widest mb-2">
-          Erreur 404
+          {t('notFound.code')}
         </p>
 
         <h1 className="text-white font-bold text-3xl mb-3">
-          Page introuvable
+          {t('notFound.title')}
         </h1>
 
         <p className="text-errorgrey text-sm leading-relaxed mb-2">
-          La page{' '}
-          <code className="bg-prussian-600 text-moonstone-300 px-1.5 py-0.5 rounded font-mono text-xs">
-            {location.pathname}
-          </code>{' '}
-          n'existe pas ou a été déplacée.
+          {t('notFound.message', { path: <code className="bg-prussian-600 text-moonstone-300 px-1.5 py-0.5 rounded font-mono text-xs">{location.pathname}</code> })}
         </p>
 
         <p className="text-errorgrey text-sm mb-8">
-          Même les araignées se perdent parfois dans leur propre toile.
+          {t('notFound.humor')}
         </p>
 
         <Link
@@ -45,7 +43,7 @@ export default function NotFound() {
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-moonstone-400/15 border border-moonstone-600 text-moonstone-300 text-sm font-semibold hover:bg-moonstone-400/25 transition-colors"
         >
           <Icon icon="ph:house" className="text-base" />
-          Retour au dashboard
+          {t('notFound.back')}
         </Link>
       </motion.div>
     </div>

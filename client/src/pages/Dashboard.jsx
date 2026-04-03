@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Icon } from '@iconify/react'
 import { Link } from 'react-router-dom'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Legend } from 'recharts'
@@ -20,6 +21,7 @@ const HTTP_COLORS = {
 }
 
 export default function Dashboard() {
+  const { t } = useTranslation()
   const { activeSiteId } = useSite()
   const [range, setRange] = usePersistentRange('dashboard')
   const [overview, setOverview] = useState(null)
@@ -58,20 +60,20 @@ export default function Dashboard() {
 
       <BeginnerBanner
         icon="ph:chart-line"
-        title="Bienvenue sur le Dashboard"
+        title={t('dashboard.welcomeTitle')}
         tips={[
-          'Ce tableau de bord présente une vue synthétique du trafic de votre serveur sur la période sélectionnée.',
-          'Les KPIs en haut résument les visites humaines, les bots, les erreurs et le taux d\'erreur global.',
-          'Survolez les icônes ⓘ pour obtenir des explications détaillées sur chaque indicateur.',
-          'Utilisez le sélecteur de dates en haut à droite pour changer la période analysée.',
+          t('dashboard.tip1'),
+          t('dashboard.tip2'),
+          t('dashboard.tip3'),
+          t('dashboard.tip4'),
         ]}
       />
 
       {/* En-tête avec sélecteur dates */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-white font-bold text-xl">Vue globale</h2>
-          <p className="text-errorgrey text-sm">Aperçu de votre trafic sur la période</p>
+          <h2 className="text-white font-bold text-xl">{t('dashboard.overview')}</h2>
+          <p className="text-errorgrey text-sm">{t('dashboard.overviewSubtitle')}</p>
         </div>
         <DateRangePicker from={range.from} to={range.to} onChange={setRange} />
       </div>
@@ -85,57 +87,57 @@ export default function Dashboard() {
           {/* KPIs */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             <KPICard
-              label="Requêtes totales"
+              label={t('dashboard.totalRequests')}
               value={overview?.total?.toLocaleString('fr-FR') || '0'}
               icon="ph:globe-hemisphere-west"
               color="moonstone"
-              info="Nombre total de requêtes HTTP reçues par votre serveur sur la période."
+              info={t('dashboard.totalRequestsInfo')}
             />
             <KPICard
-              label="Visiteurs humains"
+              label={t('dashboard.humanVisitors')}
               value={overview?.humans?.toLocaleString('fr-FR') || '0'}
               icon="ph:users"
               color="green"
-              info="Requêtes émises par des navigateurs humains (hors bots détectés)."
+              info={t('dashboard.humanVisitorsInfo')}
             />
             <KPICard
-              label="Requêtes bots"
+              label={t('dashboard.botRequests')}
               value={overview?.bots?.toLocaleString('fr-FR') || '0'}
               icon="ph:robot"
               color="purple"
-              info="Requêtes de robots d'indexation et crawlers détectés."
+              info={t('dashboard.botRequestsInfo')}
             />
             <KPICard
-              label="Taux d'erreur"
+              label={t('dashboard.errorRate')}
               value={`${overview?.errorRate || 0}%`}
               icon="ph:warning-octagon"
               color={parseFloat(overview?.errorRate) > 5 ? 'dustyred' : 'green'}
-              info="Pourcentage de requêtes ayant retourné un code 4xx ou 5xx."
+              info={t('dashboard.errorRateInfo')}
             />
             <KPICard
-              label="Succès (2xx)"
+              label={t('dashboard.success2xx')}
               value={overview?.s2xx?.toLocaleString('fr-FR') || '0'}
               icon="ph:check-circle"
               color="green"
             />
             <KPICard
-              label="Redirections (3xx)"
+              label={t('dashboard.redirects3xx')}
               value={overview?.s3xx?.toLocaleString('fr-FR') || '0'}
               icon="ph:arrows-clockwise"
               color="amber"
             />
             <KPICard
-              label="Erreurs client (4xx)"
+              label={t('dashboard.clientErrors4xx')}
               value={overview?.s4xx?.toLocaleString('fr-FR') || '0'}
               icon="ph:x-circle"
               color="dustyred"
             />
             <KPICard
-              label="URLs en 404 uniques"
+              label={t('dashboard.unique404')}
               value={overview?.unique404?.toLocaleString('fr-FR') || '0'}
               icon="ph:magnifying-glass-minus"
               color="dustyred"
-              info="Nombre d'URLs distinctes ayant retourné un 404 sur la période."
+              info={t('dashboard.unique404Info')}
             />
           </div>
 
@@ -144,12 +146,12 @@ export default function Dashboard() {
             {/* Évolution codes HTTP */}
             <div className="lg:col-span-2 bg-prussian-500 rounded-xl border border-prussian-400 p-5">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-white font-bold text-sm">Évolution des codes HTTP</h3>
+                <h3 className="text-white font-bold text-sm">{t('dashboard.httpEvolution')}</h3>
                 <InfoBubble
-                  title="Évolution des codes HTTP"
-                  content="Ce graphique montre l'évolution du nombre de requêtes par famille de code HTTP sur la période sélectionnée."
-                  impact="Une augmentation des 4xx indique des pages manquantes (404) ou des problèmes d'accès. Les 5xx signalent des erreurs serveur."
-                  action="Analysez les pics d'erreurs et identifiez les URLs concernées dans 'Top Pages'."
+                  title={t('dashboard.httpEvolution')}
+                  content={t('dashboard.httpEvolutionInfo')}
+                  impact={t('dashboard.httpEvolutionImpact')}
+                  action={t('dashboard.httpEvolutionAction')}
                 />
               </div>
               {httpData.length > 0 ? (
@@ -170,18 +172,18 @@ export default function Dashboard() {
                   </LineChart>
                 </ResponsiveContainer>
               ) : (
-                <EmptyState message="Aucune donnée sur cette période" />
+                <EmptyState message={t('common.noData')} />
               )}
             </div>
 
             {/* Répartition bots */}
             <div className="bg-prussian-500 rounded-xl border border-prussian-400 p-5">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-white font-bold text-sm">Répartition des bots</h3>
+                <h3 className="text-white font-bold text-sm">{t('dashboard.botsDistribution')}</h3>
                 <InfoBubble
-                  title="Budget de crawl"
-                  content="Répartition des robots d'indexation qui ont crawlé votre site."
-                  impact="Googlebot doit représenter une part significative. Un manque de passage indique un problème de crawlabilité."
+                  title={t('dashboard.botsDistributionTitle')}
+                  content={t('dashboard.botsDistributionInfo')}
+                  impact={t('dashboard.botsDistributionImpact')}
                 />
               </div>
               {botPieData.length > 0 ? (
@@ -209,7 +211,7 @@ export default function Dashboard() {
                   </ul>
                 </>
               ) : (
-                <EmptyState message="Aucun bot détecté" />
+                <EmptyState message={t('common.noData')} />
               )}
             </div>
           </div>
@@ -218,18 +220,18 @@ export default function Dashboard() {
           {weeklyTrends.length > 1 && (
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-2">
-                <h3 className="text-white font-bold text-sm">Tendances — 12 semaines</h3>
+                <h3 className="text-white font-bold text-sm">{t('dashboard.trends')}</h3>
                 <InfoBubble
-                  title="Tendances hebdomadaires"
-                  content="Évolution du trafic, de Googlebot et du TTFB sur les 12 dernières semaines."
-                  impact="Identifiez les tendances longues : baisse du crawl Googlebot, dégradation progressive du TTFB ou montée des bots."
-                  action="Si le TTFB moyen dépasse 800ms sur plusieurs semaines, investiguer les performances serveur."
+                  title={t('dashboard.trendsInfo')}
+                  content={t('dashboard.trendsContent')}
+                  impact={t('dashboard.trendsImpact')}
+                  action={t('dashboard.trendsAction')}
                 />
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {/* Trafic humains vs bots */}
                 <div className="lg:col-span-2 bg-prussian-500 rounded-xl border border-prussian-400 p-5">
-                  <h4 className="text-errorgrey text-xs font-semibold uppercase tracking-wide mb-3">Trafic hebdomadaire</h4>
+                  <h4 className="text-errorgrey text-xs font-semibold uppercase tracking-wide mb-3">{t('dashboard.trendsTraffic')}</h4>
                   <ResponsiveContainer width="100%" height={200}>
                     <AreaChart data={weeklyTrends}>
                       <defs>
@@ -247,8 +249,8 @@ export default function Dashboard() {
                       <YAxis tick={{ fill: '#898989', fontSize: 10 }} />
                       <Tooltip contentStyle={{ background: '#262e40', border: '1px solid #273043', borderRadius: 8, color: '#fff' }} />
                       <Legend wrapperStyle={{ fontSize: 11, color: '#d1d1d1' }} />
-                      <Area type="monotone" dataKey="humans" name="Humains" stroke="#00c6e0" fill="url(#gHumans)" strokeWidth={2} dot={false} />
-                      <Area type="monotone" dataKey="bots" name="Bots" stroke="#8b5cf6" fill="url(#gBots)" strokeWidth={2} dot={false} />
+                      <Area type="monotone" dataKey="humans" name={t('dashboard.trendsHumans')} stroke="#00c6e0" fill="url(#gHumans)" strokeWidth={2} dot={false} />
+                      <Area type="monotone" dataKey="bots" name={t('dashboard.trendsBots')} stroke="#8b5cf6" fill="url(#gBots)" strokeWidth={2} dot={false} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
@@ -256,7 +258,7 @@ export default function Dashboard() {
                 {/* Googlebot + TTFB */}
                 <div className="flex flex-col gap-4">
                   <div className="bg-prussian-500 rounded-xl border border-prussian-400 p-5 flex-1">
-                    <h4 className="text-errorgrey text-xs font-semibold uppercase tracking-wide mb-3">Googlebot / semaine</h4>
+                    <h4 className="text-errorgrey text-xs font-semibold uppercase tracking-wide mb-3">{t('dashboard.trendsGooglebot')}</h4>
                     <ResponsiveContainer width="100%" height={80}>
                       <LineChart data={weeklyTrends}>
                         <XAxis dataKey="week_label" tick={false} axisLine={false} tickLine={false} />
@@ -267,7 +269,7 @@ export default function Dashboard() {
                     </ResponsiveContainer>
                   </div>
                   <div className="bg-prussian-500 rounded-xl border border-prussian-400 p-5 flex-1">
-                    <h4 className="text-errorgrey text-xs font-semibold uppercase tracking-wide mb-3">TTFB moyen (ms)</h4>
+                    <h4 className="text-errorgrey text-xs font-semibold uppercase tracking-wide mb-3">{t('dashboard.trendsTTFB')}</h4>
                     <ResponsiveContainer width="100%" height={80}>
                       <LineChart data={weeklyTrends}>
                         <XAxis dataKey="week_label" tick={false} axisLine={false} tickLine={false} />
@@ -298,10 +300,10 @@ export default function Dashboard() {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <Icon icon="ph:warning-diamond" className="text-orange-400 text-lg" />
-                  <h3 className="text-white font-bold text-sm">Anomalies récentes (48h)</h3>
+                  <h3 className="text-white font-bold text-sm">{t('dashboard.recentAnomalies')}</h3>
                 </div>
                 <Link to="/anomalies" className="text-moonstone-400 hover:text-moonstone-300 text-xs font-semibold transition-colors">
-                  Voir tout →
+                  {t('dashboard.viewAll')}
                 </Link>
               </div>
               <div className="flex flex-col gap-2">
@@ -314,10 +316,10 @@ export default function Dashboard() {
                     unknown_bot_spike: 'ph:question',
                   }
                   const LABELS = {
-                    traffic_spike: 'Spike de trafic',
-                    error_rate_spike: "Taux d'erreurs élevé",
-                    googlebot_absent: 'Googlebot absent',
-                    unknown_bot_spike: 'Bots inconnus',
+                    traffic_spike: t('dashboard.anomalyTrafficSpike'),
+                    error_rate_spike: t('dashboard.anomalyErrorRate'),
+                    googlebot_absent: t('dashboard.anomalyGooglebotAbsent'),
+                    unknown_bot_spike: t('dashboard.anomalyUnknownBot'),
                   }
                   return (
                     <div key={a.id} className={`flex items-center gap-3 rounded-lg px-3 py-2 ${isCritical ? 'bg-dustyred-400/10 border border-dustyred-700/50' : 'bg-prussian-600'}`}>

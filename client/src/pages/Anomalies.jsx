@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Icon } from '@iconify/react'
 import BeginnerBanner from '../components/ui/BeginnerBanner'
 import { useSite } from '../context/SiteContext'
@@ -13,15 +14,17 @@ dayjs.locale('fr')
 
 const PAGE_SIZE = 50
 
-const TYPE_LABELS = {
-  traffic_spike:    { label: 'Spike de trafic',        icon: 'ph:trend-up',           color: 'text-orange-400' },
-  error_rate_spike: { label: 'Taux d\'erreurs élevé',  icon: 'ph:warning-circle',     color: 'text-dustyred-400' },
-  googlebot_absent: { label: 'Googlebot absent',        icon: 'ph:robot',              color: 'text-yellow-400' },
-  unknown_bot_spike:{ label: 'Bots inconnus élevés',   icon: 'ph:question',           color: 'text-purple-400' },
+const TYPE_CONFIG = {
+  traffic_spike:    { icon: 'ph:trend-up',           color: 'text-orange-400' },
+  error_rate_spike: { icon: 'ph:warning-circle',     color: 'text-dustyred-400' },
+  googlebot_absent: { icon: 'ph:robot',              color: 'text-yellow-400' },
+  unknown_bot_spike:{ icon: 'ph:question',           color: 'text-purple-400' },
 }
 
 function AnomalyRow({ row }) {
-  const info = TYPE_LABELS[row.type] || { label: row.type, icon: 'ph:info', color: 'text-errorgrey' }
+  const { t } = useTranslation()
+  const config = TYPE_CONFIG[row.type] || { icon: 'ph:info', color: 'text-errorgrey' }
+  const label = t(`anomalies.${row.type}`)
   const isCritical = row.severity === 'critical'
 
   return (
@@ -33,15 +36,15 @@ function AnomalyRow({ row }) {
         'w-10 h-10 rounded-lg flex items-center justify-center shrink-0',
         isCritical ? 'bg-dustyred-400/10' : 'bg-prussian-500'
       )}>
-        <Icon icon={info.icon} className={clsx('text-xl', info.color)} />
+        <Icon icon={config.icon} className={clsx('text-xl', config.color)} />
       </div>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className={clsx('font-semibold text-sm', info.color)}>{info.label}</span>
+          <span className={clsx('font-semibold text-sm', config.color)}>{label}</span>
           {isCritical && (
             <span className="text-xs bg-dustyred-400/10 text-dustyred-300 border border-dustyred-700 rounded-full px-2 py-0.5">
-              critique
+              {t('anomalies.badgeCritical')}
             </span>
           )}
           {row.site_name && (
@@ -55,14 +58,14 @@ function AnomalyRow({ row }) {
           {row.value_observed != null && row.baseline_mean != null && row.type !== 'googlebot_absent' && (
             <>
               <span>
-                Observé : <strong className="text-white">
+                {t('anomalies.observed')} : <strong className="text-white">
                   {row.type.includes('rate') || row.type.includes('bot_spike')
                     ? `${Math.round(row.value_observed * 100)}%`
                     : Math.round(row.value_observed).toLocaleString()}
                 </strong>
               </span>
               <span>
-                Baseline : <strong className="text-white">
+                {t('anomalies.baseline')} : <strong className="text-white">
                   {row.type.includes('rate') || row.type.includes('bot_spike')
                     ? `${Math.round(row.baseline_mean * 100)}%`
                     : Math.round(row.baseline_mean).toLocaleString()}
@@ -89,6 +92,7 @@ function AnomalyRow({ row }) {
 }
 
 export default function Anomalies() {
+  const { t } = useTranslation()
   const { activeSiteId } = useSite()
   const [rows, setRows]         = useState([])
   const [total, setTotal]       = useState(0)
@@ -113,21 +117,21 @@ export default function Anomalies() {
     <div className="flex flex-col gap-6">
       <BeginnerBanner
         icon="ph:warning-diamond"
-        title="Anomalies détectées"
+        title={t('anomalies.welcomeTitle')}
         tips={[
-          'Spider-Lens analyse votre trafic chaque heure et compare les volumes aux 7 derniers jours.',
-          'Une anomalie est déclenchée quand une valeur dépasse la moyenne + 2,5 fois l\'écart-type.',
-          'Les anomalies critiques déclenchent un email — les warnings sont enregistrées silencieusement.',
-          'Il faut au moins 3 jours de données historiques pour que la détection soit fiable.',
+          t('anomalies.tip1'),
+          t('anomalies.tip2'),
+          t('anomalies.tip3'),
+          t('anomalies.tip4'),
         ]}
       />
 
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-white font-bold text-xl">Anomalies</h2>
-          <p className="text-errorgrey text-sm">Détection automatique de comportements anormaux</p>
+          <h2 className="text-white font-bold text-xl">{t('anomalies.welcomeTitle')}</h2>
+          <p className="text-errorgrey text-sm">{t('common.description')}</p>
         </div>
-        <span className="text-errorgrey text-sm">{total.toLocaleString()} anomalie{total !== 1 ? 's' : ''}</span>
+        <span className="text-errorgrey text-sm">{t('anomalies.count', { count: total })}</span>
       </div>
 
       {/* Filtres par type */}
@@ -140,8 +144,8 @@ export default function Anomalies() {
               ? 'bg-moonstone-400/20 text-moonstone-300 border-moonstone-600'
               : 'bg-prussian-600 text-errorgrey border-prussian-500 hover:text-white'
           )}
-        >Tous</button>
-        {Object.entries(TYPE_LABELS).map(([key, val]) => (
+        >{t('anomalies.filterAll')}</button>
+        {Object.entries(TYPE_CONFIG).map(([key, config]) => (
           <button
             key={key}
             onClick={() => setTypeFilter(key)}
@@ -152,8 +156,8 @@ export default function Anomalies() {
                 : 'bg-prussian-600 text-errorgrey border-prussian-500 hover:text-white'
             )}
           >
-            <Icon icon={val.icon} className={clsx('text-sm', val.color)} />
-            {val.label}
+            <Icon icon={config.icon} className={clsx('text-sm', config.color)} />
+            {t(`anomalies.${key}`)}
           </button>
         ))}
       </div>
@@ -168,11 +172,11 @@ export default function Anomalies() {
       {!loading && rows.length === 0 && (
         <div className="bg-prussian-600 rounded-xl border border-prussian-500 p-12 text-center">
           <Icon icon="ph:check-circle" className="text-green-400 text-4xl mx-auto mb-3" />
-          <p className="text-white font-semibold">Aucune anomalie détectée</p>
+          <p className="text-white font-semibold">{t('anomalies.emptyTitle')}</p>
           <p className="text-errorgrey text-sm mt-1">
             {total === 0
-              ? 'Tout semble normal — la détection s\'améliore avec plus de données historiques.'
-              : 'Aucun résultat pour ce filtre.'}
+              ? t('anomalies.emptyTextNew')
+              : t('anomalies.emptyTextFiltered')}
           </p>
         </div>
       )}
@@ -189,15 +193,15 @@ export default function Anomalies() {
             disabled={offset === 0}
             onClick={() => setOffset(o => Math.max(0, o - PAGE_SIZE))}
             className="px-4 py-2 bg-prussian-600 text-white rounded-lg text-sm disabled:opacity-40 hover:bg-prussian-500 transition-colors"
-          >← Précédent</button>
+          >← {t('common.previous')}</button>
           <span className="text-errorgrey text-sm">
-            {offset + 1}–{Math.min(offset + PAGE_SIZE, total)} / {total.toLocaleString()}
+            {offset + 1}–{Math.min(offset + PAGE_SIZE, total)} {t('common.of')} {total.toLocaleString()}
           </span>
           <button
             disabled={offset + PAGE_SIZE >= total}
             onClick={() => setOffset(o => o + PAGE_SIZE)}
             className="px-4 py-2 bg-prussian-600 text-white rounded-lg text-sm disabled:opacity-40 hover:bg-prussian-500 transition-colors"
-          >Suivant →</button>
+          >{t('common.next')} →</button>
         </div>
       )}
     </div>

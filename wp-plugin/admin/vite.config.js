@@ -8,6 +8,15 @@ export default defineConfig({
     manifest: true,
     rollupOptions: {
       input: 'src/main.jsx',
+      output: {
+        format: 'iife',
+        globals: {
+          react: 'React',
+          'react-dom': 'ReactDOM',
+          'react-dom/client': 'ReactDOM',
+        },
+      },
+      external: ['react', 'react-dom', 'react-dom/client'],
     },
   },
   // En dev, on proxie les requêtes REST WP vers un WP local

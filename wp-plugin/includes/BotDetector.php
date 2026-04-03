@@ -8,7 +8,7 @@ class BotDetector {
     /**
      * Patterns UA → nom du bot (ordre : du plus spécifique au plus générique)
      */
-    private static array $patterns = [
+    private static $patterns = [
         // Moteurs de recherche majeurs
         'Googlebot'            => '/googlebot/i',
         'Google-Extended'      => '/google-extended/i',
