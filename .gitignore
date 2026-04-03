@@ -38,6 +38,9 @@ tasks/
 # Templates de référence (non applicatif)
 Templates/
 
+# Claude context (infos locales, credentials)
+CLAUDE.md
+
 # WP Plugin — build frontend
 wp-plugin/admin/dist/
 wp-plugin/admin/node_modules/
