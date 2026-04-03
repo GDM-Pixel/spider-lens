@@ -71,7 +71,7 @@ export function startCron() {
     await sendWeeklyReports()
   })
 
-  // Purge des données anciennes (chaque nuit à 2h)
+  // Purge des données anciennes + VACUUM (chaque nuit à 2h)
   cron.schedule('0 2 * * *', () => {
     const days = parseInt(process.env.DATA_RETENTION_DAYS || '90', 10)
     const db = getDb()
@@ -79,5 +79,9 @@ export function startCron() {
       "DELETE FROM log_entries WHERE timestamp < datetime('now', ? || ' days')"
     ).run(`-${days}`)
     console.log(`[cron] Purge : ${result.changes} entrées supprimées (>${days} jours)`)
+    if (result.changes > 0) {
+      db.exec('VACUUM')
+      console.log('[cron] VACUUM done — disk space reclaimed')
+    }
   })
 }
