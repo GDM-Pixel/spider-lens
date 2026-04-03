@@ -187,9 +187,12 @@ router.get('/url-detail', (req, res) => {
   const ipFilter    = req.query.ip
   const ipWhere     = ipFilter ? 'AND ip = ?' : ''
   const ipParams    = ipFilter ? [ipFilter] : []
+  const uaFilter    = req.query.ua
+  const uaWhere     = uaFilter ? 'AND user_agent LIKE ?' : ''
+  const uaParams    = uaFilter ? [`%${uaFilter}%`] : []
 
-  const where = `timestamp BETWEEN ? AND ? ${statusWhere} ${botWhere} ${searchWhere} ${ipWhere} ${sf}`
-  const params = [from, to, ...statusParams, ...searchParams, ...ipParams, ...sp]
+  const where = `timestamp BETWEEN ? AND ? ${statusWhere} ${botWhere} ${searchWhere} ${ipWhere} ${uaWhere} ${sf}`
+  const params = [from, to, ...statusParams, ...searchParams, ...ipParams, ...uaParams, ...sp]
 
   // Requête principale — agrégée par URL + status_code
   const rows = db.prepare(`
@@ -571,6 +574,24 @@ router.get('/bots/export', (req, res) => {
   res.setHeader('Content-Type', 'text/csv; charset=utf-8')
   res.setHeader('Content-Disposition', `attachment; filename="spider-lens-bots-${from.slice(0,10)}-${to.slice(0,10)}.csv"`)
   res.send('\uFEFF' + header + csv)
+})
+
+// GET /api/stats/top-user-agents — top UA distincts pour le filtre select
+router.get('/top-user-agents', (req, res) => {
+  const db = getDb()
+  const { from, to } = getDateRange(req)
+  const { clause: sf, params: sp } = getSiteFilter(req)
+
+  const rows = db.prepare(`
+    SELECT user_agent, COUNT(*) as hits
+    FROM log_entries
+    WHERE user_agent IS NOT NULL AND timestamp BETWEEN ? AND ? ${sf}
+    GROUP BY user_agent
+    ORDER BY hits DESC
+    LIMIT 50
+  `).all(from, to, ...sp)
+
+  res.json(rows)
 })
 
 export default router

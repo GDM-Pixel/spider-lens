@@ -144,6 +144,7 @@
     "filterAll": "Alle",
     "filterHumans": "Mensen",
     "filterBots": "Bots",
+    "filterAllUA": "Alle User-Agents",
     "searchPlaceholder": "Filteren op URL…",
     "headerUrl": "URL",
     "headerCode": "Code",

@@ -144,6 +144,7 @@
     "filterAll": "Tutti",
     "filterHumans": "Umani",
     "filterBots": "Bot",
+    "filterAllUA": "Tutti i User-Agent",
     "searchPlaceholder": "Filtra per URL…",
     "headerUrl": "URL",
     "headerCode": "Codice",

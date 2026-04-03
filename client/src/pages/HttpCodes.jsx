@@ -58,6 +58,8 @@ export default function HttpCodes() {
   // ── Drill-down state ──────────────────────────────────
   const [activeFilter, setActiveFilter] = useState('all')
   const [botFilter, setBotFilter]       = useState('all')   // 'all' | '0' | '1'
+  const [uaFilter, setUaFilter]         = useState('')
+  const [topUAs, setTopUAs]             = useState([])
   const [search, setSearch]             = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [sort, setSort]                 = useState({ by: 'hits', dir: 'desc' })
@@ -74,7 +76,14 @@ export default function HttpCodes() {
   }, [search])
 
   // Reset page quand filtre change
-  useEffect(() => { setDrillPage(0) }, [activeFilter, botFilter, debouncedSearch, range, sort, activeSiteId])
+  useEffect(() => { setDrillPage(0) }, [activeFilter, botFilter, uaFilter, debouncedSearch, range, sort, activeSiteId])
+
+  // Charger le top 50 des User-Agents pour le select
+  useEffect(() => {
+    api.get('/stats/top-user-agents', { params: range })
+      .then(r => setTopUAs(r.data))
+      .catch(() => {})
+  }, [range, activeSiteId])
 
   // ── Charger graphe + KPIs ────────────────────────────
   useEffect(() => {
@@ -102,6 +111,7 @@ export default function HttpCodes() {
     if (group?.query) params.status = group.query
     if (botFilter !== 'all') params.bot = botFilter
     if (debouncedSearch) params.search = debouncedSearch
+    if (uaFilter) params.ua = uaFilter
 
     api.get('/stats/url-detail', { params })
       .then(r => { setDrillRows(r.data.rows); setDrillTotal(r.data.total) })
@@ -115,6 +125,7 @@ export default function HttpCodes() {
     if (group?.query) params.set('status', group.query)
     if (botFilter !== 'all') params.set('bot', botFilter)
     if (debouncedSearch) params.set('search', debouncedSearch)
+    if (uaFilter) params.set('ua', uaFilter)
 
     const token = localStorage.getItem('spider_token')
     const url = `/api/stats/url-detail/export?${params.toString()}`
@@ -144,6 +155,7 @@ export default function HttpCodes() {
     if (group?.query) params.status = group.query
     if (botFilter !== 'all') params.bot = botFilter
     if (debouncedSearch) params.search = debouncedSearch
+    if (uaFilter) params.ua = uaFilter
 
     api.get('/stats/url-detail', { params })
       .then(r => {
@@ -328,6 +340,26 @@ export default function HttpCodes() {
                 ))}
               </div>
 
+              {/* Filtre User-Agent */}
+              {topUAs.length > 0 && (
+                <div className="relative">
+                  <Icon icon="ph:device-mobile" className="absolute left-2.5 top-1/2 -translate-y-1/2 text-errorgrey text-sm pointer-events-none" />
+                  <select
+                    value={uaFilter}
+                    onChange={e => setUaFilter(e.target.value)}
+                    className="bg-prussian-600 border border-prussian-400 rounded-lg pl-7 pr-6 py-1.5 text-xs text-white focus:outline-none focus:border-moonstone-600 transition-colors appearance-none cursor-pointer max-w-[200px]"
+                  >
+                    <option value="">{t('httpCodes.filterAllUA')}</option>
+                    {topUAs.map(ua => (
+                      <option key={ua.user_agent} value={ua.user_agent}>
+                        {truncateUA(ua.user_agent)} ({ua.hits.toLocaleString('fr-FR')})
+                      </option>
+                    ))}
+                  </select>
+                  <Icon icon="ph:caret-down" className="absolute right-2 top-1/2 -translate-y-1/2 text-errorgrey text-xs pointer-events-none" />
+                </div>
+              )}
+
               {/* Recherche URL */}
               <div className="relative flex-1 min-w-[160px]">
                 <Icon icon="ph:magnifying-glass" className="absolute left-3 top-1/2 -translate-y-1/2 text-errorgrey text-sm" />
@@ -368,6 +400,7 @@ export default function HttpCodes() {
                   {activeFilter !== 'all' && <> · filtre <span className="font-bold" style={{ color: activeGroup?.color }}>{activeFilter}</span></>}
                   {botFilter === '1' && <> · {t('httpCodes.filterBots')} seulement</>}
                   {botFilter === '0' && <> · {t('httpCodes.filterHumans')} seulement</>}
+                  {uaFilter && <> · UA : <span className="text-white font-mono">{truncateUA(uaFilter)}</span></>}
                   {debouncedSearch && <> · "<span className="text-white">{debouncedSearch}</span>"</>}
                   </>
                 )}
