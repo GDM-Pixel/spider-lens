@@ -95,14 +95,16 @@ export default function HttpCodes() {
   // ── Charger graphe + KPIs ────────────────────────────
   useEffect(() => {
     setLoadingChart(true)
+    const params = { ...range }
+    if (uaFilter) params.ua = uaFilter
     Promise.all([
-      api.get('/stats/http-codes', { params: range }),
-      api.get('/stats/overview',   { params: range }),
+      api.get('/stats/http-codes', { params }),
+      api.get('/stats/overview',   { params }),
     ]).then(([http, ov]) => {
       setChartData(http.data)
       setOverview(ov.data)
     }).finally(() => setLoadingChart(false))
-  }, [range, activeSiteId])
+  }, [range, activeSiteId, uaFilter])
 
   // ── Charger tableau drill-down ────────────────────────
   useEffect(() => {
@@ -123,7 +125,7 @@ export default function HttpCodes() {
     api.get('/stats/url-detail', { params })
       .then(r => { setDrillRows(r.data.rows); setDrillTotal(r.data.total) })
       .finally(() => setLoadingDrill(false))
-  }, [range, activeFilter, botFilter, debouncedSearch, sort, drillPage, activeSiteId])
+  }, [range, activeFilter, botFilter, uaFilter, debouncedSearch, sort, drillPage, activeSiteId])
 
   // ── Export CSV (via endpoint backend) ────────────────
   function exportCSV() {
@@ -228,7 +230,37 @@ export default function HttpCodes() {
           <h2 className="text-white font-bold text-xl">{t('httpCodes.chartTitle')}</h2>
           <p className="text-errorgrey text-sm">{t('httpCodes.chartInfo')}</p>
         </div>
-        <DateRangePicker from={range.from} to={range.to} onChange={setRange} />
+        <div className="flex items-center gap-3 flex-wrap">
+          {topUAs.length > 0 && (
+            <div className="relative">
+              <Icon icon="ph:robot" className="absolute left-2.5 top-1/2 -translate-y-1/2 text-errorgrey text-sm pointer-events-none" />
+              <select
+                value={uaFilter}
+                onChange={e => setUaFilter(e.target.value)}
+                className={clsx(
+                  'border rounded-lg pl-7 pr-6 py-1.5 text-xs focus:outline-none transition-colors appearance-none cursor-pointer max-w-[200px]',
+                  uaFilter && /googlebot/i.test(uaFilter)
+                    ? 'bg-emerald-900/60 border-emerald-600 text-emerald-300 focus:border-emerald-400'
+                    : uaFilter
+                      ? 'bg-moonstone-900/40 border-moonstone-600 text-moonstone-300 focus:border-moonstone-400'
+                      : 'bg-prussian-600 border-prussian-400 text-errorgrey focus:border-moonstone-600'
+                )}
+              >
+                <option value="">{t('httpCodes.filterAllUA')}</option>
+                {topUAs.map(ua => {
+                  const isGooglebot = /googlebot/i.test(ua.user_agent)
+                  return (
+                    <option key={ua.user_agent} value={ua.user_agent} style={isGooglebot ? { background: '#14532d', color: '#86efac' } : {}}>
+                      {isGooglebot ? '🤖 ' : ''}{truncateUA(ua.user_agent)} ({ua.hits.toLocaleString('fr-FR')})
+                    </option>
+                  )
+                })}
+              </select>
+              <Icon icon="ph:caret-down" className="absolute right-2 top-1/2 -translate-y-1/2 text-errorgrey text-xs pointer-events-none" />
+            </div>
+          )}
+          <DateRangePicker from={range.from} to={range.to} onChange={setRange} />
+        </div>
       </div>
 
       {loadingChart ? (
