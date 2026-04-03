@@ -13,6 +13,8 @@
 
 </div>
 
+<img src=".github/banner.jpg" alt="Spider-Lens Dashboard" width="100%" />
+
 ---
 
 Spider-Lens lit vos fichiers de logs Apache/Nginx et vous offre un tableau de bord complet pour surveiller votre trafic, vos erreurs HTTP, vos bots d'indexation et vos performances serveur (TTFB). Disponible en application Node.js autonome **et** en plugin WordPress natif.
