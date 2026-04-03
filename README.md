@@ -168,6 +168,27 @@ server {
 sudo certbot --nginx -d spider-lens.your-domain.com
 ```
 
+### Security hardening (recommended)
+
+**Trusted IPs for `X-Forwarded-For`** — If Spider-Lens is behind a reverse proxy, add this to your Nginx config to prevent IP spoofing:
+
+```nginx
+# Only trust X-Forwarded-For from your own proxy
+set_real_ip_from 127.0.0.1;
+real_ip_header X-Real-IP;
+```
+
+**Restrict access by IP** — If Spider-Lens is for internal use only:
+
+```nginx
+location / {
+    allow 1.2.3.4;   # your IP
+    deny all;
+    proxy_pass http://127.0.0.1:3000;
+    # ... other headers
+}
+```
+
 ---
 
 ## 🔌 Installation — WordPress plugin
