@@ -3,7 +3,7 @@
 
   # Spider-Lens
 
-  **Analyseur de logs serveur orienté SEO — open-source, auto-hébergé**
+  **SEO-focused server log analyzer — open-source, self-hosted**
 
   [![Version](https://img.shields.io/badge/version-1.0.0-blue)](#)
   [![Node.js](https://img.shields.io/badge/node-%3E%3D18-green)](#)
@@ -13,51 +13,53 @@
 
 </div>
 
+---
+
 <img src=".github/banner.jpg" alt="Spider-Lens Dashboard" width="100%" />
 
 ---
 
-Spider-Lens lit vos fichiers de logs Apache/Nginx et vous offre un tableau de bord complet pour surveiller votre trafic, vos erreurs HTTP, vos bots d'indexation et vos performances serveur (TTFB). Disponible en application Node.js autonome **et** en plugin WordPress natif.
+Spider-Lens reads your Apache/Nginx log files and provides a comprehensive dashboard to monitor your traffic, HTTP errors, crawl bots, and server performance (TTFB). Available as a standalone Node.js app **and** as a native WordPress plugin.
 
 ---
 
-## ✨ Fonctionnalités
+## ✨ Features
 
-| Vue | Description |
-|-----|-------------|
-| **Dashboard** | KPIs synthétiques : visites, bots, taux d'erreur, codes HTTP, graphiques |
-| **Codes HTTP** | Tableau filtrable (2xx/3xx/4xx/5xx) + drill-down par URL + export CSV & Excel |
-| **Top Pages** | Pages les plus vues + liste des erreurs 404 à corriger en priorité |
-| **Bots & Crawlers** | Détection de 16+ bots (Googlebot, AhrefsBot, SemrushBot, ClaudeBot...) |
-| **TTFB** | Time To First Byte par URL, seuil configurable, export CSV & Excel |
-| **Réseau** | Analyse des IPs et user-agents |
-| **Anomalies** | Détection automatique de pics de trafic et comportements anormaux |
-| **Blocklist** | Blocage d'IPs/user-agents suspects |
-| **Paramètres** | Configuration SMTP, rétention des données, changement de mot de passe |
+| View | Description |
+|------|-------------|
+| **Dashboard** | Summary KPIs: visits, bots, error rate, HTTP codes, charts |
+| **HTTP Codes** | Filterable table (2xx/3xx/4xx/5xx) + URL drill-down + CSV & Excel export |
+| **Top Pages** | Most visited pages + 404 errors list to fix |
+| **Bots & Crawlers** | Detection of 16+ bots (Googlebot, AhrefsBot, SemrushBot, ClaudeBot...) |
+| **TTFB** | Time To First Byte per URL, configurable threshold, CSV & Excel export |
+| **Network** | IP and user-agent analysis |
+| **Anomalies** | Automatic detection of traffic spikes and abnormal patterns |
+| **Blocklist** | Block suspicious IPs and user-agents |
+| **Settings** | SMTP configuration, data retention, password change |
 
-### Autres fonctionnalités
+### More
 
-- 🌍 **i18n** — Interface disponible en FR, EN, ES, DE, IT, NL (persistance via localStorage)
-- 🔒 **Authentification JWT** — Token 7 jours, session sécurisée
-- 📧 **Alertes email** — Spike 404, erreurs 5xx, absence de Googlebot (SMTP configurable)
-- 📊 **Parsing incrémental** — Reprise à l'offset, détection de rotation de logs
-- 🌱 **Mode débutant** — Bandeaux d'aide et infobulles contextuelles désactivables
-- 🌐 **Multi-sites** — Suivez plusieurs sites depuis une seule interface
-- 🔌 **Plugin WordPress** — Intégration native dans l'admin WP sans Node.js requis
+- 🌍 **i18n** — UI available in FR, EN, ES, DE, IT, NL (persisted via localStorage)
+- 🔒 **JWT authentication** — 7-day token, secure session
+- 📧 **Email alerts** — 404 spikes, 5xx errors, missing Googlebot (configurable SMTP)
+- 📊 **Incremental parsing** — Resume from offset, log rotation detection
+- 🌱 **Beginner mode** — Help banners and contextual tooltips, dismissible
+- 🌐 **Multi-site** — Monitor multiple sites from a single interface
+- 🔌 **WordPress plugin** — Native WP admin integration, no Node.js required
 
 ---
 
-## 🛠️ Stack technique
+## 🛠️ Tech stack
 
-| Couche | Technologie |
-|--------|-------------|
+| Layer | Technology |
+|-------|------------|
 | Backend | Node.js 18+ · Express 4 · ES Modules |
-| Base de données | SQLite via better-sqlite3 (WAL) |
-| Authentification | JWT + bcryptjs |
-| Tâches planifiées | node-cron |
+| Database | SQLite via better-sqlite3 (WAL) |
+| Auth | JWT + bcryptjs |
+| Scheduled tasks | node-cron |
 | Emails | Nodemailer (SMTP) |
 | Frontend | React 18 · Vite 5 |
-| Graphiques | Recharts |
+| Charts | Recharts |
 | Styles | Tailwind CSS 3 |
 | i18n | react-i18next · i18next-browser-languagedetector |
 | Tests | Jest 29 · Supertest |
@@ -65,66 +67,66 @@ Spider-Lens lit vos fichiers de logs Apache/Nginx et vous offre un tableau de bo
 
 ---
 
-## 🚀 Installation — Application Node.js
+## 🚀 Installation — Node.js app
 
-### Prérequis
+### Requirements
 
 - Node.js ≥ 18
 - npm ≥ 9
-- Accès à votre fichier de log Apache ou Nginx
+- Access to your Apache or Nginx log file
 
-### 1. Cloner le dépôt
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/gdm-pixel/spider-lens.git
 cd spider-lens
 ```
 
-### 2. Installer les dépendances
+### 2. Install dependencies
 
 ```bash
 cd server && npm install
 cd ../client && npm install
 ```
 
-### 3. Configurer l'environnement
+### 3. Configure environment
 
 ```bash
 cp server/.env.example server/.env
 ```
 
-Éditez `server/.env` :
+Edit `server/.env`:
 
 ```env
 PORT=3000
 NODE_ENV=production
-JWT_SECRET=changez-ce-secret-en-production
+JWT_SECRET=change-this-secret-in-production
 ADMIN_USER=admin
-ADMIN_PASS=changez-ce-mot-de-passe
+ADMIN_PASS=change-this-password
 LOG_FILE_PATH=/var/log/apache2/access.log
 DB_PATH=./spider-lens.db
-SITE_NAME=Mon Site
+SITE_NAME=My Site
 ```
 
-> ⚠️ **Sécurité** : Changez `JWT_SECRET` et `ADMIN_PASS` avant toute mise en ligne !
+> ⚠️ **Security**: Change `JWT_SECRET` and `ADMIN_PASS` before going live!
 
-### 4. Compiler le frontend
+### 4. Build the frontend
 
 ```bash
 cd client && npm run build
 ```
 
-### 5. Lancer le serveur
+### 5. Start the server
 
 ```bash
 cd server && npm start
 ```
 
-Le dashboard est accessible sur `http://localhost:3000`.
+The dashboard is available at `http://localhost:3000`.
 
 ---
 
-## 🔄 Déploiement en production (Nginx + PM2)
+## 🔄 Production deployment (Nginx + PM2)
 
 ### PM2
 
@@ -139,16 +141,16 @@ pm2 save && pm2 startup
 ```nginx
 server {
     listen 80;
-    server_name spider-lens.votre-domaine.com;
+    server_name spider-lens.your-domain.com;
     return 301 https://$host$request_uri;
 }
 
 server {
     listen 443 ssl;
-    server_name spider-lens.votre-domaine.com;
+    server_name spider-lens.your-domain.com;
 
-    ssl_certificate     /etc/letsencrypt/live/spider-lens.votre-domaine.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/spider-lens.votre-domaine.com/privkey.pem;
+    ssl_certificate     /etc/letsencrypt/live/spider-lens.your-domain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/spider-lens.your-domain.com/privkey.pem;
 
     location / {
         proxy_pass http://127.0.0.1:3000;
@@ -160,47 +162,47 @@ server {
 }
 ```
 
-### SSL avec Certbot
+### SSL with Certbot
 
 ```bash
-sudo certbot --nginx -d spider-lens.votre-domaine.com
+sudo certbot --nginx -d spider-lens.your-domain.com
 ```
 
 ---
 
-## 🔌 Installation — Plugin WordPress
+## 🔌 Installation — WordPress plugin
 
-Le plugin WordPress permet d'intégrer Spider-Lens directement dans votre admin WP, sans avoir besoin de Node.js sur votre serveur.
+The WordPress plugin lets you integrate Spider-Lens directly into your WP admin, without needing Node.js on your server.
 
-### 1. Télécharger le plugin
+### 1. Download the plugin
 
-Téléchargez `spider-lens.zip` depuis la [page des releases GitHub](../../releases).
+Download `spider-lens.zip` from the [GitHub releases page](../../releases).
 
-### 2. Installer via l'admin WordPress
+### 2. Install via WordPress admin
 
-`Extensions → Ajouter → Téléverser une extension → spider-lens.zip → Installer → Activer`
+`Plugins → Add New → Upload Plugin → spider-lens.zip → Install Now → Activate`
 
-### 3. Configurer
+### 3. Configure
 
-Rendez-vous dans **Spider-Lens** dans le menu d'administration. La base de données et les paramètres sont configurables directement depuis l'interface.
+Go to **Spider-Lens** in the admin menu. The database and settings are configurable directly from the interface.
 
-> Le plugin utilise `wp-element` (React bundlé avec WordPress) — aucune dépendance externe requise.
+> The plugin uses `wp-element` (React bundled with WordPress) — no external dependencies required.
 
 ---
 
-## 📊 Format de logs supportés
+## 📊 Supported log formats
 
 **Apache Combined Log Format**
 ```
 127.0.0.1 - - [10/Oct/2023:13:55:36 -0700] "GET /page HTTP/1.1" 200 1234 "http://ref" "Mozilla/5.0" 150
 ```
 
-**Nginx** (format standard)
+**Nginx** (standard format)
 ```
 127.0.0.1 - - [10/Oct/2023:13:55:36 -0700] "GET /page HTTP/1.1" 200 1234
 ```
 
-Le champ final optionnel (`150`) est le temps de réponse en ms (TTFB). Pour l'activer dans Nginx :
+The optional last field (`150`) is the response time in ms (TTFB). To enable it in Nginx:
 
 ```nginx
 log_format combined_time '$remote_addr - $remote_user [$time_local] '
@@ -217,34 +219,34 @@ access_log /var/log/nginx/access.log combined_time;
 cd server && npm test
 ```
 
-27 tests couvrant :
-- Détection de bots (Googlebot, AhrefsBot, SemrushBot, ClaudeBot...)
-- Parsing Apache Combined et Nginx
-- Normalisation des URLs
-- API auth (login, token invalide, champs manquants)
-- Routes stats (protection JWT, cohérence des compteurs)
+27 tests covering:
+- Bot detection (Googlebot, AhrefsBot, SemrushBot, ClaudeBot...)
+- Apache Combined and Nginx log parsing
+- URL normalization
+- Auth API (login, invalid token, missing fields)
+- Stats routes (JWT protection, counter consistency)
 
 ---
 
-## ⚙️ Configuration des alertes email
+## ⚙️ Email alert configuration
 
-Dans les **Paramètres** du dashboard :
+From the **Settings** view in the dashboard:
 
-| Champ | Description |
+| Field | Description |
 |-------|-------------|
-| Hôte SMTP | ex: `smtp.gmail.com` |
-| Port | 587 (TLS) ou 465 (SSL) |
-| Email de destination | Adresse qui recevra les alertes |
-| Seuil 404 | Nombre de 404/heure déclenchant une alerte |
-| Seuil 5xx | Nombre d'erreurs serveur/heure |
-| Absence Googlebot | Nombre de jours sans visite Googlebot |
+| SMTP host | e.g. `smtp.gmail.com` |
+| Port | 587 (TLS) or 465 (SSL) |
+| Destination email | Address that receives alerts |
+| 404 threshold | Number of 404s/hour triggering an alert |
+| 5xx threshold | Number of server errors/hour |
+| Missing Googlebot | Days without a Googlebot visit |
 
 ---
 
-## 💻 Développement local
+## 💻 Local development
 
 ```bash
-# Backend avec hot-reload (port 3000)
+# Backend with hot-reload (port 3000)
 cd server && npm run dev
 
 # Frontend Vite (port 5173)
@@ -256,34 +258,34 @@ cd client && npm run dev
 ## 🗺️ Roadmap
 
 ### v1.0.0 ✅
-- [x] Dashboard, Codes HTTP, Top Pages, Bots, TTFB, Réseau, Anomalies, Blocklist
-- [x] Plugin WordPress natif
-- [x] i18n : FR / EN / ES / DE / IT / NL
-- [x] Export CSV & Excel
-- [x] Alertes email
-- [x] Multi-sites
-- [x] Mode débutant
-- [x] Tests Jest (27)
+- [x] Dashboard, HTTP Codes, Top Pages, Bots, TTFB, Network, Anomalies, Blocklist
+- [x] Native WordPress plugin
+- [x] i18n: FR / EN / ES / DE / IT / NL
+- [x] CSV & Excel export
+- [x] Email alerts
+- [x] Multi-site support
+- [x] Beginner mode
+- [x] Jest tests (27)
 
-### v1.1.0 (prévue)
-- [ ] Filtres avancés par IP et user-agent
-- [ ] API webhook pour intégrations externes
-- [ ] Dashboard personnalisable (widgets)
-
----
-
-## 🤝 Contribution
-
-Les contributions sont bienvenues ! Ouvrez une issue ou une pull request.
+### v1.1.0 (planned)
+- [ ] Advanced filters by IP and user-agent
+- [ ] Webhook API for external integrations
+- [ ] Customizable dashboard (widgets)
 
 ---
 
-## 📄 Licence
+## 🤝 Contributing
+
+Contributions are welcome! Open an issue or a pull request.
+
+---
+
+## 📄 License
 
 MIT — [GDM-Pixel](https://www.gdm-pixel.com) · Caen, France
 
 ---
 
 <div align="center">
-  <sub>Fait avec ❤️ à Caen, Normandie</sub>
+  <sub>Made with ❤️ in Caen, Normandy</sub>
 </div>

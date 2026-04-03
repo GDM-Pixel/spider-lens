@@ -1,44 +1,44 @@
 # Changelog
 
-Toutes les modifications notables de Spider-Lens sont documentées ici.
+All notable changes to Spider-Lens are documented here.
 
-Format : [Semantic Versioning](https://semver.org/lang/fr/)
+Format: [Semantic Versioning](https://semver.org/)
 
 ---
 
 ## [1.0.0] — 2026-04-03
 
-### Ajouts
-- **Internationalisation complète (i18n)** — Support de 6 langues : Français, Anglais, Espagnol, Allemand, Italien, Néerlandais
-- **Sélecteur de langue** — Composant `LanguageSwitcher` dans le header avec drapeaux, persistance via `localStorage`
-- **Plugin WordPress** — Intégration native dans l'admin WP (IIFE build, React externalisé via `wp-element`)
-- **Logo officiel** — Remplacement du placeholder par le logo Spider-Lens dans la sidebar et l'icône WP admin
-- **Signature GDM-Pixel** — Affichée en bas de la sidebar (version desktop)
-- **ErrorBoundary** — Capture des erreurs React silencieuses en développement
+### Added
+- **Full i18n support** — 6 languages: French, English, Spanish, German, Italian, Dutch
+- **Language switcher** — `LanguageSwitcher` component in the header with flags, persisted via `localStorage`
+- **WordPress plugin** — Native WP admin integration (IIFE build, React externalized via `wp-element`)
+- **Official logo** — Replaced placeholder with Spider-Lens logo in sidebar and WP admin icon
+- **GDM-Pixel signature** — Displayed at the bottom of the sidebar (desktop view)
+- **ErrorBoundary** — Catches silent React crashes in development
 
-### Corrections
-- **Navigation entre les vues** — Correction d'un deadlock entre `AnimatePresence (framer-motion)` et `Suspense` qui empêchait le chargement du contenu lors des changements de route (sans rechargement forcé)
-- **Boucle de redirection login** — L'intercepteur axios émet désormais un événement `spider:unauthorized` au lieu d'un `window.location.href` brutal, évitant la boucle `/login` ↔ `/dashboard`
-- **Plugin WP — PHP fatal errors** — Correction du mot-clé réservé `NAMESPACE` → `API_NAMESPACE`, suppression des typed properties PHP 7.4 incompatibles, remplacement du spread operator dans `$wpdb->prepare()`
-- **Plugin WP — Build manquant** — Détection du build Vite via le manifest au lieu de chercher `index.js`
-- **Plugin WP — Tracking backend** — Le Collector n'enregistre plus les pages d'administration WordPress
-- **Version** — Badge header mis à jour : `v0.3` → `v1.0.0`
+### Fixed
+- **View navigation** — Fixed a deadlock between `AnimatePresence (framer-motion)` and `Suspense` that prevented content from loading on route changes without a forced reload
+- **Login redirect loop** — The axios interceptor now dispatches a `spider:unauthorized` event instead of a hard `window.location.href` redirect, eliminating the `/login` ↔ `/dashboard` loop
+- **WP plugin — PHP fatal errors** — Fixed reserved keyword `NAMESPACE` → `API_NAMESPACE`, removed PHP 7.4 incompatible typed properties, replaced spread operator in `$wpdb->prepare()`
+- **WP plugin — Missing build** — Build detection now reads the Vite manifest instead of looking for a hardcoded `index.js`
+- **WP plugin — Backend tracking** — Collector no longer records WordPress admin page visits
+- **Version badge** — Header version updated from `v0.3` to `v1.0.0`
 
-### Améliorations
-- **Transitions de routes** — Suppression de `AnimatePresence` au profit de `Suspense` simple pour une navigation fiable
-- **Authentification** — Token JWT supprimé proprement du `localStorage` en cas de 401 avant la navigation
+### Improved
+- **Route transitions** — Removed `AnimatePresence` in favor of plain `Suspense` for reliable navigation
+- **Authentication** — JWT token is now cleanly removed from `localStorage` on 401 before navigation
 
 ---
 
 ## [0.7.0] — 2026-03-XX
 
-### Ajouts
-- Dashboard, Codes HTTP, Top Pages, Bots & Crawlers, TTFB, Réseau, Anomalies, Blocklist, Paramètres
-- Parsing incrémental Apache/Nginx avec détection de rotation de logs
-- Export CSV & Excel sur les vues Codes HTTP et Top Pages
-- Alertes email (404, 5xx, absence Googlebot) via SMTP configurable
-- Mode débutant avec bandeaux d'aide et infobulles contextuelles
-- Authentification JWT (7 jours), changement de mot de passe
-- Détection de 16+ bots (Googlebot, AhrefsBot, SemrushBot, ClaudeBot...)
-- Support multi-sites
-- 27 tests Jest (parsing, auth, API stats)
+### Added
+- Dashboard, HTTP Codes, Top Pages, Bots & Crawlers, TTFB, Network, Anomalies, Blocklist, Settings
+- Incremental Apache/Nginx log parsing with log rotation detection
+- CSV & Excel export on HTTP Codes and Top Pages views
+- Email alerts (404 spikes, 5xx errors, missing Googlebot) via configurable SMTP
+- Beginner mode with help banners and contextual tooltips
+- JWT authentication (7-day token), password change from settings
+- Detection of 16+ bots (Googlebot, AhrefsBot, SemrushBot, ClaudeBot...)
+- Multi-site support
+- 27 Jest tests (parsing, auth, stats API)
