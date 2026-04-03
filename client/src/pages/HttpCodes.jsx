@@ -263,12 +263,12 @@ export default function HttpCodes() {
         </div>
       </div>
 
-      {loadingChart ? (
+      {chartData.length === 0 && loadingChart ? (
         <div className="flex items-center justify-center h-48">
           <div className="w-8 h-8 border-2 border-moonstone-400 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : (
-        <>
+        <div className={loadingChart ? 'opacity-50 pointer-events-none transition-opacity' : 'transition-opacity'}>
           {/* ── KPIs ─────────────────────────────────── */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <KPICard label={t('httpCodes.kpi2xx')} value={totals.s2xx?.toLocaleString('fr-FR') || '0'}
@@ -533,7 +533,7 @@ export default function HttpCodes() {
               </div>
             )}
           </div>
-        </>
+        </div>
       )}
     </div>
   )
