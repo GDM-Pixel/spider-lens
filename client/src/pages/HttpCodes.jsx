@@ -78,10 +78,17 @@ export default function HttpCodes() {
   // Reset page quand filtre change
   useEffect(() => { setDrillPage(0) }, [activeFilter, botFilter, uaFilter, debouncedSearch, range, sort, activeSiteId])
 
-  // Charger le top 50 des User-Agents pour le select
+  // Charger le top 50 des User-Agents pour le select (Googlebot en premier, reste trié alpha)
   useEffect(() => {
     api.get('/stats/top-user-agents', { params: range })
-      .then(r => setTopUAs(r.data))
+      .then(r => {
+        const data = r.data
+        const googlebot = data.filter(ua => /googlebot/i.test(ua.user_agent))
+        const others = data
+          .filter(ua => !/googlebot/i.test(ua.user_agent))
+          .sort((a, b) => a.user_agent.localeCompare(b.user_agent))
+        setTopUAs([...googlebot, ...others])
+      })
       .catch(() => {})
   }, [range, activeSiteId])
 
@@ -347,14 +354,22 @@ export default function HttpCodes() {
                   <select
                     value={uaFilter}
                     onChange={e => setUaFilter(e.target.value)}
-                    className="bg-prussian-600 border border-prussian-400 rounded-lg pl-7 pr-6 py-1.5 text-xs text-white focus:outline-none focus:border-moonstone-600 transition-colors appearance-none cursor-pointer max-w-[200px]"
+                    className={clsx(
+                      'border rounded-lg pl-7 pr-6 py-1.5 text-xs focus:outline-none transition-colors appearance-none cursor-pointer max-w-[200px]',
+                      uaFilter && /googlebot/i.test(uaFilter)
+                        ? 'bg-emerald-900/60 border-emerald-600 text-emerald-300 focus:border-emerald-400'
+                        : 'bg-prussian-600 border-prussian-400 text-white focus:border-moonstone-600'
+                    )}
                   >
                     <option value="">{t('httpCodes.filterAllUA')}</option>
-                    {topUAs.map(ua => (
-                      <option key={ua.user_agent} value={ua.user_agent}>
-                        {truncateUA(ua.user_agent)} ({ua.hits.toLocaleString('fr-FR')})
-                      </option>
-                    ))}
+                    {topUAs.map(ua => {
+                      const isGooglebot = /googlebot/i.test(ua.user_agent)
+                      return (
+                        <option key={ua.user_agent} value={ua.user_agent} style={isGooglebot ? { background: '#14532d', color: '#86efac' } : {}}>
+                          {isGooglebot ? '🤖 ' : ''}{truncateUA(ua.user_agent)} ({ua.hits.toLocaleString('fr-FR')})
+                        </option>
+                      )
+                    })}
                   </select>
                   <Icon icon="ph:caret-down" className="absolute right-2 top-1/2 -translate-y-1/2 text-errorgrey text-xs pointer-events-none" />
                 </div>

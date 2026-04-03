@@ -188,8 +188,8 @@ router.get('/url-detail', (req, res) => {
   const ipWhere     = ipFilter ? 'AND ip = ?' : ''
   const ipParams    = ipFilter ? [ipFilter] : []
   const uaFilter    = req.query.ua
-  const uaWhere     = uaFilter ? 'AND user_agent LIKE ?' : ''
-  const uaParams    = uaFilter ? [`%${uaFilter}%`] : []
+  const uaWhere     = uaFilter ? 'AND (user_agent LIKE ? OR user_agent LIKE ?)' : ''
+  const uaParams    = uaFilter ? [`%${uaFilter}%`, `%\\x22${uaFilter}%`] : []
 
   const where = `timestamp BETWEEN ? AND ? ${statusWhere} ${botWhere} ${searchWhere} ${ipWhere} ${uaWhere} ${sf}`
   const params = [from, to, ...statusParams, ...searchParams, ...ipParams, ...uaParams, ...sp]
@@ -583,10 +583,16 @@ router.get('/top-user-agents', (req, res) => {
   const { clause: sf, params: sp } = getSiteFilter(req)
 
   const rows = db.prepare(`
-    SELECT user_agent, COUNT(*) as hits
-    FROM log_entries
-    WHERE user_agent IS NOT NULL AND timestamp BETWEEN ? AND ? ${sf}
-    GROUP BY user_agent
+    SELECT
+      TRIM(TRIM(user_agent, char(34)), '\x22') AS user_agent,
+      SUM(cnt) as hits
+    FROM (
+      SELECT user_agent, COUNT(*) as cnt
+      FROM log_entries
+      WHERE user_agent IS NOT NULL AND user_agent != '-' AND timestamp BETWEEN ? AND ? ${sf}
+      GROUP BY user_agent
+    )
+    GROUP BY TRIM(TRIM(user_agent, char(34)), '\x22')
     ORDER BY hits DESC
     LIMIT 50
   `).all(from, to, ...sp)
