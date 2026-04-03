@@ -9,7 +9,7 @@ router.use(requireAuth)
 function getDateRange(req) {
   const from = req.query.from || new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10)
   const to = req.query.to || new Date().toISOString().slice(0, 10)
-  return { from: `${from} 00:00:00`, to: `${to} 23:59:59` }
+  return { from: `${from}T00:00:00.000Z`, to: `${to}T23:59:59.999Z` }
 }
 
 // Filtre optionnel par site — retourne { clause, params }
