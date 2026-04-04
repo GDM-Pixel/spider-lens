@@ -51,6 +51,10 @@ const PORT = process.env.PORT || 3000
 
 // ── Middlewares ───────────────────────────────────────────
 const isProd = process.env.NODE_ENV === 'production'
+
+// ── Trust proxy (requis derrière Nginx) ──────────────────
+if (isProd) app.set('trust proxy', 1)
+
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
