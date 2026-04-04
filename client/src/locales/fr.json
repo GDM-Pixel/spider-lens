@@ -10,7 +10,8 @@
     "blocklist": "Blocklist / Export",
     "settings": "Paramètres",
     "analysis": "Analyse",
-    "logout": "Déconnexion"
+    "logout": "Déconnexion",
+    "assistant": "Assistant IA"
   },
   "header": {
     "beginnerActive": "Mode débutant actif — cliquez pour désactiver",
@@ -29,7 +30,8 @@
       "network":    { "title": "Réseau",              "subtitle": "IPs et User-Agents" },
       "anomalies":  { "title": "Anomalies",           "subtitle": "Comportements anormaux détectés" },
       "blocklist":  { "title": "Blocklist",           "subtitle": "IPs bloquées" },
-      "settings":   { "title": "Paramètres",          "subtitle": "Configuration de Spider-Lens" }
+      "settings":   { "title": "Paramètres",          "subtitle": "Configuration de Spider-Lens" },
+      "assistant":  { "title": "Assistant IA",        "subtitle": "Analysez vos logs en langage naturel" }
     }
   },
   "common": {
@@ -449,5 +451,20 @@
     "purgeNow": "Purger maintenant",
     "purging": "Purge en cours…",
     "purgeResult": "{{logs}} logs, {{anomalies}} anomalies, {{alerts}} alertes supprimés — DB : {{size}}"
+  },
+  "assistant": {
+    "welcomeTitle": "Votre Assistant IA Spider-Lens",
+    "tip1": "Posez des questions en langage naturel sur votre trafic : 'Pourquoi Googlebot ne crawle pas /contact ?'",
+    "tip2": "L'assistant analyse les 30 derniers jours de données et vous donne des recommandations concrètes.",
+    "tip3": "Commencez par lancer l'analyse automatique pour obtenir un score de santé SEO et les points clés.",
+    "analyzeBtn": "Lancer l'analyse SEO",
+    "analyzing": "Analyse en cours...",
+    "chatPlaceholder": "Posez une question sur vos logs...",
+    "send": "Envoyer",
+    "welcome": "Bonjour ! Je suis votre assistant SEO. Lancez l'analyse automatique ou posez-moi directement une question.",
+    "noApiKey": "La clé API Gemini n'est pas configurée. Ajoutez GEMINI_API_KEY dans votre fichier .env.",
+    "errorGeneric": "Une erreur s'est produite. Veuillez réessayer.",
+    "poweredBy": "propulsé par",
+    "clearChat": "Effacer la conversation"
   }
 }

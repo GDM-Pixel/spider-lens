@@ -10,7 +10,8 @@
     "blocklist": "Blocklist / Export",
     "settings": "Einstellungen",
     "analysis": "Analyse",
-    "logout": "Abmelden"
+    "logout": "Abmelden",
+    "assistant": "KI-Assistent"
   },
   "header": {
     "beginnerActive": "Anfängermodus aktiv — klicken zum Deaktivieren",
@@ -29,7 +30,8 @@
       "network":    { "title": "Netzwerk",        "subtitle": "IPs und User-Agents" },
       "anomalies":  { "title": "Anomalien",      "subtitle": "Automatisch erkanntes abnormales Verhalten" },
       "blocklist":  { "title": "Blocklist",      "subtitle": "Blockierte IPs" },
-      "settings":   { "title": "Einstellungen",       "subtitle": "Spider-Lens-Konfiguration" }
+      "settings":   { "title": "Einstellungen",       "subtitle": "Spider-Lens-Konfiguration" },
+      "assistant":  { "title": "KI-Assistent",        "subtitle": "Analysieren Sie Ihre Logs in natürlicher Sprache" }
     }
   },
   "common": {
@@ -449,5 +451,20 @@
     "purgeNow": "Jetzt bereinigen",
     "purging": "Bereinigung läuft…",
     "purgeResult": "{{logs}} Logs, {{anomalies}} Anomalien, {{alerts}} Alarme gelöscht — DB: {{size}}"
+  },
+  "assistant": {
+    "welcomeTitle": "Ihr Spider-Lens KI-Assistent",
+    "tip1": "Stellen Sie Fragen in natürlicher Sprache: 'Warum crawlt Googlebot /contact nicht?'",
+    "tip2": "Der Assistent analysiert die letzten 30 Tage und gibt konkrete Empfehlungen.",
+    "tip3": "Starten Sie mit der automatischen Analyse für einen SEO-Gesundheitsscore.",
+    "analyzeBtn": "SEO-Analyse starten",
+    "analyzing": "Analysiere...",
+    "chatPlaceholder": "Stellen Sie eine Frage zu Ihren Logs...",
+    "send": "Senden",
+    "welcome": "Hallo! Ich bin Ihr SEO-Assistent. Starten Sie die Analyse oder stellen Sie eine Frage.",
+    "noApiKey": "Der Gemini API-Schlüssel ist nicht konfiguriert. Fügen Sie GEMINI_API_KEY zu Ihrer .env-Datei hinzu.",
+    "errorGeneric": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+    "poweredBy": "powered by",
+    "clearChat": "Gespräch löschen"
   }
 }

@@ -10,6 +10,9 @@ import bcrypt from 'bcryptjs'
 dotenv.config()
 
 // ── Validation des secrets critiques ─────────────────────
+if (!process.env.GEMINI_API_KEY) {
+  console.warn('[warn] GEMINI_API_KEY absente — l\'assistant IA sera désactivé.')
+}
 if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
   console.error('[FATAL] JWT_SECRET manquant ou trop court (minimum 32 caractères). Arrêt.')
   process.exit(1)
@@ -31,6 +34,7 @@ import sitesRoutes from './routes/sites.js'
 import networkRoutes from './routes/network.js'
 import blocklistRoutes from './routes/blocklist.js'
 import adminRoutes from './routes/admin.js'
+import assistantRoutes from './routes/assistant.js'
 import { startCron } from './services/cron.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -63,6 +67,7 @@ app.use('/api/sites', sitesRoutes)
 app.use('/api/network', networkRoutes)
 app.use('/api/blocklist', blocklistRoutes)
 app.use('/api/admin', adminRoutes)
+app.use('/api/assistant', assistantRoutes)
 
 // ── Sanity check ─────────────────────────────────────────
 app.get('/api/health', (req, res) => res.json({ status: 'ok', version: '0.7.0' }))

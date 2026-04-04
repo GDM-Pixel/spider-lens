@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { key: "network",   icon: "ph:network",               path: "/network" },
   { key: "anomalies", icon: "ph:warning-diamond",       path: "/anomalies" },
   { key: "blocklist", icon: "ph:export",                path: "/blocklist" },
+  { key: "assistant", icon: "ph:sparkle",               path: "/assistant" },
   { key: "settings",  icon: "ph:gear-six",              path: "/settings" },
 ];
 

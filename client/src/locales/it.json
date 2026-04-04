@@ -10,7 +10,8 @@
     "blocklist": "Lista di Blocco",
     "settings": "Impostazioni",
     "analysis": "Analisi",
-    "logout": "Esci"
+    "logout": "Esci",
+    "assistant": "Assistente IA"
   },
   "header": {
     "beginnerActive": "Modalità principiante attiva — clicca per disabilitare",
@@ -29,7 +30,8 @@
       "network":    { "title": "Rete",        "subtitle": "IP e User-Agent" },
       "anomalies":  { "title": "Anomalie",      "subtitle": "Comportamenti anomali rilevati automaticamente" },
       "blocklist":  { "title": "Lista di Blocco",      "subtitle": "IP bloccati" },
-      "settings":   { "title": "Impostazioni",       "subtitle": "Configurazione Spider-Lens" }
+      "settings":   { "title": "Impostazioni",       "subtitle": "Configurazione Spider-Lens" },
+      "assistant":  { "title": "Assistente IA",      "subtitle": "Analizza i tuoi log in linguaggio naturale" }
     }
   },
   "common": {
@@ -449,5 +451,20 @@
     "purgeNow": "Elimina ora",
     "purging": "Eliminazione in corso…",
     "purgeResult": "{{logs}} log, {{anomalies}} anomalie, {{alerts}} avvisi eliminati — DB: {{size}}"
+  },
+  "assistant": {
+    "welcomeTitle": "Il tuo Assistente IA Spider-Lens",
+    "tip1": "Fai domande in linguaggio naturale: 'Perché Googlebot non esegue il crawl di /contact?'",
+    "tip2": "L'assistente analizza gli ultimi 30 giorni e ti fornisce raccomandazioni concrete.",
+    "tip3": "Inizia con l'analisi automatica per ottenere un punteggio di salute SEO.",
+    "analyzeBtn": "Avvia analisi SEO",
+    "analyzing": "Analisi in corso...",
+    "chatPlaceholder": "Fai una domanda sui tuoi log...",
+    "send": "Invia",
+    "welcome": "Ciao! Sono il tuo assistente SEO. Avvia l'analisi automatica o fai una domanda.",
+    "noApiKey": "La chiave API Gemini non è configurata. Aggiungi GEMINI_API_KEY al tuo file .env.",
+    "errorGeneric": "Si è verificato un errore. Riprova.",
+    "poweredBy": "sviluppato da",
+    "clearChat": "Cancella conversazione"
   }
 }

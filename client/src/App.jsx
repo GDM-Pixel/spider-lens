@@ -13,6 +13,7 @@ const Network = lazy(() => import('./pages/Network'))
 const Anomalies = lazy(() => import('./pages/Anomalies'))
 const Blocklist = lazy(() => import('./pages/Blocklist'))
 const Settings = lazy(() => import('./pages/Settings'))
+const Assistant = lazy(() => import('./pages/Assistant'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 
 export default function App() {
@@ -32,6 +33,7 @@ export default function App() {
         <Route path="/anomalies" element={<Anomalies />} />
         <Route path="/blocklist" element={<Blocklist />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/assistant" element={<Assistant />} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>

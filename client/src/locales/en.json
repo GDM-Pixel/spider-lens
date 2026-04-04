@@ -10,7 +10,8 @@
     "blocklist": "Blocklist / Export",
     "settings": "Settings",
     "analysis": "Analysis",
-    "logout": "Logout"
+    "logout": "Logout",
+    "assistant": "AI Assistant"
   },
   "header": {
     "beginnerActive": "Beginner mode active — click to disable",
@@ -29,7 +30,8 @@
       "network":    { "title": "Network",        "subtitle": "IPs and User-Agents" },
       "anomalies":  { "title": "Anomalies",      "subtitle": "Automatically detected abnormal behaviour" },
       "blocklist":  { "title": "Blocklist",      "subtitle": "Blocked IPs" },
-      "settings":   { "title": "Settings",       "subtitle": "Spider-Lens configuration" }
+      "settings":   { "title": "Settings",       "subtitle": "Spider-Lens configuration" },
+      "assistant":  { "title": "AI Assistant",   "subtitle": "Analyze your logs in natural language" }
     }
   },
   "common": {
@@ -449,5 +451,20 @@
     "purgeNow": "Purge now",
     "purging": "Purging…",
     "purgeResult": "{{logs}} logs, {{anomalies}} anomalies, {{alerts}} alerts deleted — DB: {{size}}"
+  },
+  "assistant": {
+    "welcomeTitle": "Your Spider-Lens AI Assistant",
+    "tip1": "Ask natural language questions about your traffic: 'Why is Googlebot not crawling /contact?'",
+    "tip2": "The assistant analyzes the last 30 days of data and gives you concrete recommendations.",
+    "tip3": "Start with the automatic analysis to get an SEO health score and key insights.",
+    "analyzeBtn": "Run SEO Analysis",
+    "analyzing": "Analyzing...",
+    "chatPlaceholder": "Ask a question about your logs...",
+    "send": "Send",
+    "welcome": "Hello! I'm your SEO assistant. Run the automatic analysis or ask me a question directly.",
+    "noApiKey": "The Gemini API key is not configured. Add GEMINI_API_KEY to your .env file.",
+    "errorGeneric": "An error occurred. Please try again.",
+    "poweredBy": "powered by",
+    "clearChat": "Clear conversation"
   }
 }

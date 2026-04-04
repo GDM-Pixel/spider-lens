@@ -10,7 +10,8 @@
     "blocklist": "Blokkeringslijst",
     "settings": "Instellingen",
     "analysis": "Analyse",
-    "logout": "Afmelden"
+    "logout": "Afmelden",
+    "assistant": "AI-assistent"
   },
   "header": {
     "beginnerActive": "Beginnermodus actief — klik om uit te schakelen",
@@ -29,7 +30,8 @@
       "network":    { "title": "Netwerk",        "subtitle": "IP's en User-Agents" },
       "anomalies":  { "title": "Anomalieën",      "subtitle": "Automatisch gedetecteerd abnormaal gedrag" },
       "blocklist":  { "title": "Blokkeringslijst",      "subtitle": "Geblokkeerde IP's" },
-      "settings":   { "title": "Instellingen",       "subtitle": "Spider-Lens-configuratie" }
+      "settings":   { "title": "Instellingen",       "subtitle": "Spider-Lens-configuratie" },
+      "assistant":  { "title": "AI-assistent",       "subtitle": "Analyseer uw logs in natuurlijke taal" }
     }
   },
   "common": {
@@ -449,5 +451,20 @@
     "purgeNow": "Nu opschonen",
     "purging": "Bezig met opschonen…",
     "purgeResult": "{{logs}} logs, {{anomalies}} anomalieën, {{alerts}} waarschuwingen verwijderd — DB: {{size}}"
+  },
+  "assistant": {
+    "welcomeTitle": "Uw Spider-Lens AI-assistent",
+    "tip1": "Stel vragen in natuurlijke taal: 'Waarom crawlt Googlebot /contact niet?'",
+    "tip2": "De assistent analyseert de laatste 30 dagen en geeft concrete aanbevelingen.",
+    "tip3": "Begin met de automatische analyse voor een SEO-gezondheidsscore.",
+    "analyzeBtn": "SEO-analyse starten",
+    "analyzing": "Analyseren...",
+    "chatPlaceholder": "Stel een vraag over uw logs...",
+    "send": "Verzenden",
+    "welcome": "Hallo! Ik ben uw SEO-assistent. Start de analyse of stel een vraag.",
+    "noApiKey": "De Gemini API-sleutel is niet geconfigureerd. Voeg GEMINI_API_KEY toe aan uw .env-bestand.",
+    "errorGeneric": "Er is een fout opgetreden. Probeer het opnieuw.",
+    "poweredBy": "aangedreven door",
+    "clearChat": "Gesprek wissen"
   }
 }

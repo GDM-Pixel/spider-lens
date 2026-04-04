@@ -10,7 +10,8 @@
     "blocklist": "Lista de Bloqueo",
     "settings": "Configuración",
     "analysis": "Análisis",
-    "logout": "Cerrar Sesión"
+    "logout": "Cerrar Sesión",
+    "assistant": "Asistente IA"
   },
   "header": {
     "beginnerActive": "Modo principiante activo — haz clic para desactivar",
@@ -29,7 +30,8 @@
       "network":    { "title": "Red",        "subtitle": "IPs y User-Agents" },
       "anomalies":  { "title": "Anomalías",      "subtitle": "Comportamientos anómalos detectados automáticamente" },
       "blocklist":  { "title": "Lista de Bloqueo",      "subtitle": "IPs bloqueadas" },
-      "settings":   { "title": "Configuración",       "subtitle": "Configuración de Spider-Lens" }
+      "settings":   { "title": "Configuración",       "subtitle": "Configuración de Spider-Lens" },
+      "assistant":  { "title": "Asistente IA",        "subtitle": "Analiza tus logs en lenguaje natural" }
     }
   },
   "common": {
@@ -449,5 +451,20 @@
     "purgeNow": "Purgar ahora",
     "purging": "Purgando…",
     "purgeResult": "{{logs}} registros, {{anomalies}} anomalías, {{alerts}} alertas eliminados — DB: {{size}}"
+  },
+  "assistant": {
+    "welcomeTitle": "Tu Asistente IA Spider-Lens",
+    "tip1": "Haz preguntas en lenguaje natural sobre tu tráfico: '¿Por qué Googlebot no rastrea /contact?'",
+    "tip2": "El asistente analiza los últimos 30 días de datos y te da recomendaciones concretas.",
+    "tip3": "Empieza con el análisis automático para obtener una puntuación de salud SEO.",
+    "analyzeBtn": "Ejecutar análisis SEO",
+    "analyzing": "Analizando...",
+    "chatPlaceholder": "Haz una pregunta sobre tus logs...",
+    "send": "Enviar",
+    "welcome": "¡Hola! Soy tu asistente SEO. Ejecuta el análisis automático o hazme una pregunta.",
+    "noApiKey": "La clave API de Gemini no está configurada. Añade GEMINI_API_KEY a tu archivo .env.",
+    "errorGeneric": "Se produjo un error. Por favor, inténtalo de nuevo.",
+    "poweredBy": "desarrollado por",
+    "clearChat": "Limpiar conversación"
   }
 }
