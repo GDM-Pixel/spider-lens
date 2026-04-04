@@ -7,6 +7,7 @@ import remarkGfm from 'remark-gfm'
 import clsx from 'clsx'
 import BeginnerBanner from '../components/ui/BeginnerBanner'
 import { useSite } from '../context/SiteContext'
+import novaAvatar from '../assets/nova-avatar.jpg'
 
 // ── SSE streaming helper ──────────────────────────────────
 async function streamSSE(url, body, onChunk, onDone, onError) {
@@ -67,9 +68,11 @@ function MessageBubble({ message }) {
       className={clsx('flex gap-3', isUser ? 'justify-end' : 'justify-start')}
     >
       {!isUser && (
-        <div className="w-8 h-8 rounded-full bg-moonstone-400/20 border border-moonstone-400/30 flex items-center justify-center shrink-0 mt-1">
-          <Icon icon="ph:sparkle" className="text-moonstone-400 text-sm" />
-        </div>
+        <img
+          src={novaAvatar}
+          alt="Nova"
+          className="w-8 h-8 rounded-full object-cover border border-moonstone-400/30 shrink-0 mt-1"
+        />
       )}
       <div
         className={clsx(
@@ -108,9 +111,7 @@ function AnalysisPanel({ content, isStreaming, onStart, hasApiKey }) {
   if (!content && !isStreaming) {
     return (
       <div className="flex flex-col items-center gap-4 py-8">
-        <div className="w-16 h-16 rounded-2xl bg-moonstone-400/10 border border-moonstone-400/20 flex items-center justify-center">
-          <Icon icon="ph:sparkle" className="text-moonstone-400 text-3xl" />
-        </div>
+        <img src={novaAvatar} alt="Nova" className="w-16 h-16 rounded-2xl object-cover border border-moonstone-400/30" />
         <div className="text-center">
           <p className="text-white font-semibold mb-1">{t('assistant.analyzeBtn')}</p>
           <p className="text-errorgrey text-sm">{t('assistant.tip3')}</p>
@@ -301,8 +302,8 @@ export default function Assistant() {
         <div className="bg-prussian-600 rounded-xl border border-prussian-500 p-5 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Icon icon="ph:sparkle" className="text-moonstone-400 text-lg" />
-              <h2 className="text-white font-semibold text-sm">Analyse SEO automatique</h2>
+              <img src={novaAvatar} alt="Nova" className="w-6 h-6 rounded-full object-cover" />
+              <h2 className="text-white font-semibold text-sm">Analyse SEO automatique <span className="text-errorgrey font-normal">par Nova</span></h2>
             </div>
             {analysisContent && !analysisStreaming && (
               <button
@@ -328,8 +329,11 @@ export default function Assistant() {
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-prussian-500">
             <div className="flex items-center gap-2">
-              <Icon icon="ph:chat-circle-dots" className="text-moonstone-400 text-lg" />
-              <h2 className="text-white font-semibold text-sm">Chat IA</h2>
+              <img src={novaAvatar} alt="Nova" className="w-7 h-7 rounded-full object-cover border border-moonstone-400/30" />
+              <div>
+                <h2 className="text-white font-semibold text-sm leading-tight">Nova</h2>
+                <p className="text-errorgrey text-xs leading-tight">Assistante SEO IA</p>
+              </div>
             </div>
             {messages.length > 0 && (
               <button
