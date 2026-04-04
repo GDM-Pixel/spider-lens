@@ -729,7 +729,10 @@ export default function HttpCodes() {
                       {t("httpCodes.headerLastSeen")}
                     </SortableHeader>
                     <th className="text-left text-xs font-semibold text-errorgrey px-5 py-3">
-                      {t("httpCodes.headerUserAgent")}
+                      Origine
+                    </th>
+                    <th className="text-left text-xs font-semibold text-errorgrey px-5 py-3">
+                      Referer
                     </th>
                   </tr>
                 </thead>
@@ -776,13 +779,17 @@ export default function HttpCodes() {
                         <td className="px-5 py-2.5 text-right text-errorgrey text-xs whitespace-nowrap">
                           {dayjs(row.last_seen).format("DD/MM/YYYY HH:mm")}
                         </td>
-                        <td className="px-5 py-2.5 max-w-[220px]">
-                          <span
-                            className="text-errorgrey text-xs truncate block"
-                            title={row.top_ua || ""}
-                          >
-                            {row.top_ua ? truncateUA(row.top_ua) : "—"}
-                          </span>
+                        <td className="px-5 py-2.5" title={row.top_ua || ""}>
+                          {originBadge(row.top_ua)}
+                        </td>
+                        <td className="px-5 py-2.5 max-w-[200px]">
+                          {row.top_referrer ? (
+                            <span className="text-moonstone-400/70 text-xs truncate block" title={row.top_referrer}>
+                              {row.top_referrer.replace(/^https?:\/\//, '').slice(0, 40) + (row.top_referrer.length > 40 ? '…' : '')}
+                            </span>
+                          ) : (
+                            <span className="text-errorgrey/40 text-xs">—</span>
+                          )}
                         </td>
                       </tr>
                     ))
@@ -867,4 +874,39 @@ function truncateUA(ua) {
   const browser = ua.match(/(Chrome|Firefox|Safari|Edge)\/[\d.]+/)?.[0];
   if (browser) return browser;
   return ua.length > 50 ? ua.slice(0, 50) + "…" : ua;
+}
+
+function originBadge(ua) {
+  if (!ua) return <span className="text-errorgrey text-xs">—</span>
+
+  if (/googlebot/i.test(ua)) return (
+    <span className="inline-flex items-center gap-1 bg-emerald-900/40 border border-emerald-700/50 text-emerald-300 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+      <Icon icon="ph:robot" className="text-xs" />Googlebot
+    </span>
+  )
+  if (/bingbot|yandex|baidu|duckduck|seznam/i.test(ua)) return (
+    <span className="inline-flex items-center gap-1 bg-blue-900/40 border border-blue-700/50 text-blue-300 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+      <Icon icon="ph:robot" className="text-xs" />Moteur
+    </span>
+  )
+  if (/ahrefs|semrush|moz|majestic|screaming|sitebulb/i.test(ua)) return (
+    <span className="inline-flex items-center gap-1 bg-purple-900/40 border border-purple-700/50 text-purple-300 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+      <Icon icon="ph:magnifying-glass" className="text-xs" />SEO Bot
+    </span>
+  )
+  if (/claudebot|gptbot|chatgpt|anthropic|openai|meta-externalagent/i.test(ua)) return (
+    <span className="inline-flex items-center gap-1 bg-amber-900/40 border border-amber-700/50 text-amber-300 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+      <Icon icon="ph:sparkle" className="text-xs" />IA Bot
+    </span>
+  )
+  if (/bot|crawl|spider|slurp|fetch|scan|check|monitor/i.test(ua) || ua === '-') return (
+    <span className="inline-flex items-center gap-1 bg-prussian-400/60 border border-prussian-300/50 text-errorgrey text-[10px] font-semibold px-2 py-0.5 rounded-full">
+      <Icon icon="ph:bug" className="text-xs" />Bot
+    </span>
+  )
+  return (
+    <span className="inline-flex items-center gap-1 bg-moonstone-900/30 border border-moonstone-700/40 text-moonstone-300 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+      <Icon icon="ph:user" className="text-xs" />Humain
+    </span>
+  )
 }

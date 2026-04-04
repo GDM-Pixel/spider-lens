@@ -213,6 +213,13 @@ router.get('/url-detail', (req, res) => {
      GROUP BY user_agent ORDER BY COUNT(*) DESC LIMIT 1) AS top_ua`
   const topUaParams = [from, to, ...sp, ...uaParamsTopUa]
 
+  const topRefSubquery = `(SELECT referrer FROM log_entries le2
+     WHERE le2.url = le.url AND le2.status_code = le.status_code
+       AND le2.timestamp BETWEEN ? AND ? ${sf}
+       AND le2.referrer IS NOT NULL AND le2.referrer != '-'
+     GROUP BY referrer ORDER BY COUNT(*) DESC LIMIT 1) AS top_referrer`
+  const topRefParams = [from, to, ...sp]
+
   const rows = db.prepare(`
     SELECT
       url,
@@ -221,13 +228,14 @@ router.get('/url-detail', (req, res) => {
       SUM(CASE WHEN is_bot = 1 THEN 1 ELSE 0 END)          AS bot_hits,
       SUM(CASE WHEN is_bot = 0 THEN 1 ELSE 0 END)          AS human_hits,
       MAX(timestamp)                                        AS last_seen,
-      ${topUaSubquery}
+      ${topUaSubquery},
+      ${topRefSubquery}
     FROM log_entries le
     WHERE ${where}
     GROUP BY url, status_code
     ORDER BY ${sortBy} ${sortDir}
     LIMIT ? OFFSET ?
-  `).all(...topUaParams, ...params, limit, offset)
+  `).all(...topUaParams, ...topRefParams, ...params, limit, offset)
 
   // Total pour pagination
   const total = db.prepare(`
