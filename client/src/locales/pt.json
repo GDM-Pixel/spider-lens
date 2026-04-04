@@ -22,16 +22,46 @@
     "openMenu": "Abrir menu",
     "closeMenu": "Fechar menu",
     "pages": {
-      "dashboard":  { "title": "Painel",    "subtitle": "Visão geral do seu tráfego" },
-      "http-codes": { "title": "Códigos HTTP",   "subtitle": "Evolução dos códigos HTTP ao longo do tempo" },
-      "top-pages":  { "title": "Páginas Principais",    "subtitle": "Páginas mais visitadas e erros 404" },
-      "bots":       { "title": "Bots & Crawlers", "subtitle": "Análise de robôs de indexação" },
-      "ttfb":       { "title": "Tempo de Carregamento",    "subtitle": "TTFB — Time To First Byte por URL" },
-      "network":    { "title": "Rede",      "subtitle": "IPs e User-Agents" },
-      "anomalies":  { "title": "Anomalias",    "subtitle": "Comportamentos anormais detectados" },
-      "blocklist":  { "title": "Blocklist",    "subtitle": "IPs bloqueados" },
-      "settings":   { "title": "Configurações",     "subtitle": "Configuração do Spider-Lens" },
-      "assistant":  { "title": "Análise com IA",  "subtitle": "Analise seus logs em linguagem natural" }
+      "dashboard": {
+        "title": "Painel",
+        "subtitle": "Visão geral do seu tráfego"
+      },
+      "http-codes": {
+        "title": "Códigos HTTP",
+        "subtitle": "Evolução dos códigos HTTP ao longo do tempo"
+      },
+      "top-pages": {
+        "title": "Páginas Principais",
+        "subtitle": "Páginas mais visitadas e erros 404"
+      },
+      "bots": {
+        "title": "Bots & Crawlers",
+        "subtitle": "Análise de robôs de indexação"
+      },
+      "ttfb": {
+        "title": "Tempo de Carregamento",
+        "subtitle": "TTFB — Time To First Byte por URL"
+      },
+      "network": {
+        "title": "Rede",
+        "subtitle": "IPs e User-Agents"
+      },
+      "anomalies": {
+        "title": "Anomalias",
+        "subtitle": "Comportamentos anormais detectados"
+      },
+      "blocklist": {
+        "title": "Blocklist",
+        "subtitle": "IPs bloqueados"
+      },
+      "settings": {
+        "title": "Configurações",
+        "subtitle": "Configuração do Spider-Lens"
+      },
+      "assistant": {
+        "title": "Análise com IA",
+        "subtitle": "Analise seus logs em linguagem natural"
+      }
     }
   },
   "common": {
@@ -422,7 +452,17 @@
     "buttonChangeUsername": "Alterar usuário",
     "passwordMismatch": "As senhas não coincidem",
     "passwordSuccess": "Senha alterada com sucesso",
-    "confirmDeleteSite": "Deletar este site? Os dados de log associados serão mantidos."
+    "confirmDeleteSite": "Deletar este site? Os dados de log associados serão mantidos.",
+    "sitemaps": "Sitemaps do crawler",
+    "noSitemapsYet": "Nenhum sitemap configurado",
+    "sitemapPlaceholder": "https://exemplo.com/sitemap.xml",
+    "addSitemap": "Adicionar",
+    "launchCrawl": "Iniciar crawl",
+    "cancelCrawl": "Cancelar",
+    "crawlRunning": "Crawl em andamento",
+    "crawlPages": "páginas",
+    "lastCrawl": "Último crawl",
+    "noCrawlYet": "Nenhum crawl ainda"
   },
   "dbAdmin": {
     "sectionTitle": "Gerenciamento de banco de dados",

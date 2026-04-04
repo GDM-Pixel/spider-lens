@@ -22,16 +22,46 @@
     "openMenu": "Відкрити меню",
     "closeMenu": "Закрити меню",
     "pages": {
-      "dashboard":  { "title": "Панель керування",    "subtitle": "Загальний огляд вашого трафіку" },
-      "http-codes": { "title": "Коди HTTP",   "subtitle": "Еволюція статусів HTTP у часі" },
-      "top-pages":  { "title": "Топ сторінки",    "subtitle": "Найбільш переглядувані сторінки та помилки 404" },
-      "bots":       { "title": "Боти та краулери", "subtitle": "Аналіз індексуючих ботів" },
-      "ttfb":       { "title": "Час завантаження",    "subtitle": "TTFB — Час до першого байту за URL" },
-      "network":    { "title": "Мережа",      "subtitle": "IP-адреси та User-Agenty" },
-      "anomalies":  { "title": "Аномалії",    "subtitle": "Виявлена ненормальна поведінка" },
-      "blocklist":  { "title": "Список блокування",    "subtitle": "Заблоковані IP" },
-      "settings":   { "title": "Параметри",     "subtitle": "Конфігурація Spider-Lens" },
-      "assistant":  { "title": "Аналіз AI",  "subtitle": "Аналізуйте журнали природною мовою" }
+      "dashboard": {
+        "title": "Панель керування",
+        "subtitle": "Загальний огляд вашого трафіку"
+      },
+      "http-codes": {
+        "title": "Коди HTTP",
+        "subtitle": "Еволюція статусів HTTP у часі"
+      },
+      "top-pages": {
+        "title": "Топ сторінки",
+        "subtitle": "Найбільш переглядувані сторінки та помилки 404"
+      },
+      "bots": {
+        "title": "Боти та краулери",
+        "subtitle": "Аналіз індексуючих ботів"
+      },
+      "ttfb": {
+        "title": "Час завантаження",
+        "subtitle": "TTFB — Час до першого байту за URL"
+      },
+      "network": {
+        "title": "Мережа",
+        "subtitle": "IP-адреси та User-Agenty"
+      },
+      "anomalies": {
+        "title": "Аномалії",
+        "subtitle": "Виявлена ненормальна поведінка"
+      },
+      "blocklist": {
+        "title": "Список блокування",
+        "subtitle": "Заблоковані IP"
+      },
+      "settings": {
+        "title": "Параметри",
+        "subtitle": "Конфігурація Spider-Lens"
+      },
+      "assistant": {
+        "title": "Аналіз AI",
+        "subtitle": "Аналізуйте журнали природною мовою"
+      }
     }
   },
   "common": {
@@ -422,7 +452,17 @@
     "buttonChangeUsername": "Змінити ім'я користувача",
     "passwordMismatch": "Паролі не збігаються",
     "passwordSuccess": "Пароль успішно змінено",
-    "confirmDeleteSite": "Видалити цей сайт? Пов'язані дані журналу будуть збережені."
+    "confirmDeleteSite": "Видалити цей сайт? Пов'язані дані журналу будуть збережені.",
+    "sitemaps": "Карти сайту краулера",
+    "noSitemapsYet": "Карту сайту не налаштовано",
+    "sitemapPlaceholder": "https://example.com/sitemap.xml",
+    "addSitemap": "Додати",
+    "launchCrawl": "Запустити краулінг",
+    "cancelCrawl": "Скасувати",
+    "crawlRunning": "Краулінг виконується",
+    "crawlPages": "сторінок",
+    "lastCrawl": "Останній краулінг",
+    "noCrawlYet": "Краулінг ще не виконувався"
   },
   "dbAdmin": {
     "sectionTitle": "Управління базою даних",

@@ -22,16 +22,46 @@
     "openMenu": "Otevřít nabídku",
     "closeMenu": "Zavřít nabídku",
     "pages": {
-      "dashboard":  { "title": "Přehled",    "subtitle": "Globální přehled vašeho provozu" },
-      "http-codes": { "title": "Kódy HTTP",   "subtitle": "Vývoj stavů HTTP v průběhu času" },
-      "top-pages":  { "title": "Top stránky",    "subtitle": "Nejčastěji zobrazené stránky a chyby 404" },
-      "bots":       { "title": "Boti a crawlery", "subtitle": "Analýza indexovacích botů" },
-      "ttfb":       { "title": "Čas načítání",    "subtitle": "TTFB — Čas do prvního bajtu na URL" },
-      "network":    { "title": "Síť",      "subtitle": "IP adresy a User-Agenty" },
-      "anomalies":  { "title": "Anomálie",    "subtitle": "Zjištěné abnormální chování" },
-      "blocklist":  { "title": "Seznam blokování",    "subtitle": "Zablokované IP" },
-      "settings":   { "title": "Nastavení",     "subtitle": "Konfigurace Spider-Lens" },
-      "assistant":  { "title": "Analýza AI",  "subtitle": "Analyzujte své logy v přirozeném jazyce" }
+      "dashboard": {
+        "title": "Přehled",
+        "subtitle": "Globální přehled vašeho provozu"
+      },
+      "http-codes": {
+        "title": "Kódy HTTP",
+        "subtitle": "Vývoj stavů HTTP v průběhu času"
+      },
+      "top-pages": {
+        "title": "Top stránky",
+        "subtitle": "Nejčastěji zobrazené stránky a chyby 404"
+      },
+      "bots": {
+        "title": "Boti a crawlery",
+        "subtitle": "Analýza indexovacích botů"
+      },
+      "ttfb": {
+        "title": "Čas načítání",
+        "subtitle": "TTFB — Čas do prvního bajtu na URL"
+      },
+      "network": {
+        "title": "Síť",
+        "subtitle": "IP adresy a User-Agenty"
+      },
+      "anomalies": {
+        "title": "Anomálie",
+        "subtitle": "Zjištěné abnormální chování"
+      },
+      "blocklist": {
+        "title": "Seznam blokování",
+        "subtitle": "Zablokované IP"
+      },
+      "settings": {
+        "title": "Nastavení",
+        "subtitle": "Konfigurace Spider-Lens"
+      },
+      "assistant": {
+        "title": "Analýza AI",
+        "subtitle": "Analyzujte své logy v přirozeném jazyce"
+      }
     }
   },
   "common": {
@@ -422,7 +452,17 @@
     "buttonChangeUsername": "Změnit uživatelské jméno",
     "passwordMismatch": "Hesla se neshodují",
     "passwordSuccess": "Heslo úspěšně změněno",
-    "confirmDeleteSite": "Smazat tento web? Přidružená data logů budou zachována."
+    "confirmDeleteSite": "Smazat tento web? Přidružená data logů budou zachována.",
+    "sitemaps": "Sitemaps pro crawler",
+    "noSitemapsYet": "Žádná mapa webu není nakonfigurována",
+    "sitemapPlaceholder": "https://example.com/sitemap.xml",
+    "addSitemap": "Přidat",
+    "launchCrawl": "Spustit crawl",
+    "cancelCrawl": "Zrušit",
+    "crawlRunning": "Crawl probíhá",
+    "crawlPages": "stránek",
+    "lastCrawl": "Poslední crawl",
+    "noCrawlYet": "Zatím žádný crawl"
   },
   "dbAdmin": {
     "sectionTitle": "Správa databáze",

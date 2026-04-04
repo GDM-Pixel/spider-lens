@@ -22,16 +22,46 @@
     "openMenu": "Öppna meny",
     "closeMenu": "Stäng meny",
     "pages": {
-      "dashboard":  { "title": "Instrumentpanel",    "subtitle": "Global överblick över din trafik" },
-      "http-codes": { "title": "HTTP-koder",   "subtitle": "HTTP-statusutveckling över tid" },
-      "top-pages":  { "title": "Topsidor",    "subtitle": "Mest visade sidor och 404-fel" },
-      "bots":       { "title": "Robotar & Crawlers", "subtitle": "Analys av indexeringsrobotar" },
-      "ttfb":       { "title": "Laddningstid",    "subtitle": "TTFB — Time To First Byte per URL" },
-      "network":    { "title": "Nätverk",      "subtitle": "IP-adresser och User-Agents" },
-      "anomalies":  { "title": "Anomalier",    "subtitle": "Identifierade onormala beteenden" },
-      "blocklist":  { "title": "Blocklist",    "subtitle": "Blockerade IP-adresser" },
-      "settings":   { "title": "Inställningar",     "subtitle": "Spider-Lens-konfiguration" },
-      "assistant":  { "title": "AI-analys",  "subtitle": "Analysera dina loggar på naturligt språk" }
+      "dashboard": {
+        "title": "Instrumentpanel",
+        "subtitle": "Global överblick över din trafik"
+      },
+      "http-codes": {
+        "title": "HTTP-koder",
+        "subtitle": "HTTP-statusutveckling över tid"
+      },
+      "top-pages": {
+        "title": "Topsidor",
+        "subtitle": "Mest visade sidor och 404-fel"
+      },
+      "bots": {
+        "title": "Robotar & Crawlers",
+        "subtitle": "Analys av indexeringsrobotar"
+      },
+      "ttfb": {
+        "title": "Laddningstid",
+        "subtitle": "TTFB — Time To First Byte per URL"
+      },
+      "network": {
+        "title": "Nätverk",
+        "subtitle": "IP-adresser och User-Agents"
+      },
+      "anomalies": {
+        "title": "Anomalier",
+        "subtitle": "Identifierade onormala beteenden"
+      },
+      "blocklist": {
+        "title": "Blocklist",
+        "subtitle": "Blockerade IP-adresser"
+      },
+      "settings": {
+        "title": "Inställningar",
+        "subtitle": "Spider-Lens-konfiguration"
+      },
+      "assistant": {
+        "title": "AI-analys",
+        "subtitle": "Analysera dina loggar på naturligt språk"
+      }
     }
   },
   "common": {
@@ -422,7 +452,17 @@
     "buttonChangeUsername": "Byt användarnamn",
     "passwordMismatch": "Lösenorden matchar inte",
     "passwordSuccess": "Lösenord ändrat framgångsrikt",
-    "confirmDeleteSite": "Ta bort denna webbplats? Associerade loggdata behålls."
+    "confirmDeleteSite": "Ta bort denna webbplats? Associerade loggdata behålls.",
+    "sitemaps": "Crawler-sitemaps",
+    "noSitemapsYet": "Ingen sitemap konfigurerad",
+    "sitemapPlaceholder": "https://example.com/sitemap.xml",
+    "addSitemap": "Lägg till",
+    "launchCrawl": "Starta crawl",
+    "cancelCrawl": "Avbryt",
+    "crawlRunning": "Crawl pågår",
+    "crawlPages": "sidor",
+    "lastCrawl": "Senaste crawl",
+    "noCrawlYet": "Ingen crawl ännu"
   },
   "dbAdmin": {
     "sectionTitle": "Databashantering",

@@ -22,16 +22,46 @@
     "openMenu": "Åbn menu",
     "closeMenu": "Luk menu",
     "pages": {
-      "dashboard":  { "title": "Dashboard",    "subtitle": "Globalt overblik over din trafik" },
-      "http-codes": { "title": "HTTP-koder",   "subtitle": "HTTP-statusudvikling over tid" },
-      "top-pages":  { "title": "Top sider",    "subtitle": "Mest viste sider og 404-fejl" },
-      "bots":       { "title": "Bots & Crawlers", "subtitle": "Indekserings bots analyse" },
-      "ttfb":       { "title": "Indlæsningstid",    "subtitle": "TTFB — Tid til første byte pr. URL" },
-      "network":    { "title": "Netværk",      "subtitle": "IP'er og User-Agenter" },
-      "anomalies":  { "title": "Anomalier",    "subtitle": "Detekteret unormale adfærd" },
-      "blocklist":  { "title": "Blokkeringsliste",    "subtitle": "Blokerede IP'er" },
-      "settings":   { "title": "Indstillinger",     "subtitle": "Spider-Lens-konfiguration" },
-      "assistant":  { "title": "AI-analyse",  "subtitle": "Analyser dine logs på naturligt sprog" }
+      "dashboard": {
+        "title": "Dashboard",
+        "subtitle": "Globalt overblik over din trafik"
+      },
+      "http-codes": {
+        "title": "HTTP-koder",
+        "subtitle": "HTTP-statusudvikling over tid"
+      },
+      "top-pages": {
+        "title": "Top sider",
+        "subtitle": "Mest viste sider og 404-fejl"
+      },
+      "bots": {
+        "title": "Bots & Crawlers",
+        "subtitle": "Indekserings bots analyse"
+      },
+      "ttfb": {
+        "title": "Indlæsningstid",
+        "subtitle": "TTFB — Tid til første byte pr. URL"
+      },
+      "network": {
+        "title": "Netværk",
+        "subtitle": "IP'er og User-Agenter"
+      },
+      "anomalies": {
+        "title": "Anomalier",
+        "subtitle": "Detekteret unormale adfærd"
+      },
+      "blocklist": {
+        "title": "Blokkeringsliste",
+        "subtitle": "Blokerede IP'er"
+      },
+      "settings": {
+        "title": "Indstillinger",
+        "subtitle": "Spider-Lens-konfiguration"
+      },
+      "assistant": {
+        "title": "AI-analyse",
+        "subtitle": "Analyser dine logs på naturligt sprog"
+      }
     }
   },
   "common": {
@@ -422,7 +452,17 @@
     "buttonChangeUsername": "Skift brugernavn",
     "passwordMismatch": "Adgangskoderne stemmer ikke overens",
     "passwordSuccess": "Adgangskode ændret med succes",
-    "confirmDeleteSite": "Slet dette websted? Tilknyttede logdata opbevares."
+    "confirmDeleteSite": "Slet dette websted? Tilknyttede logdata opbevares.",
+    "sitemaps": "Crawler-sitemaps",
+    "noSitemapsYet": "Ingen sitemap konfigureret",
+    "sitemapPlaceholder": "https://example.com/sitemap.xml",
+    "addSitemap": "Tilføj",
+    "launchCrawl": "Start crawl",
+    "cancelCrawl": "Annuller",
+    "crawlRunning": "Crawl kørende",
+    "crawlPages": "sider",
+    "lastCrawl": "Seneste crawl",
+    "noCrawlYet": "Ingen crawl endnu"
   },
   "dbAdmin": {
     "sectionTitle": "Databasestyring",

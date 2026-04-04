@@ -3,6 +3,7 @@ import { parseLogFile } from './parser.js'
 import { checkAndSendAlerts } from './mailer.js'
 import { detectAnomalies } from './anomalyDetector.js'
 import { sendWeeklyReports } from './weeklyReport.js'
+import { startCrawl, getCrawlStatus } from './crawler.js'
 import { getDb } from '../db/database.js'
 import dotenv from 'dotenv'
 
@@ -69,6 +70,26 @@ export function startCron() {
   cron.schedule('0 8 * * 1', async () => {
     console.log('[cron] Envoi du rapport hebdomadaire...')
     await sendWeeklyReports()
+  })
+
+  // Auto-crawl hebdomadaire — chaque dimanche à 3h
+  cron.schedule('0 3 * * 0', async () => {
+    const db = getDb()
+    const sites = db.prepare(`
+      SELECT s.id, s.name FROM sites s
+      WHERE s.active = 1
+        AND EXISTS (SELECT 1 FROM site_sitemaps sm WHERE sm.site_id = s.id)
+    `).all()
+    for (const site of sites) {
+      const status = getCrawlStatus(site.id)
+      if (status?.status === 'running' || status?.status === 'cancelling') continue
+      try {
+        await startCrawl(site.id)
+        console.log(`[cron] Auto-crawl démarré pour site "${site.name}" (id=${site.id})`)
+      } catch (e) {
+        console.error(`[cron] Erreur auto-crawl site ${site.id}:`, e.message)
+      }
+    }
   })
 
   // Purge des données anciennes + VACUUM (chaque nuit à 2h)

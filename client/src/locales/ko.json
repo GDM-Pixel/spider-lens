@@ -22,16 +22,46 @@
     "openMenu": "메뉴 열기",
     "closeMenu": "메뉴 닫기",
     "pages": {
-      "dashboard":  { "title": "대시보드",    "subtitle": "트래픽 전체 개요" },
-      "http-codes": { "title": "HTTP 코드",   "subtitle": "시간에 따른 HTTP 상태 변화" },
-      "top-pages":  { "title": "상위 페이지",    "subtitle": "가장 많이 본 페이지 및 404 오류" },
-      "bots":       { "title": "봇 & 크롤러", "subtitle": "색인 로봇 분석" },
-      "ttfb":       { "title": "로드 시간",    "subtitle": "TTFB — URL당 첫 바이트까지의 시간" },
-      "network":    { "title": "네트워크",      "subtitle": "IP 및 User-Agent" },
-      "anomalies":  { "title": "이상",    "subtitle": "감지된 비정상 동작" },
-      "blocklist":  { "title": "차단 목록",    "subtitle": "차단된 IP" },
-      "settings":   { "title": "설정",     "subtitle": "Spider-Lens 구성" },
-      "assistant":  { "title": "AI 분석",  "subtitle": "자연 언어로 로그 분석" }
+      "dashboard": {
+        "title": "대시보드",
+        "subtitle": "트래픽 전체 개요"
+      },
+      "http-codes": {
+        "title": "HTTP 코드",
+        "subtitle": "시간에 따른 HTTP 상태 변화"
+      },
+      "top-pages": {
+        "title": "상위 페이지",
+        "subtitle": "가장 많이 본 페이지 및 404 오류"
+      },
+      "bots": {
+        "title": "봇 & 크롤러",
+        "subtitle": "색인 로봇 분석"
+      },
+      "ttfb": {
+        "title": "로드 시간",
+        "subtitle": "TTFB — URL당 첫 바이트까지의 시간"
+      },
+      "network": {
+        "title": "네트워크",
+        "subtitle": "IP 및 User-Agent"
+      },
+      "anomalies": {
+        "title": "이상",
+        "subtitle": "감지된 비정상 동작"
+      },
+      "blocklist": {
+        "title": "차단 목록",
+        "subtitle": "차단된 IP"
+      },
+      "settings": {
+        "title": "설정",
+        "subtitle": "Spider-Lens 구성"
+      },
+      "assistant": {
+        "title": "AI 분석",
+        "subtitle": "자연 언어로 로그 분석"
+      }
     }
   },
   "common": {
@@ -422,7 +452,17 @@
     "buttonChangeUsername": "사용자명 변경",
     "passwordMismatch": "비밀번호가 일치하지 않습니다",
     "passwordSuccess": "비밀번호가 성공적으로 변경되었습니다",
-    "confirmDeleteSite": "이 사이트를 삭제하시겠습니까? 관련된 로그 데이터는 유지됩니다."
+    "confirmDeleteSite": "이 사이트를 삭제하시겠습니까? 관련된 로그 데이터는 유지됩니다.",
+    "sitemaps": "크롤러 사이트맵",
+    "noSitemapsYet": "사이트맵이 설정되지 않음",
+    "sitemapPlaceholder": "https://example.com/sitemap.xml",
+    "addSitemap": "추가",
+    "launchCrawl": "크롤링 시작",
+    "cancelCrawl": "취소",
+    "crawlRunning": "크롤링 중",
+    "crawlPages": "페이지",
+    "lastCrawl": "마지막 크롤링",
+    "noCrawlYet": "아직 크롤링 없음"
   },
   "dbAdmin": {
     "sectionTitle": "데이터베이스 관리",

@@ -22,16 +22,46 @@
     "openMenu": "Open menu",
     "closeMenu": "Collapse menu",
     "pages": {
-      "dashboard":  { "title": "Dashboard",     "subtitle": "Global overview of your traffic" },
-      "http-codes": { "title": "HTTP Codes",     "subtitle": "Evolution of HTTP statuses over time" },
-      "top-pages":  { "title": "Top Pages",      "subtitle": "Most viewed pages & 404 errors" },
-      "bots":       { "title": "Bots & Crawlers","subtitle": "Analysis of detected crawl bots" },
-      "ttfb":       { "title": "Load Time",      "subtitle": "TTFB — Time To First Byte per URL" },
-      "network":    { "title": "Network",        "subtitle": "IPs and User-Agents" },
-      "anomalies":  { "title": "Anomalies",      "subtitle": "Automatically detected abnormal behaviour" },
-      "blocklist":  { "title": "Blocklist",      "subtitle": "Blocked IPs" },
-      "settings":   { "title": "Settings",       "subtitle": "Spider-Lens configuration" },
-      "assistant":  { "title": "AI Analysis",    "subtitle": "Analyze your logs in natural language" }
+      "dashboard": {
+        "title": "Dashboard",
+        "subtitle": "Global overview of your traffic"
+      },
+      "http-codes": {
+        "title": "HTTP Codes",
+        "subtitle": "Evolution of HTTP statuses over time"
+      },
+      "top-pages": {
+        "title": "Top Pages",
+        "subtitle": "Most viewed pages & 404 errors"
+      },
+      "bots": {
+        "title": "Bots & Crawlers",
+        "subtitle": "Analysis of detected crawl bots"
+      },
+      "ttfb": {
+        "title": "Load Time",
+        "subtitle": "TTFB — Time To First Byte per URL"
+      },
+      "network": {
+        "title": "Network",
+        "subtitle": "IPs and User-Agents"
+      },
+      "anomalies": {
+        "title": "Anomalies",
+        "subtitle": "Automatically detected abnormal behaviour"
+      },
+      "blocklist": {
+        "title": "Blocklist",
+        "subtitle": "Blocked IPs"
+      },
+      "settings": {
+        "title": "Settings",
+        "subtitle": "Spider-Lens configuration"
+      },
+      "assistant": {
+        "title": "AI Analysis",
+        "subtitle": "Analyze your logs in natural language"
+      }
     }
   },
   "common": {
@@ -422,7 +452,17 @@
     "buttonChangeUsername": "Change username",
     "passwordMismatch": "Passwords do not match",
     "passwordSuccess": "Password changed successfully",
-    "confirmDeleteSite": "Delete this site? Associated log data will be kept."
+    "confirmDeleteSite": "Delete this site? Associated log data will be kept.",
+    "sitemaps": "Crawler sitemaps",
+    "noSitemapsYet": "No sitemap configured",
+    "sitemapPlaceholder": "https://example.com/sitemap.xml",
+    "addSitemap": "Add",
+    "launchCrawl": "Launch crawl",
+    "cancelCrawl": "Cancel",
+    "crawlRunning": "Crawl in progress",
+    "crawlPages": "pages",
+    "lastCrawl": "Last crawl",
+    "noCrawlYet": "No crawl yet"
   },
   "dbAdmin": {
     "sectionTitle": "Database Management",

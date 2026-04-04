@@ -22,16 +22,46 @@
     "openMenu": "メニューを開く",
     "closeMenu": "メニューを閉じる",
     "pages": {
-      "dashboard":  { "title": "ダッシュボード",    "subtitle": "トラフィック全体の概要" },
-      "http-codes": { "title": "HTTPコード",   "subtitle": "時系列のHTTPステータス推移" },
-      "top-pages":  { "title": "トップページ",    "subtitle": "最も閲覧されたページと404エラー" },
-      "bots":       { "title": "ボット & クローラー", "subtitle": "インデックスロボットの分析" },
-      "ttfb":       { "title": "読み込み時間",    "subtitle": "TTFB — URL別の最初のバイトまでの時間" },
-      "network":    { "title": "ネットワーク",      "subtitle": "IPとUser-Agent" },
-      "anomalies":  { "title": "異常",    "subtitle": "検出された異常な動作" },
-      "blocklist":  { "title": "ブロックリスト",    "subtitle": "ブロックされたIP" },
-      "settings":   { "title": "設定",     "subtitle": "Spider-Lens設定" },
-      "assistant":  { "title": "AI分析",  "subtitle": "自然言語でログを分析する" }
+      "dashboard": {
+        "title": "ダッシュボード",
+        "subtitle": "トラフィック全体の概要"
+      },
+      "http-codes": {
+        "title": "HTTPコード",
+        "subtitle": "時系列のHTTPステータス推移"
+      },
+      "top-pages": {
+        "title": "トップページ",
+        "subtitle": "最も閲覧されたページと404エラー"
+      },
+      "bots": {
+        "title": "ボット & クローラー",
+        "subtitle": "インデックスロボットの分析"
+      },
+      "ttfb": {
+        "title": "読み込み時間",
+        "subtitle": "TTFB — URL別の最初のバイトまでの時間"
+      },
+      "network": {
+        "title": "ネットワーク",
+        "subtitle": "IPとUser-Agent"
+      },
+      "anomalies": {
+        "title": "異常",
+        "subtitle": "検出された異常な動作"
+      },
+      "blocklist": {
+        "title": "ブロックリスト",
+        "subtitle": "ブロックされたIP"
+      },
+      "settings": {
+        "title": "設定",
+        "subtitle": "Spider-Lens設定"
+      },
+      "assistant": {
+        "title": "AI分析",
+        "subtitle": "自然言語でログを分析する"
+      }
     }
   },
   "common": {
@@ -422,7 +452,17 @@
     "buttonChangeUsername": "ユーザー名を変更",
     "passwordMismatch": "パスワードが一致しません",
     "passwordSuccess": "パスワードが正常に変更されました",
-    "confirmDeleteSite": "このサイトを削除しますか?関連するログデータは保持されます。"
+    "confirmDeleteSite": "このサイトを削除しますか?関連するログデータは保持されます。",
+    "sitemaps": "クローラーサイトマップ",
+    "noSitemapsYet": "サイトマップが未設定",
+    "sitemapPlaceholder": "https://example.com/sitemap.xml",
+    "addSitemap": "追加",
+    "launchCrawl": "クロール開始",
+    "cancelCrawl": "キャンセル",
+    "crawlRunning": "クロール中",
+    "crawlPages": "ページ",
+    "lastCrawl": "最終クロール",
+    "noCrawlYet": "クロール未実施"
   },
   "dbAdmin": {
     "sectionTitle": "データベース管理",

@@ -43,6 +43,7 @@ import networkRoutes from './routes/network.js'
 import blocklistRoutes from './routes/blocklist.js'
 import adminRoutes from './routes/admin.js'
 import assistantRoutes from './routes/assistant.js'
+import crawlerRoutes from './routes/crawler.js'
 import { startCron } from './services/cron.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -82,6 +83,7 @@ app.use('/api/network', networkRoutes)
 app.use('/api/blocklist', blocklistRoutes)
 app.use('/api/admin', adminRoutes)
 app.use('/api/assistant', assistantRoutes)
+app.use('/api/crawler', crawlerRoutes)
 
 // ── Sanity check ─────────────────────────────────────────
 app.get('/api/health', (req, res) => res.json({ status: 'ok', version: '0.7.0' }))

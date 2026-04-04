@@ -53,20 +53,35 @@ export function buildSiteSummary(siteId) {
     ? `${((( overview.s4xx + overview.s5xx) / overview.total) * 100).toFixed(1)}%`
     : '0%'
 
-  // -- Top 5 pages 404 humains réels (hors scans, hors UA vides/corrompus)
+  // Filtre UA : exclure uniquement les UA vides ou corrompus (bots qui se font passer pour humains)
+  // Ne PAS filtrer par URL — les sites WordPress ont des URLs /wp-content, /wp-json légitimes
+  const SCAN_UA_SQL = `(user_agent IS NOT NULL AND user_agent != '-' AND user_agent NOT LIKE '"%')`
+
+  // URLs universellement suspectes (aucun site légitime ne les sert) — pour l'estimation des scans
+  const SCAN_ONLY_URL_SQL = `(
+    url LIKE '%wp-login%' OR url LIKE '%xmlrpc%'
+    OR url LIKE '%.env%' OR url LIKE '%/.git%' OR url LIKE '%/phpmyadmin%'
+    OR url LIKE '%wlwmanifest%' OR url LIKE '%/actuator%'
+    OR url LIKE '%/info.php%'
+  )`
+
+  // -- Top 5 pages 404 humains réels (hors UA vides/corrompus — inclut URLs WP légitimes)
   const top404 = db.prepare(`
     SELECT url, COUNT(*) AS hits
     FROM log_entries
     WHERE timestamp BETWEEN ? AND ? AND status_code = 404 AND is_bot = 0
-      AND (user_agent IS NOT NULL AND user_agent != '-' AND user_agent NOT LIKE '"%')
-      AND NOT (
-        url LIKE '%wp-admin%' OR url LIKE '%wp-login%' OR url LIKE '%xmlrpc%'
-        OR url LIKE '%.env%' OR url LIKE '%/.git%' OR url LIKE '%/phpmyadmin%'
-        OR url LIKE '%/info.php%' OR url LIKE '%.php%'
-        OR url LIKE '%/admin%' OR url LIKE '%traffic-advice%'
-      ) ${sc}
+      AND ${SCAN_UA_SQL} ${sc}
     GROUP BY url ORDER BY hits DESC LIMIT 5
   `).all(from, to, ...sp).map(r => ({ url: trunc(r.url), hits: r.hits }))
+
+  // -- Estimation des requêtes scan (bots déguisés en humains — URLs non-WordPress)
+  const scanEstimate = db.prepare(`
+    SELECT COUNT(*) AS count
+    FROM log_entries
+    WHERE timestamp BETWEEN ? AND ? AND is_bot = 0
+      AND ${SCAN_UA_SQL}
+      AND ${SCAN_ONLY_URL_SQL} ${sc}
+  `).get(from, to, ...sp)
 
   // -- 404 breakdown : humains vs bots vs scans malveillants
   const err404Detail = db.prepare(`
@@ -74,24 +89,15 @@ export function buildSiteSummary(siteId) {
       SUM(CASE WHEN is_bot = 0 THEN 1 ELSE 0 END) AS human404,
       SUM(CASE WHEN is_bot = 1 AND user_agent LIKE '%Googlebot%' THEN 1 ELSE 0 END) AS googlebot404,
       SUM(CASE WHEN is_bot = 1 AND user_agent NOT LIKE '%Googlebot%'
-               AND (url LIKE '%wp-admin%' OR url LIKE '%wp-login%' OR url LIKE '%.env%'
-                    OR url LIKE '%/.git%' OR url LIKE '%/admin%' OR url LIKE '%/phpmyadmin%'
+               AND (url LIKE '%wp-login%' OR url LIKE '%.env%'
+                    OR url LIKE '%/.git%' OR url LIKE '%/phpmyadmin%'
                     OR url LIKE '%xmlrpc%') THEN 1 ELSE 0 END) AS scan404,
       SUM(CASE WHEN is_bot = 1 THEN 1 ELSE 0 END) AS bot404
     FROM log_entries
     WHERE timestamp BETWEEN ? AND ? AND status_code = 404 ${sc}
   `).get(from, to, ...sp)
 
-  // -- Taux d'erreur humains réels (SEO-pertinent)
-  // On exclut les URLs de scan/intrusion et les UA vides — ces requêtes viennent de bots
-  // mal classifiés qui se font passer pour des humains
-  const SCAN_URL_PATTERN = `(
-    url LIKE '%wp-admin%' OR url LIKE '%wp-login%' OR url LIKE '%xmlrpc%'
-    OR url LIKE '%.env%' OR url LIKE '%/.git%' OR url LIKE '%/phpmyadmin%'
-    OR url LIKE '%/info.php%' OR url LIKE '%.php%'
-    OR url LIKE '%/admin%' OR url LIKE '%traffic-advice%'
-  )`
-
+  // -- Taux d'erreur humains réels (SEO-pertinent — hors UA vides/corrompus uniquement)
   const humanOverview = db.prepare(`
     SELECT
       COUNT(*) AS total,
@@ -99,8 +105,7 @@ export function buildSiteSummary(siteId) {
       SUM(CASE WHEN status_code BETWEEN 500 AND 599 THEN 1 ELSE 0 END) AS s5xx
     FROM log_entries
     WHERE timestamp BETWEEN ? AND ? AND is_bot = 0
-      AND (user_agent IS NOT NULL AND user_agent != '-' AND user_agent NOT LIKE '"%')
-      AND NOT ${SCAN_URL_PATTERN} ${sc}
+      AND ${SCAN_UA_SQL} ${sc}
   `).get(from, to, ...sp)
 
   const humanErrorRate = humanOverview.total > 0
@@ -227,6 +232,32 @@ export function buildSiteSummary(siteId) {
     ORDER BY detected_at DESC LIMIT 3
   `).all(from, ...sp).map(r => ({ type: r.type, severity: r.severity, date: r.date }))
 
+  // -- Données crawl on-page (si disponibles pour ce site)
+  let crawlSummary = null
+  if (siteId != null) {
+    const crawlTotal = db.prepare('SELECT COUNT(*) as cnt FROM crawled_pages WHERE site_id = ?').get(siteId)?.cnt || 0
+    if (crawlTotal > 0) {
+      const missingTitle = db.prepare("SELECT COUNT(*) as cnt FROM crawled_pages WHERE site_id = ? AND (title IS NULL OR title = '')").get(siteId).cnt
+      const missingH1    = db.prepare("SELECT COUNT(*) as cnt FROM crawled_pages WHERE site_id = ? AND (h1 IS NULL OR h1 = '')").get(siteId).cnt
+      const noindex      = db.prepare("SELECT COUNT(*) as cnt FROM crawled_pages WHERE site_id = ? AND meta_robots LIKE '%noindex%'").get(siteId).cnt
+      const avgWc        = db.prepare("SELECT ROUND(AVG(word_count)) as avg FROM crawled_pages WHERE site_id = ? AND word_count > 0").get(siteId)?.avg || 0
+      const thinContent  = db.prepare("SELECT COUNT(*) as cnt FROM crawled_pages WHERE site_id = ? AND word_count > 0 AND word_count < 300").get(siteId).cnt
+      const errors       = db.prepare("SELECT COUNT(*) as cnt FROM crawled_pages WHERE site_id = ? AND error IS NOT NULL").get(siteId).cnt
+      const lastCrawl    = db.prepare("SELECT MAX(crawled_at) as dt FROM crawled_pages WHERE site_id = ?").get(siteId)?.dt
+      crawlSummary = { total: crawlTotal, missingTitle, missingH1, noindex, avgWordCount: avgWc, thinContent, errors, lastCrawl }
+    }
+  }
+
+  // -- Cross-référence : top404 URLs présentes dans crawled_pages = vrais liens cassés internes
+  // inCrawl: true → URL connue du site → problème SEO réel (lien cassé)
+  // inCrawl: false → URL inconnue → scanner ou lien externe → à ignorer pour le score
+  const top404WithCrawlRef = top404.map(item => {
+    if (siteId == null || !crawlSummary) return { ...item, inCrawl: null }
+    const urlPattern = item.url.replace(/…$/, '')
+    const found = db.prepare("SELECT 1 FROM crawled_pages WHERE site_id = ? AND url LIKE ? LIMIT 1").get(siteId, `%${urlPattern}%`)
+    return { ...item, inCrawl: !!found }
+  })
+
   return {
     period: '30d',
     overview: {
@@ -239,6 +270,9 @@ export function buildSiteSummary(siteId) {
       s5xx: overview.s5xx,
       errorRate,             // taux global (humains + bots)
       humanErrorRate,        // taux erreur humains uniquement — SEO-pertinent
+      // Estimation des requêtes de scan déguisées en humains (wp-login, .env, xmlrpc, etc.)
+      // Si ce chiffre est élevé, humanErrorRate peut être artificiellement gonflé
+      scanRequestsEstimate: scanEstimate?.count ?? 0,
     },
     // 404 breakdown : humains / googlebot / scans malveillants
     err404Detail: {
@@ -247,7 +281,7 @@ export function buildSiteSummary(siteId) {
       scan404: err404Detail?.scan404 ?? 0,   // wp-admin, .env, etc. — à IGNORER pour le score SEO
       bot404: err404Detail?.bot404 ?? 0,
     },
-    top404,           // top 404 humains uniquement
+    top404: top404WithCrawlRef,  // top 404 humains, avec inCrawl: true/false/null
     topPages,
     topBots,
     // Googlebot — indicateur SEO principal
@@ -263,6 +297,7 @@ export function buildSiteSummary(siteId) {
     topCountries,
     weeklyTrend,
     recentAnomalies,
+    crawlSummary,    // données on-page du crawler (null si pas encore crawlé)
   }
 }
 
@@ -392,10 +427,20 @@ WHAT MATTERS FOR SEO (affects the score):
 5. Human 404s (top404 field, human visits only): broken links hurt SEO
 
 WHAT DOES NOT AFFECT SEO SCORE:
-- scan404 in err404Detail: these are security scan attempts (wp-admin, .env, .git, xmlrpc, .php files) by malicious bots — they are NOT a Google SEO problem. NEVER penalize the score for these.
+- scan404 in err404Detail: these are security scan attempts (wp-login, .env, .git, xmlrpc) by malicious bots — NOT a Google SEO problem. NEVER penalize the score for these.
 - High bot traffic ratio in general: security bots, scrapers etc. don't affect Google rankings
 - The global errorRate field includes all those bot scans — do NOT use it for scoring. Use humanErrorRate instead.
-- humanErrorRate is already filtered: scan URLs and empty/corrupted user-agents are excluded. It reflects real visitor experience only.
+- scanRequestsEstimate in overview: estimated requests to known scan URLs from bots disguised as humans. If humanErrorRate seems high AND scanRequestsEstimate is significant (> 50), the true human error rate is likely lower. Mention it as informational only.
+
+CRAWLER DATA (top404 cross-reference — when crawlSummary is available):
+- top404 entries with "inCrawl: true": the URL was found during sitemap crawl → this is a REAL broken internal link. Penalize the score accordingly.
+- top404 entries with "inCrawl: false": the URL was NOT found during crawling → it's not a real page (scanner probing, external referrer, outdated bookmark). Do NOT penalize the score for these.
+- top404 entries with "inCrawl: null": no crawl data available yet, treat with caution.
+- crawlSummary.missingTitle > 0: pages without <title> tag — critical SEO issue, penalize.
+- crawlSummary.missingH1 > 0: pages without <h1> tag — important SEO issue, mention as warning.
+- crawlSummary.thinContent: pages < 300 words — flag as warning if > 10% of total pages.
+- crawlSummary.noindex: noindex pages — mention as info (may be intentional).
+- If crawlSummary is null: no crawl has been run yet, do not mention crawl data.
 
 SCORING RULES:
 - 80-100 → "${labels.great}", scoreColor: "green"

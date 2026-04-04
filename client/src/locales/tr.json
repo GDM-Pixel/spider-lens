@@ -22,16 +22,46 @@
     "openMenu": "Menüyü aç",
     "closeMenu": "Menüyü kapat",
     "pages": {
-      "dashboard":  { "title": "Pano",    "subtitle": "Trafiğinizin genel özeti" },
-      "http-codes": { "title": "HTTP Kodları",   "subtitle": "Zaman içinde HTTP durum geçişi" },
-      "top-pages":  { "title": "En İyi Sayfalar",    "subtitle": "En çok görüntülenen sayfalar ve 404 hataları" },
-      "bots":       { "title": "Botlar & Tarayıcılar", "subtitle": "İndeksleme robotları analizi" },
-      "ttfb":       { "title": "Yükleme Süresi",    "subtitle": "TTFB — URL başına İlk Bayt Süresi" },
-      "network":    { "title": "Ağ",      "subtitle": "IP'ler ve User-Agentlar" },
-      "anomalies":  { "title": "Anomaliler",    "subtitle": "Tespit edilen anormal davranışlar" },
-      "blocklist":  { "title": "Engelleme Listesi",    "subtitle": "Engellenen IP'ler" },
-      "settings":   { "title": "Ayarlar",     "subtitle": "Spider-Lens yapılandırması" },
-      "assistant":  { "title": "AI Analizi",  "subtitle": "Kayıtlarınızı doğal dilde analiz edin" }
+      "dashboard": {
+        "title": "Pano",
+        "subtitle": "Trafiğinizin genel özeti"
+      },
+      "http-codes": {
+        "title": "HTTP Kodları",
+        "subtitle": "Zaman içinde HTTP durum geçişi"
+      },
+      "top-pages": {
+        "title": "En İyi Sayfalar",
+        "subtitle": "En çok görüntülenen sayfalar ve 404 hataları"
+      },
+      "bots": {
+        "title": "Botlar & Tarayıcılar",
+        "subtitle": "İndeksleme robotları analizi"
+      },
+      "ttfb": {
+        "title": "Yükleme Süresi",
+        "subtitle": "TTFB — URL başına İlk Bayt Süresi"
+      },
+      "network": {
+        "title": "Ağ",
+        "subtitle": "IP'ler ve User-Agentlar"
+      },
+      "anomalies": {
+        "title": "Anomaliler",
+        "subtitle": "Tespit edilen anormal davranışlar"
+      },
+      "blocklist": {
+        "title": "Engelleme Listesi",
+        "subtitle": "Engellenen IP'ler"
+      },
+      "settings": {
+        "title": "Ayarlar",
+        "subtitle": "Spider-Lens yapılandırması"
+      },
+      "assistant": {
+        "title": "AI Analizi",
+        "subtitle": "Kayıtlarınızı doğal dilde analiz edin"
+      }
     }
   },
   "common": {
@@ -422,7 +452,17 @@
     "buttonChangeUsername": "Kullanıcı adını değiştir",
     "passwordMismatch": "Şifreler uyuşmuyor",
     "passwordSuccess": "Şifre başarıyla değiştirildi",
-    "confirmDeleteSite": "Bu siteyi silmek istiyor musunuz? İlişkili günlük verileri tutulacaktır."
+    "confirmDeleteSite": "Bu siteyi silmek istiyor musunuz? İlişkili günlük verileri tutulacaktır.",
+    "sitemaps": "Tarayıcı sitemapları",
+    "noSitemapsYet": "Sitemap yapılandırılmamış",
+    "sitemapPlaceholder": "https://example.com/sitemap.xml",
+    "addSitemap": "Ekle",
+    "launchCrawl": "Taramayı başlat",
+    "cancelCrawl": "İptal",
+    "crawlRunning": "Tarama devam ediyor",
+    "crawlPages": "sayfa",
+    "lastCrawl": "Son tarama",
+    "noCrawlYet": "Henüz tarama yok"
   },
   "dbAdmin": {
     "sectionTitle": "Veritabanı yönetimi",

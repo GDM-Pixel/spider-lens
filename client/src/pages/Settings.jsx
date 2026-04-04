@@ -44,6 +44,14 @@ export default function Settings() {
   const [siteMsg, setSiteMsg] = useState(null)
   const [savingSite, setSavingSite] = useState(false)
 
+  // Crawler / sitemaps
+  const [sitemapsBySite, setSitemapsBySite] = useState({})        // { [siteId]: [{ id, url }] }
+  const [crawlStatusBySite, setCrawlStatusBySite] = useState({})  // { [siteId]: statusObj }
+  const [expandedSiteId, setExpandedSiteId] = useState(null)      // quel site a son panneau ouvert
+  const [newSitemapUrl, setNewSitemapUrl] = useState({})          // { [siteId]: string }
+  const [addingSitemap, setAddingSitemap] = useState({})          // { [siteId]: bool }
+  const [crawlPollers, setCrawlPollers] = useState({})            // { [siteId]: intervalId }
+
   useEffect(() => {
     api.get('/alerts/config').then(r => setConfig(r.data)).finally(() => setLoading(false))
     loadDbStats()
@@ -219,7 +227,87 @@ export default function Settings() {
   async function handleDeleteSite(id) {
     if (!confirm(t('settings.confirmDeleteSite'))) return
     await api.delete(`/sites/${id}`)
+    stopCrawlPolling(id)
     await reloadSites()
+  }
+
+  // ── Sitemaps + Crawler ──────────────────────────────────
+
+  async function loadSitemaps(siteId) {
+    try {
+      const r = await api.get(`/crawler/${siteId}/sitemaps`)
+      setSitemapsBySite(prev => ({ ...prev, [siteId]: r.data }))
+    } catch { /* ignore */ }
+  }
+
+  async function loadCrawlStatus(siteId) {
+    try {
+      const r = await api.get(`/crawler/${siteId}/status`)
+      setCrawlStatusBySite(prev => ({ ...prev, [siteId]: r.data }))
+      return r.data
+    } catch { return null }
+  }
+
+  function startCrawlPolling(siteId) {
+    if (crawlPollers[siteId]) return
+    const id = setInterval(async () => {
+      const status = await loadCrawlStatus(siteId)
+      if (status && status.status !== 'running' && status.status !== 'cancelling') {
+        stopCrawlPolling(siteId)
+      }
+    }, 3000)
+    setCrawlPollers(prev => ({ ...prev, [siteId]: id }))
+  }
+
+  function stopCrawlPolling(siteId) {
+    setCrawlPollers(prev => {
+      if (prev[siteId]) clearInterval(prev[siteId])
+      const next = { ...prev }
+      delete next[siteId]
+      return next
+    })
+  }
+
+  async function handleToggleSitemapPanel(siteId) {
+    if (expandedSiteId === siteId) {
+      setExpandedSiteId(null)
+    } else {
+      setExpandedSiteId(siteId)
+      await loadSitemaps(siteId)
+      await loadCrawlStatus(siteId)
+    }
+  }
+
+  async function handleAddSitemap(siteId) {
+    const url = (newSitemapUrl[siteId] || '').trim()
+    if (!url) return
+    setAddingSitemap(prev => ({ ...prev, [siteId]: true }))
+    try {
+      await api.post(`/crawler/${siteId}/sitemaps`, { url })
+      setNewSitemapUrl(prev => ({ ...prev, [siteId]: '' }))
+      await loadSitemaps(siteId)
+    } catch { /* ignore */ }
+    finally { setAddingSitemap(prev => ({ ...prev, [siteId]: false })) }
+  }
+
+  async function handleDeleteSitemap(siteId, sitemapId) {
+    await api.delete(`/crawler/${siteId}/sitemaps/${sitemapId}`)
+    await loadSitemaps(siteId)
+  }
+
+  async function handleStartCrawl(siteId) {
+    try {
+      await api.post(`/crawler/${siteId}/start`)
+      await loadCrawlStatus(siteId)
+      startCrawlPolling(siteId)
+    } catch { /* ignore */ }
+  }
+
+  async function handleCancelCrawl(siteId) {
+    try {
+      await api.post(`/crawler/${siteId}/cancel`)
+      await loadCrawlStatus(siteId)
+    } catch { /* ignore */ }
   }
 
   async function handleToggleSite(site) {
@@ -261,38 +349,138 @@ export default function Settings() {
         {/* Liste des sites */}
         {sites.length > 0 && (
           <div className="flex flex-col gap-2">
-            {sites.map(site => (
-              <div key={site.id} className="flex items-center justify-between gap-3 bg-prussian-600 rounded-lg px-4 py-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className={`w-2 h-2 rounded-full shrink-0 ${site.active ? 'bg-emerald-400' : 'bg-errorgrey'}`} />
-                  <div className="min-w-0">
-                    <p className="text-white text-sm font-semibold truncate">{site.name}</p>
-                    <p className="text-errorgrey text-xs truncate">{site.log_file_path}</p>
+            {sites.map(site => {
+              const crawlStatus = crawlStatusBySite[site.id]
+              const isRunning = crawlStatus?.status === 'running' || crawlStatus?.status === 'cancelling'
+              const isExpanded = expandedSiteId === site.id
+              const sitemaps = sitemapsBySite[site.id] || []
+
+              return (
+                <div key={site.id} className="flex flex-col bg-prussian-600 rounded-lg overflow-hidden">
+                  {/* Site row */}
+                  <div className="flex items-center justify-between gap-3 px-4 py-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`w-2 h-2 rounded-full shrink-0 ${site.active ? 'bg-emerald-400' : 'bg-errorgrey'}`} />
+                      <div className="min-w-0">
+                        <p className="text-white text-sm font-semibold truncate">{site.name}</p>
+                        <p className="text-errorgrey text-xs truncate">{site.log_file_path}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => handleToggleSitemapPanel(site.id)}
+                        title={t('settings.sitemaps')}
+                        className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${isExpanded ? 'text-moonstone-400 bg-moonstone-400/15' : 'text-errorgrey hover:text-moonstone-400 hover:bg-prussian-400'}`}
+                      >
+                        <Icon icon={isRunning ? 'ph:spinner' : 'ph:magnifying-glass'} className={`text-base ${isRunning ? 'animate-spin' : ''}`} />
+                      </button>
+                      <button
+                        onClick={() => handleToggleSite(site)}
+                        title={site.active ? t('settings.toggleDisable') : t('settings.toggleEnable')}
+                        className={`text-xs px-2 py-1 rounded border transition-colors ${site.active ? 'border-emerald-700 text-emerald-400 hover:bg-emerald-400/10' : 'border-prussian-300 text-errorgrey hover:text-white'}`}
+                      >
+                        {site.active ? t('settings.statusActive') : t('settings.statusInactive')}
+                      </button>
+                      <button
+                        onClick={() => startEditSite(site)}
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-errorgrey hover:text-moonstone-400 hover:bg-prussian-400 transition-colors"
+                      >
+                        <Icon icon="ph:pencil-simple" className="text-base" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteSite(site.id)}
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-errorgrey hover:text-dustyred-400 hover:bg-dustyred-400/10 transition-colors"
+                      >
+                        <Icon icon="ph:trash" className="text-base" />
+                      </button>
+                    </div>
                   </div>
+
+                  {/* Panneau Sitemaps */}
+                  {isExpanded && (
+                    <div className="border-t border-prussian-500 px-4 py-3 flex flex-col gap-3">
+                      <p className="text-lightgrey text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
+                        <Icon icon="ph:map-trifold" className="text-moonstone-400 text-sm" />
+                        {t('settings.sitemaps')}
+                      </p>
+
+                      {/* Liste sitemaps */}
+                      {sitemaps.length > 0 ? (
+                        <div className="flex flex-col gap-1">
+                          {sitemaps.map(sm => (
+                            <div key={sm.id} className="flex items-center justify-between gap-2 bg-prussian-500 rounded px-3 py-1.5">
+                              <span className="text-lightgrey text-xs truncate">{sm.url}</span>
+                              <button
+                                onClick={() => handleDeleteSitemap(site.id, sm.id)}
+                                className="w-5 h-5 rounded flex items-center justify-center text-errorgrey hover:text-dustyred-400 transition-colors shrink-0"
+                              >
+                                <Icon icon="ph:x" className="text-xs" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-errorgrey text-xs italic">{t('settings.noSitemapsYet')}</p>
+                      )}
+
+                      {/* Ajouter un sitemap */}
+                      <div className="flex gap-2">
+                        <input
+                          type="url"
+                          value={newSitemapUrl[site.id] || ''}
+                          onChange={e => setNewSitemapUrl(prev => ({ ...prev, [site.id]: e.target.value }))}
+                          placeholder={t('settings.sitemapPlaceholder')}
+                          className="flex-1 bg-prussian-700 border border-prussian-400 rounded-lg px-3 py-1.5 text-white text-xs placeholder-errorgrey focus:outline-none focus:border-moonstone-400"
+                          onKeyDown={e => e.key === 'Enter' && handleAddSitemap(site.id)}
+                        />
+                        <button
+                          onClick={() => handleAddSitemap(site.id)}
+                          disabled={addingSitemap[site.id] || !(newSitemapUrl[site.id] || '').trim()}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-prussian-400 hover:bg-prussian-300 border border-prussian-300 rounded-lg text-xs text-white font-semibold transition-colors disabled:opacity-50 shrink-0"
+                        >
+                          <Icon icon="ph:plus" className="text-sm" />
+                          {t('settings.addSitemap')}
+                        </button>
+                      </div>
+
+                      {/* Contrôles crawl */}
+                      <div className="flex items-center justify-between pt-1 border-t border-prussian-500">
+                        <div className="text-xs text-errorgrey">
+                          {isRunning ? (
+                            <span className="text-moonstone-400 flex items-center gap-1">
+                              <Icon icon="ph:spinner" className="animate-spin text-sm" />
+                              {t('settings.crawlRunning')} — {crawlStatus.pagesCrawled ?? 0} / {crawlStatus.pagesFound ?? '?'} {t('settings.crawlPages')}
+                            </span>
+                          ) : crawlStatus?.finishedAt ? (
+                            <span>{t('settings.lastCrawl')} : {new Date(crawlStatus.finishedAt).toLocaleDateString()} — {crawlStatus.pagesCrawled ?? 0} {t('settings.crawlPages')}</span>
+                          ) : (
+                            <span>{t('settings.noCrawlYet')}</span>
+                          )}
+                        </div>
+                        {isRunning ? (
+                          <button
+                            onClick={() => handleCancelCrawl(site.id)}
+                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-dustyred-400 hover:bg-dustyred-400/10 border border-dustyred-400/30 rounded-lg transition-colors"
+                          >
+                            <Icon icon="ph:stop-circle" className="text-sm" />
+                            {t('settings.cancelCrawl')}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleStartCrawl(site.id)}
+                            disabled={sitemaps.length === 0}
+                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-moonstone-400 hover:bg-moonstone-400/10 border border-moonstone-400/30 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            <Icon icon="ph:magnifying-glass" className="text-sm" />
+                            {t('settings.launchCrawl')}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    onClick={() => handleToggleSite(site)}
-                    title={site.active ? t('settings.toggleDisable') : t('settings.toggleEnable')}
-                    className={`text-xs px-2 py-1 rounded border transition-colors ${site.active ? 'border-emerald-700 text-emerald-400 hover:bg-emerald-400/10' : 'border-prussian-300 text-errorgrey hover:text-white'}`}
-                  >
-                    {site.active ? t('settings.statusActive') : t('settings.statusInactive')}
-                  </button>
-                  <button
-                    onClick={() => startEditSite(site)}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center text-errorgrey hover:text-moonstone-400 hover:bg-prussian-400 transition-colors"
-                  >
-                    <Icon icon="ph:pencil-simple" className="text-base" />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteSite(site.id)}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center text-errorgrey hover:text-dustyred-400 hover:bg-dustyred-400/10 transition-colors"
-                  >
-                    <Icon icon="ph:trash" className="text-base" />
-                  </button>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
 

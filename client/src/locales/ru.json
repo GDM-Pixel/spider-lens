@@ -22,16 +22,46 @@
     "openMenu": "Открыть меню",
     "closeMenu": "Закрыть меню",
     "pages": {
-      "dashboard":  { "title": "Панель управления",    "subtitle": "Общий обзор вашего трафика" },
-      "http-codes": { "title": "Коды HTTP",   "subtitle": "Эволюция статусов HTTP во времени" },
-      "top-pages":  { "title": "Топ страницы",    "subtitle": "Самые просматриваемые страницы и ошибки 404" },
-      "bots":       { "title": "Боты и краулеры", "subtitle": "Анализ индексирующих ботов" },
-      "ttfb":       { "title": "Время загрузки",    "subtitle": "TTFB — Время до первого байта по URL" },
-      "network":    { "title": "Сеть",      "subtitle": "IP-адреса и User-Agenty" },
-      "anomalies":  { "title": "Аномалии",    "subtitle": "Обнаруженное ненормальное поведение" },
-      "blocklist":  { "title": "Список блокировок",    "subtitle": "Заблокированные IP" },
-      "settings":   { "title": "Настройки",     "subtitle": "Конфигурация Spider-Lens" },
-      "assistant":  { "title": "AI анализ",  "subtitle": "Анализируйте логи на естественном языке" }
+      "dashboard": {
+        "title": "Панель управления",
+        "subtitle": "Общий обзор вашего трафика"
+      },
+      "http-codes": {
+        "title": "Коды HTTP",
+        "subtitle": "Эволюция статусов HTTP во времени"
+      },
+      "top-pages": {
+        "title": "Топ страницы",
+        "subtitle": "Самые просматриваемые страницы и ошибки 404"
+      },
+      "bots": {
+        "title": "Боты и краулеры",
+        "subtitle": "Анализ индексирующих ботов"
+      },
+      "ttfb": {
+        "title": "Время загрузки",
+        "subtitle": "TTFB — Время до первого байта по URL"
+      },
+      "network": {
+        "title": "Сеть",
+        "subtitle": "IP-адреса и User-Agenty"
+      },
+      "anomalies": {
+        "title": "Аномалии",
+        "subtitle": "Обнаруженное ненормальное поведение"
+      },
+      "blocklist": {
+        "title": "Список блокировок",
+        "subtitle": "Заблокированные IP"
+      },
+      "settings": {
+        "title": "Настройки",
+        "subtitle": "Конфигурация Spider-Lens"
+      },
+      "assistant": {
+        "title": "AI анализ",
+        "subtitle": "Анализируйте логи на естественном языке"
+      }
     }
   },
   "common": {
@@ -422,7 +452,17 @@
     "buttonChangeUsername": "Изменить имя пользователя",
     "passwordMismatch": "Пароли не совпадают",
     "passwordSuccess": "Пароль успешно изменен",
-    "confirmDeleteSite": "Удалить этот сайт? Связанные данные журнала будут сохранены."
+    "confirmDeleteSite": "Удалить этот сайт? Связанные данные журнала будут сохранены.",
+    "sitemaps": "Карты сайта краулера",
+    "noSitemapsYet": "Карта сайта не настроена",
+    "sitemapPlaceholder": "https://example.com/sitemap.xml",
+    "addSitemap": "Добавить",
+    "launchCrawl": "Запустить краулинг",
+    "cancelCrawl": "Отмена",
+    "crawlRunning": "Краулинг выполняется",
+    "crawlPages": "страниц",
+    "lastCrawl": "Последний краулинг",
+    "noCrawlYet": "Краулинг не выполнялся"
   },
   "dbAdmin": {
     "sectionTitle": "Управление базой данных",

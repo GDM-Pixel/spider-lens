@@ -88,6 +88,18 @@ function applyMigrations() {
     console.log('[db] Migration V0.6 appliquée (retention_policy)')
   }
 
+  // V0.7 — sitemap crawler (site_sitemaps, crawled_pages, crawl_runs)
+  const hasSitemaps = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='site_sitemaps'").get()
+  if (!hasSitemaps) {
+    const migration = readFileSync(join(__dirname, 'migration_v07.sql'), 'utf8')
+    for (const stmt of migration.split(';').map(s => s.trim()).filter(Boolean)) {
+      try { run(stmt) } catch (e) {
+        if (!e.message.includes('already exists')) throw e
+      }
+    }
+    console.log('[db] Migration V0.7 appliquée (sitemap crawler)')
+  }
+
   // Backfill : créer le site par défaut depuis LOG_FILE_PATH si défini et pas encore de site
   const siteCount = db.prepare('SELECT COUNT(*) as cnt FROM sites').get()?.cnt || 0
   if (siteCount === 0) {

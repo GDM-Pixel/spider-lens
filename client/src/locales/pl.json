@@ -22,16 +22,46 @@
     "openMenu": "Otwórz menu",
     "closeMenu": "Zamknij menu",
     "pages": {
-      "dashboard":  { "title": "Panel",    "subtitle": "Globalna przegląd ruchu" },
-      "http-codes": { "title": "Kody HTTP",   "subtitle": "Ewolucja statusów HTTP w czasie" },
-      "top-pages":  { "title": "Top strony",    "subtitle": "Najczęściej odwiedzane strony i błędy 404" },
-      "bots":       { "title": "Boty i Crawlery", "subtitle": "Analiza robotów indeksujących" },
-      "ttfb":       { "title": "Czas ładowania",    "subtitle": "TTFB — Time To First Byte na URL" },
-      "network":    { "title": "Sieć",      "subtitle": "Adresy IP i User-Agenty" },
-      "anomalies":  { "title": "Anomalie",    "subtitle": "Wykryte anomalne zachowania" },
-      "blocklist":  { "title": "Lista blokowania",    "subtitle": "Zablokowane adresy IP" },
-      "settings":   { "title": "Ustawienia",     "subtitle": "Konfiguracja Spider-Lens" },
-      "assistant":  { "title": "Analiza AI",  "subtitle": "Analizuj dzienniki w języku naturalnym" }
+      "dashboard": {
+        "title": "Panel",
+        "subtitle": "Globalna przegląd ruchu"
+      },
+      "http-codes": {
+        "title": "Kody HTTP",
+        "subtitle": "Ewolucja statusów HTTP w czasie"
+      },
+      "top-pages": {
+        "title": "Top strony",
+        "subtitle": "Najczęściej odwiedzane strony i błędy 404"
+      },
+      "bots": {
+        "title": "Boty i Crawlery",
+        "subtitle": "Analiza robotów indeksujących"
+      },
+      "ttfb": {
+        "title": "Czas ładowania",
+        "subtitle": "TTFB — Time To First Byte na URL"
+      },
+      "network": {
+        "title": "Sieć",
+        "subtitle": "Adresy IP i User-Agenty"
+      },
+      "anomalies": {
+        "title": "Anomalie",
+        "subtitle": "Wykryte anomalne zachowania"
+      },
+      "blocklist": {
+        "title": "Lista blokowania",
+        "subtitle": "Zablokowane adresy IP"
+      },
+      "settings": {
+        "title": "Ustawienia",
+        "subtitle": "Konfiguracja Spider-Lens"
+      },
+      "assistant": {
+        "title": "Analiza AI",
+        "subtitle": "Analizuj dzienniki w języku naturalnym"
+      }
     }
   },
   "common": {
@@ -422,7 +452,17 @@
     "buttonChangeUsername": "Zmień nazwę użytkownika",
     "passwordMismatch": "Hasła nie pasują",
     "passwordSuccess": "Hasło zmienione pomyślnie",
-    "confirmDeleteSite": "Usunąć tę stronę? Powiązane dane dziennika zostaną zachowane."
+    "confirmDeleteSite": "Usunąć tę stronę? Powiązane dane dziennika zostaną zachowane.",
+    "sitemaps": "Sitemaps crawlera",
+    "noSitemapsYet": "Brak skonfigurowanej mapy witryny",
+    "sitemapPlaceholder": "https://example.com/sitemap.xml",
+    "addSitemap": "Dodaj",
+    "launchCrawl": "Uruchom crawl",
+    "cancelCrawl": "Anuluj",
+    "crawlRunning": "Crawl w toku",
+    "crawlPages": "stron",
+    "lastCrawl": "Ostatni crawl",
+    "noCrawlYet": "Brak crawla"
   },
   "dbAdmin": {
     "sectionTitle": "Zarządzanie bazą danych",

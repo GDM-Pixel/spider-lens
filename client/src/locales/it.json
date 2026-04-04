@@ -22,16 +22,46 @@
     "openMenu": "Apri menu",
     "closeMenu": "Comprimi menu",
     "pages": {
-      "dashboard":  { "title": "Dashboard",     "subtitle": "Panoramica globale del tuo traffico" },
-      "http-codes": { "title": "Codici HTTP",     "subtitle": "Evoluzione degli stati HTTP nel tempo" },
-      "top-pages":  { "title": "Pagine Principali",      "subtitle": "Pagine più visitate ed errori 404" },
-      "bots":       { "title": "Bot e Crawler","subtitle": "Analisi dei bot crawler rilevati" },
-      "ttfb":       { "title": "Tempo di Caricamento",      "subtitle": "TTFB — Time To First Byte per URL" },
-      "network":    { "title": "Rete",        "subtitle": "IP e User-Agent" },
-      "anomalies":  { "title": "Anomalie",      "subtitle": "Comportamenti anomali rilevati automaticamente" },
-      "blocklist":  { "title": "Lista di Blocco",      "subtitle": "IP bloccati" },
-      "settings":   { "title": "Impostazioni",       "subtitle": "Configurazione Spider-Lens" },
-      "assistant":  { "title": "Analisi IA",          "subtitle": "Analizza i tuoi log in linguaggio naturale" }
+      "dashboard": {
+        "title": "Dashboard",
+        "subtitle": "Panoramica globale del tuo traffico"
+      },
+      "http-codes": {
+        "title": "Codici HTTP",
+        "subtitle": "Evoluzione degli stati HTTP nel tempo"
+      },
+      "top-pages": {
+        "title": "Pagine Principali",
+        "subtitle": "Pagine più visitate ed errori 404"
+      },
+      "bots": {
+        "title": "Bot e Crawler",
+        "subtitle": "Analisi dei bot crawler rilevati"
+      },
+      "ttfb": {
+        "title": "Tempo di Caricamento",
+        "subtitle": "TTFB — Time To First Byte per URL"
+      },
+      "network": {
+        "title": "Rete",
+        "subtitle": "IP e User-Agent"
+      },
+      "anomalies": {
+        "title": "Anomalie",
+        "subtitle": "Comportamenti anomali rilevati automaticamente"
+      },
+      "blocklist": {
+        "title": "Lista di Blocco",
+        "subtitle": "IP bloccati"
+      },
+      "settings": {
+        "title": "Impostazioni",
+        "subtitle": "Configurazione Spider-Lens"
+      },
+      "assistant": {
+        "title": "Analisi IA",
+        "subtitle": "Analizza i tuoi log in linguaggio naturale"
+      }
     }
   },
   "common": {
@@ -422,7 +452,17 @@
     "buttonChangeUsername": "Cambia nome",
     "passwordMismatch": "Le password non coincidono",
     "passwordSuccess": "Password cambiata con successo",
-    "confirmDeleteSite": "Eliminare questo sito? I dati del log associati verranno mantenuti."
+    "confirmDeleteSite": "Eliminare questo sito? I dati del log associati verranno mantenuti.",
+    "sitemaps": "Sitemap crawler",
+    "noSitemapsYet": "Nessuna sitemap configurata",
+    "sitemapPlaceholder": "https://example.com/sitemap.xml",
+    "addSitemap": "Aggiungi",
+    "launchCrawl": "Avvia crawl",
+    "cancelCrawl": "Annulla",
+    "crawlRunning": "Crawl in corso",
+    "crawlPages": "pagine",
+    "lastCrawl": "Ultimo crawl",
+    "noCrawlYet": "Nessun crawl ancora"
   },
   "dbAdmin": {
     "sectionTitle": "Gestione del database",
