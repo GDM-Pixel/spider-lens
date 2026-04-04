@@ -58,11 +58,19 @@ export function buildSiteSummary(siteId) {
   const SCAN_UA_SQL = `(user_agent IS NOT NULL AND user_agent != '-' AND user_agent NOT LIKE '"%')`
 
   // URLs universellement suspectes (aucun site légitime ne les sert) — pour l'estimation des scans
+  // Ces patterns apparaissent UNIQUEMENT dans des scans automatiques, jamais dans un vrai trafic humain
   const SCAN_ONLY_URL_SQL = `(
     url LIKE '%wp-login%' OR url LIKE '%xmlrpc%'
     OR url LIKE '%.env%' OR url LIKE '%/.git%' OR url LIKE '%/phpmyadmin%'
     OR url LIKE '%wlwmanifest%' OR url LIKE '%/actuator%'
-    OR url LIKE '%/info.php%'
+    OR url LIKE '%/info.php%' OR url LIKE '%secrets.json%'
+    OR url LIKE '%config.js%' OR url LIKE '%/wp-config%'
+    OR url LIKE '%/.well-known/traffic-advice%'
+    OR url LIKE '%/wp-admin%' OR url LIKE '%/wp-content%' OR url LIKE '%/wp-includes%'
+    OR url = '/ip' OR url = '/order' OR url = '/cart' OR url = '/checkout'
+    OR url LIKE '//wp%' OR url LIKE '//wordpress%' OR url LIKE '//web/%'
+    OR url LIKE '//test/%' OR url LIKE '//site/%' OR url LIKE '//shop/%'
+    OR url LIKE '//cms/%'
   )`
 
   // -- Top 5 pages 404 humains réels (hors UA vides/corrompus — inclut URLs WP légitimes)
@@ -97,7 +105,7 @@ export function buildSiteSummary(siteId) {
     WHERE timestamp BETWEEN ? AND ? AND status_code = 404 ${sc}
   `).get(from, to, ...sp)
 
-  // -- Taux d'erreur humains réels (SEO-pertinent — hors UA vides/corrompus uniquement)
+  // -- Taux d'erreur humains réels (SEO-pertinent — hors UA vides/corrompus ET hors URLs de scan)
   const humanOverview = db.prepare(`
     SELECT
       COUNT(*) AS total,
@@ -105,7 +113,8 @@ export function buildSiteSummary(siteId) {
       SUM(CASE WHEN status_code BETWEEN 500 AND 599 THEN 1 ELSE 0 END) AS s5xx
     FROM log_entries
     WHERE timestamp BETWEEN ? AND ? AND is_bot = 0
-      AND ${SCAN_UA_SQL} ${sc}
+      AND ${SCAN_UA_SQL}
+      AND NOT ${SCAN_ONLY_URL_SQL} ${sc}
   `).get(from, to, ...sp)
 
   const humanErrorRate = humanOverview.total > 0
