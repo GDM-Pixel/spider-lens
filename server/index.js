@@ -17,6 +17,14 @@ if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
   console.error('[FATAL] JWT_SECRET manquant ou trop court (minimum 32 caractères). Arrêt.')
   process.exit(1)
 }
+if (process.env.JWT_SECRET === 'spider-lens-dev-secret-change-in-production') {
+  if (process.env.NODE_ENV === 'production') {
+    console.error('[FATAL] JWT_SECRET utilise la valeur par défaut. Générez une clé unique : openssl rand -hex 32')
+    process.exit(1)
+  } else {
+    console.warn('[warn] JWT_SECRET par défaut — à changer avant mise en production.')
+  }
+}
 if (!process.env.ADMIN_PASS || process.env.ADMIN_PASS === 'spider-lens-change-me') {
   if (process.env.NODE_ENV === 'production') {
     console.error('[FATAL] ADMIN_PASS par défaut détecté en production. Changez-le dans .env. Arrêt.')
@@ -42,12 +50,13 @@ const app = express()
 const PORT = process.env.PORT || 3000
 
 // ── Middlewares ───────────────────────────────────────────
+const isProd = process.env.NODE_ENV === 'production'
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],   // unsafe-inline requis pour Vite en dev
-      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: isProd ? ["'self'"] : ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],  // requis pour Tailwind inline styles
       imgSrc: ["'self'", 'data:', 'blob:'],
       connectSrc: ["'self'"],
       fontSrc: ["'self'", 'data:'],
@@ -55,6 +64,7 @@ app.use(helmet({
       frameAncestors: ["'none'"],
     },
   },
+  hsts: isProd ? { maxAge: 31536000, includeSubDomains: true } : false,
 }))
 app.use(cors({ origin: process.env.NODE_ENV === 'development' ? 'http://localhost:5173' : false }))
 app.use(express.json())
@@ -71,6 +81,16 @@ app.use('/api/assistant', assistantRoutes)
 
 // ── Sanity check ─────────────────────────────────────────
 app.get('/api/health', (req, res) => res.json({ status: 'ok', version: '0.7.0' }))
+
+// ── Global error handler ──────────────────────────────────
+app.use((err, req, res, next) => {
+  console.error('[error]', err.message)
+  res.status(err.statusCode || 500).json(
+    isProd
+      ? { error: 'Internal server error' }
+      : { error: err.message, stack: err.stack }
+  )
+})
 
 // ── Serve frontend (production) ───────────────────────────
 const clientDist = join(__dirname, '..', 'client', 'dist')

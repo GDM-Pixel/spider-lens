@@ -7,10 +7,11 @@ import { requireAuth } from '../middleware/auth.js'
 
 const router = Router()
 
-// Rate limiter : 10 tentatives par 15 minutes par IP
+// Rate limiter : 5 tentatives par 15 minutes par IP
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: 5,
+  skipSuccessfulRequests: true,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Trop de tentatives de connexion. Réessayez dans 15 minutes.' },
