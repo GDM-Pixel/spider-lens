@@ -8,7 +8,8 @@ import { getDb } from '../db/database.js'
 
 // Apache Combined / Nginx combined :
 // 127.0.0.1 - - [10/Oct/2000:13:55:36 -0700] "GET /index.html HTTP/1.1" 200 2326 "http://ref" "UA"
-const REGEX_COMBINED = /^(\S+)\s+\S+\s+\S+\s+\[([^\]]+)\]\s+"(\S+)\s+(\S+)\s+\S+"\s+(\d{3})\s+(\S+)(?:\s+"([^"]*)")?(?:\s+"([^"]*)")?(?:\s+(\d+))?/
+// Avec $request_time nginx (secondes flottantes) en dernier champ optionnel : ... "UA" 0.123
+const REGEX_COMBINED = /^(\S+)\s+\S+\s+\S+\s+\[([^\]]+)\]\s+"(\S+)\s+(\S+)\s+\S+"\s+(\d{3})\s+(\S+)(?:\s+"([^"]*)")?(?:\s+"([^"]*)")?(?:\s+(\d+(?:\.\d+)?))?/
 
 // Nginx format par défaut (sans referrer/UA)
 const REGEX_NGINX_DEFAULT = /^(\S+)\s+\S+\s+\S+\s+\[([^\]]+)\]\s+"(\S+)\s+(\S+)\s+\S+"\s+(\d{3})\s+(\S+)/
@@ -68,7 +69,7 @@ export function parseLine(line) {
     response_size: sizeStr === '-' ? 0 : parseInt(sizeStr, 10),
     referrer: referrer === '-' || !referrer ? null : referrer,
     user_agent: userAgent || null,
-    response_time_ms: responseTimeStr ? parseInt(responseTimeStr, 10) : null,
+    response_time_ms: responseTimeStr ? Math.round(parseFloat(responseTimeStr) * 1000) : null,
     is_bot: isBot ? 1 : 0,
     bot_name: botName || null,
   }
