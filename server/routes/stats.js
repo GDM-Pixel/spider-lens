@@ -205,12 +205,13 @@ router.get('/url-detail', (req, res) => {
   const where = `timestamp BETWEEN ? AND ? ${statusWhere} ${botWhere} ${searchWhere} ${ipWhere} ${uaWhere} ${sf}`
   const params = [from, to, ...statusParams, ...searchParams, ...ipParams, ...uaParams, ...sp]
 
-  // Sous-requête top_ua
+  // Sous-requête top_ua — respecte le filtre UA si actif
+  const { clause: uaWhereTopUa, params: uaParamsTopUa } = getUaFilter(req.query.ua)
   const topUaSubquery = `(SELECT user_agent FROM log_entries le2
      WHERE le2.url = le.url AND le2.status_code = le.status_code
-       AND le2.timestamp BETWEEN ? AND ? ${sf}
+       AND le2.timestamp BETWEEN ? AND ? ${sf} ${uaWhereTopUa}
      GROUP BY user_agent ORDER BY COUNT(*) DESC LIMIT 1) AS top_ua`
-  const topUaParams = [from, to, ...sp]
+  const topUaParams = [from, to, ...sp, ...uaParamsTopUa]
 
   const rows = db.prepare(`
     SELECT
