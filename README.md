@@ -40,7 +40,7 @@ Spider-Lens reads your Apache/Nginx log files and provides a comprehensive dashb
 
 ### More
 
-- 🤖 **Nova AI assistant** — Floating chat bubble on every page; sends page context only when you ask a question (powered by Gemini 2.5 Flash via Nova-Mind.cloud)
+- 🤖 **Nova AI assistant** — Floating chat bubble on every page; sends page context only when you ask a question (powered by Gemini 3 Flash Preview via Nova-Mind.cloud)
 - 🌍 **i18n** — UI available in FR, EN, ES, DE, IT, NL (persisted via localStorage)
 - 🔒 **JWT authentication** — 7-day token, secure session
 - 📧 **Email alerts** — 404 spikes, 5xx errors, missing Googlebot (configurable SMTP)
@@ -61,7 +61,7 @@ Spider-Lens reads your Apache/Nginx log files and provides a comprehensive dashb
 | Auth | JWT + bcryptjs |
 | Scheduled tasks | node-cron |
 | Emails | Nodemailer (SMTP) |
-| AI | Google Gemini 2.5 Flash · SSE streaming |
+| AI | Google Gemini 3 Flash Preview · SSE streaming |
 | Frontend | React 18 · Vite 5 |
 | Animations | Framer Motion |
 | Charts | Recharts |
