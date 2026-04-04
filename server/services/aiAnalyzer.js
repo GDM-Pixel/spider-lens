@@ -53,11 +53,18 @@ export function buildSiteSummary(siteId) {
     ? `${((( overview.s4xx + overview.s5xx) / overview.total) * 100).toFixed(1)}%`
     : '0%'
 
-  // -- Top 5 pages 404 (humains uniquement — SEO pertinent)
+  // -- Top 5 pages 404 humains réels (hors scans, hors UA vides/corrompus)
   const top404 = db.prepare(`
     SELECT url, COUNT(*) AS hits
     FROM log_entries
-    WHERE timestamp BETWEEN ? AND ? AND status_code = 404 AND is_bot = 0 ${sc}
+    WHERE timestamp BETWEEN ? AND ? AND status_code = 404 AND is_bot = 0
+      AND (user_agent IS NOT NULL AND user_agent != '-' AND user_agent NOT LIKE '"%')
+      AND NOT (
+        url LIKE '%wp-admin%' OR url LIKE '%wp-login%' OR url LIKE '%xmlrpc%'
+        OR url LIKE '%.env%' OR url LIKE '%/.git%' OR url LIKE '%/phpmyadmin%'
+        OR url LIKE '%/info.php%' OR url LIKE '%.php%'
+        OR url LIKE '%/admin%' OR url LIKE '%traffic-advice%'
+      ) ${sc}
     GROUP BY url ORDER BY hits DESC LIMIT 5
   `).all(from, to, ...sp).map(r => ({ url: trunc(r.url), hits: r.hits }))
 
@@ -75,14 +82,25 @@ export function buildSiteSummary(siteId) {
     WHERE timestamp BETWEEN ? AND ? AND status_code = 404 ${sc}
   `).get(from, to, ...sp)
 
-  // -- Taux d'erreur humains uniquement (SEO-pertinent)
+  // -- Taux d'erreur humains réels (SEO-pertinent)
+  // On exclut les URLs de scan/intrusion et les UA vides — ces requêtes viennent de bots
+  // mal classifiés qui se font passer pour des humains
+  const SCAN_URL_PATTERN = `(
+    url LIKE '%wp-admin%' OR url LIKE '%wp-login%' OR url LIKE '%xmlrpc%'
+    OR url LIKE '%.env%' OR url LIKE '%/.git%' OR url LIKE '%/phpmyadmin%'
+    OR url LIKE '%/info.php%' OR url LIKE '%.php%'
+    OR url LIKE '%/admin%' OR url LIKE '%traffic-advice%'
+  )`
+
   const humanOverview = db.prepare(`
     SELECT
       COUNT(*) AS total,
       SUM(CASE WHEN status_code BETWEEN 400 AND 499 THEN 1 ELSE 0 END) AS s4xx,
       SUM(CASE WHEN status_code BETWEEN 500 AND 599 THEN 1 ELSE 0 END) AS s5xx
     FROM log_entries
-    WHERE timestamp BETWEEN ? AND ? AND is_bot = 0 ${sc}
+    WHERE timestamp BETWEEN ? AND ? AND is_bot = 0
+      AND (user_agent IS NOT NULL AND user_agent != '-' AND user_agent NOT LIKE '"%')
+      AND NOT ${SCAN_URL_PATTERN} ${sc}
   `).get(from, to, ...sp)
 
   const humanErrorRate = humanOverview.total > 0
@@ -374,9 +392,10 @@ WHAT MATTERS FOR SEO (affects the score):
 5. Human 404s (top404 field, human visits only): broken links hurt SEO
 
 WHAT DOES NOT AFFECT SEO SCORE:
-- scan404 in err404Detail: these are security scan attempts (wp-admin, .env, .git, xmlrpc) by malicious bots — they are NOT a Google SEO problem. NEVER penalize the score for these.
+- scan404 in err404Detail: these are security scan attempts (wp-admin, .env, .git, xmlrpc, .php files) by malicious bots — they are NOT a Google SEO problem. NEVER penalize the score for these.
 - High bot traffic ratio in general: security bots, scrapers etc. don't affect Google rankings
 - The global errorRate field includes all those bot scans — do NOT use it for scoring. Use humanErrorRate instead.
+- humanErrorRate is already filtered: scan URLs and empty/corrupted user-agents are excluded. It reflects real visitor experience only.
 
 SCORING RULES:
 - 80-100 → "${labels.great}", scoreColor: "green"
