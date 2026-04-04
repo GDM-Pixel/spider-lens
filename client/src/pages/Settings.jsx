@@ -215,11 +215,15 @@ export default function Settings() {
   }
 
   return (
-    <div className="flex flex-col gap-6 max-w-2xl">
+    <div className="flex flex-col gap-6">
       <div>
         <h2 className="text-white font-bold text-xl">{t('settings.title')}</h2>
         <p className="text-errorgrey text-sm">{t('settings.subtitle')}</p>
       </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        {/* ── Colonne gauche ── */}
+        <div className="flex flex-col gap-6">
 
       {/* ── Sites à surveiller ─────────────────────────── */}
       <div className="bg-prussian-500 rounded-xl border border-prussian-400 p-6 flex flex-col gap-5">
@@ -413,6 +417,11 @@ export default function Settings() {
         </div>
       </div>
 
+        </div>{/* fin colonne gauche */}
+
+        {/* ── Colonne droite ── */}
+        <div className="flex flex-col gap-6">
+
       {/* ── Rapport hebdomadaire ──────────────────────────── */}
       <div className="bg-prussian-500 rounded-xl border border-prussian-400 p-6 flex flex-col gap-5">
         <div className="flex items-center gap-3 border-b border-prussian-400 pb-4">
@@ -531,6 +540,9 @@ export default function Settings() {
         </div>
       </div>
 
+        </div>{/* fin colonne droite */}
+      </div>{/* fin grid */}
+
       {/* Bouton sauvegarde global */}
       <button
         onClick={handleSave}
@@ -614,7 +626,7 @@ export default function Settings() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-3">
             <RetentionSelect
               label={t('dbAdmin.retentionLogs')}
               icon="ph:rows"
