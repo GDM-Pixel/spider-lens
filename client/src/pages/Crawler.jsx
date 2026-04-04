@@ -171,7 +171,7 @@ export default function Crawler() {
           <KPICard
             label={t('crawler.missingH1')}
             value={summary.missingH1?.toLocaleString('fr-FR')}
-            icon="ph:heading"
+            icon="ph:text-h-one"
             color={summary.missingH1 > 0 ? 'dustyred' : 'moonstone'}
             info={t('crawler.missingH1Info')}
           />
