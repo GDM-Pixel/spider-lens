@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Icon } from '@iconify/react'
 import api from '../api/client'
+import logoUrl from '../assets/logo-login-spider-lens.svg'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -30,13 +31,8 @@ export default function Login() {
 
   return (
     <div className="w-full max-w-sm">
-      {/* Logo placeholder */}
-      <div className="flex flex-col items-center mb-8">
-        <div className="w-16 h-16 rounded-2xl bg-prussian-500 border border-prussian-400 flex items-center justify-center mb-4">
-          <Icon icon="ph:spider" className="text-4xl text-moonstone-400" />
-        </div>
-        <h1 className="text-2xl font-extrabold text-white">Spider-Lens</h1>
-        <p className="text-errorgrey text-sm mt-1">{t('login.subtitle')}</p>
+      <div className="flex justify-center mb-8">
+        <img src={logoUrl} alt="Spider-Lens" className="w-72" />
       </div>
 
       <div className="bg-prussian-600 border border-prussian-500 rounded-2xl p-8">
