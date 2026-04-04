@@ -5,7 +5,7 @@
 
   **SEO-focused server log analyzer — open-source, self-hosted**
 
-  [![Version](https://img.shields.io/badge/version-1.2.0-blue)](#)
+  [![Version](https://img.shields.io/badge/version-1.3.0-blue)](#)
   [![Node.js](https://img.shields.io/badge/node-%3E%3D18-green)](#)
   [![License](https://img.shields.io/badge/license-MIT-lightgrey)](#)
   [![i18n](https://img.shields.io/badge/i18n-16%20languages-orange)](#)
@@ -403,7 +403,16 @@ cd client && npm run dev
 - [x] Beginner mode
 - [x] Jest tests (27)
 
-### v1.3.0 (planned)
+### v1.3.0 ✅
+- [x] **Sitemap Crawler** — BFS crawler with recursive internal link following, configurable per-site with multiple sitemap URLs. Extracts title, H1, word count, canonical, meta robots, depth, source (sitemap/internal). Auto-crawl every Sunday at 3am.
+- [x] **Crawler page** — Dedicated `/crawler` view: 6 KPI cards (missing title, H1, noindex, thin content, errors), filterable paginated table, crawl run history
+- [x] **AI scoring fix** — SEO score now based on HTTP responses seen by Googlebot + SEO bots (Bingbot, AhrefsBot, SemrushBot, MJ12bot, ClaudeBot, GPTBot). Top 404 cross-referenced with crawled pages: `inCrawl: true` = real broken link, `inCrawl: false` = scanner noise (ignored)
+- [x] **TTFB support** — Nginx `$request_time` parsed as float seconds → converted to ms. Full setup instructions in README
+- [x] **Settings restructure** — 3 clear poles: Sites (with integrated crawler controls per site), Alertes, Gestion DB
+- [x] **Mon Compte page** — Dedicated `/account` route for username and password changes, accessible from sidebar
+- [x] **Origin & Referer** — Origin badge and Referer column added to HTTP Codes table
+
+### v1.4.0 (planned)
 - [ ] Advanced filters by IP and user-agent
 - [ ] Webhook API for external integrations
 - [ ] Customizable dashboard (widgets)

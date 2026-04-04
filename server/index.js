@@ -86,7 +86,7 @@ app.use('/api/assistant', assistantRoutes)
 app.use('/api/crawler', crawlerRoutes)
 
 // ── Sanity check ─────────────────────────────────────────
-app.get('/api/health', (req, res) => res.json({ status: 'ok', version: '0.7.0' }))
+app.get('/api/health', (req, res) => res.json({ status: 'ok', version: '1.3.0' }))
 
 // ── Global error handler ──────────────────────────────────
 app.use((err, req, res, next) => {
@@ -128,7 +128,7 @@ startCron()
 startRetentionCron()
 
 app.listen(PORT, () => {
-  console.log(`\n🕷️  Spider-Lens v0.7.0 — http://localhost:${PORT}`)
+  console.log(`\n🕷️  Spider-Lens v1.3.0 — http://localhost:${PORT}`)
   console.log(`   Mode : ${process.env.NODE_ENV || 'development'}`)
   console.log(`   DB   : ${process.env.DB_PATH || './spider-lens.db'}`)
   console.log(`   Logs : ${process.env.LOG_FILE_PATH || '(non configuré)'}`)
