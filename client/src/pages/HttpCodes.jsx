@@ -795,8 +795,7 @@ export default function HttpCodes() {
             {totalPages > 1 && (
               <div className="flex items-center justify-between px-5 py-3 border-t border-prussian-400 bg-prussian-600/20">
                 <p className="text-errorgrey text-xs">
-                  {t("common.page")} {drillPage + 1} {t("common.of")}{" "}
-                  {totalPages} · {drillTotal.toLocaleString("fr-FR")}{" "}
+                  {t("common.page", { page: drillPage + 1, total: totalPages })} · {drillTotal.toLocaleString("fr-FR")}{" "}
                   {t("common.results")}
                 </p>
                 <div className="flex gap-1">

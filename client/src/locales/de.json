@@ -50,7 +50,7 @@
     "saved": "Gespeichert!",
     "previous": "← Vorheriger",
     "next": "Nächster →",
-    "of": "/ {{total}}",
+    "of": "/",
     "page": "Seite {{page}} / {{total}}",
     "results": "Ergebnisse",
     "hits": "Hits",

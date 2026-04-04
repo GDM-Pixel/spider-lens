@@ -50,7 +50,7 @@
     "saved": "Gemt!",
     "previous": "← Forrige",
     "next": "Næste →",
-    "of": "/ {{total}}",
+    "of": "/",
     "page": "Side {{page}} / {{total}}",
     "results": "resultater",
     "hits": "Visits",

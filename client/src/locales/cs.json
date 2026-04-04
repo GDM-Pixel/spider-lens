@@ -50,7 +50,7 @@
     "saved": "Uloženo!",
     "previous": "← Předchozí",
     "next": "Další →",
-    "of": "/ {{total}}",
+    "of": "/",
     "page": "Stránka {{page}} / {{total}}",
     "results": "výsledky",
     "hits": "Přístupy",

@@ -50,7 +50,7 @@
     "saved": "保存されました!",
     "previous": "← 前へ",
     "next": "次へ →",
-    "of": "/ {{total}}",
+    "of": "/",
     "page": "ページ {{page}} / {{total}}",
     "results": "件の結果",
     "hits": "ヒット数",

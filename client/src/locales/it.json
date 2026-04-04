@@ -50,7 +50,7 @@
     "saved": "Salvato!",
     "previous": "← Precedente",
     "next": "Prossimo →",
-    "of": "/ {{total}}",
+    "of": "/",
     "page": "Pagina {{page}} / {{total}}",
     "results": "risultati",
     "hits": "Risultati",

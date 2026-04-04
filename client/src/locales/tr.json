@@ -50,7 +50,7 @@
     "saved": "Kaydedildi!",
     "previous": "← Önceki",
     "next": "Sonraki →",
-    "of": "/ {{total}}",
+    "of": "/",
     "page": "Sayfa {{page}} / {{total}}",
     "results": "sonuç",
     "hits": "İsabetler",

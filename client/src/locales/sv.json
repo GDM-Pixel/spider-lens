@@ -50,7 +50,7 @@
     "saved": "Sparat!",
     "previous": "← Föregående",
     "next": "Nästa →",
-    "of": "/ {{total}}",
+    "of": "/",
     "page": "Sida {{page}} / {{total}}",
     "results": "resultat",
     "hits": "Träffar",
