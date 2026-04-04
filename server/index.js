@@ -59,7 +59,7 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: isProd ? ["'self'"] : ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'"],  // requis pour Tailwind inline styles
       imgSrc: ["'self'", 'data:', 'blob:'],
       connectSrc: ["'self'"],
