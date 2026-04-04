@@ -9,7 +9,7 @@ Format: [Semantic Versioning](https://semver.org/)
 ## [1.1.0] — 2026-04-04
 
 ### Added
-- **Analyse IA (Nova)** — Page d'analyse SEO structurée propulsée par Gemini 2.0 Flash : score global, problèmes détectés, recommandations actionnables, highlights clés (composants `ScoreGauge`, `ProblemCard`, `RecommendationCard`, `HighlightBadge`, `AnalysisSection`)
+- **Analyse IA (Nova)** — Page d'analyse SEO structurée propulsée par Gemini 2.5 Flash : score global, problèmes détectés, recommandations actionnables, highlights clés (composants `ScoreGauge`, `ProblemCard`, `RecommendationCard`, `HighlightBadge`, `AnalysisSection`)
 - **Nova chat bubble** — Chatbot assistant flottant accessible sur toutes les pages, avec streaming SSE, contexte de page dynamique (envoyé uniquement lors d'un message utilisateur), badge de messages non lus et avatar Nova
 - **Contexte de page** — Chaque vue (Dashboard, HTTP Codes, Anomalies, TTFB, Network, Top Pages) injecte automatiquement un résumé compact au chatbot lors d'une question
 - **Gestion base de données** — Section dans les Paramètres : stats en temps réel (taille, lignes par table, plage de dates), politique de rétention configurable (7/30/90/180/365 jours ou illimité) avec avertissement, purge manuelle + VACUUM avec feedback inline
