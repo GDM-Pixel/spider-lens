@@ -5,7 +5,13 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   ResponsiveContainer, ReferenceLine, Cell,
 } from 'recharts'
-import { Icon } from '@iconify/react'
+import { Icon, addIcon } from '@iconify/react'
+
+addIcon('fa-custom:gauge-low', {
+  width: 512,
+  height: 512,
+  body: '<path fill="currentColor" d="M256 464a208 208 0 1 0 0-416 208 208 0 1 0 0 416zM256 0a256 256 0 1 1 0 512A256 256 0 1 1 256 0zm32 112a32 32 0 1 1 -64 0 32 32 0 1 1 64 0zM256 408c-30.9 0-56-25.1-56-56c0-14 5.1-26.8 13.7-36.6L146 161.7c-5.3-12.1 .2-26.3 12.3-31.6s26.3 .2 31.6 12.3L257.6 296c30.2 .8 54.4 25.6 54.4 56c0 30.9-25.1 56-56 56zM384 160a32 32 0 1 1 -64 0 32 32 0 1 1 64 0zm16 64a32 32 0 1 1 0 64 32 32 0 1 1 0-64zM144 256a32 32 0 1 1 -64 0 32 32 0 1 1 64 0z"/>',
+})
 import * as XLSX from 'xlsx'
 import DateRangePicker from '../components/ui/DateRangePicker'
 import InfoBubble from '../components/ui/InfoBubble'
@@ -224,7 +230,7 @@ export default function TTFB() {
             <KPICard
               label={t('ttfb.kpiSlowPages', { threshold })}
               value={overview?.slow_count?.toLocaleString('fr-FR')}
-              icon="ph:snail"
+              icon="fa-custom:gauge-low"
               color="dustyred"
               info={t('ttfb.kpiSlowPagesInfo', { threshold })}
             />
@@ -324,7 +330,7 @@ export default function TTFB() {
                     : 'bg-transparent border-prussian-400 text-errorgrey hover:text-white'
                 )}
               >
-                <Icon icon="ph:snail" className="text-base" />
+                <Icon icon="fa-custom:gauge-low" className="text-base" />
                 {t('ttfb.filterSlowPages', { threshold })}
               </button>
 

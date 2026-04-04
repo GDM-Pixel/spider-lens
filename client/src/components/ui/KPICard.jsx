@@ -31,16 +31,18 @@ export default function KPICard({ label, value, icon, color = 'moonstone', trend
       variants={kpiVariants}
       className="bg-prussian-500 rounded-xl border border-prussian-400 p-5 flex flex-col gap-3 hover:border-prussian-300 hover:shadow-lg hover:shadow-black/10 transition-all duration-200"
     >
-      <div className="flex items-start justify-between">
-        <div className={clsx('w-10 h-10 rounded-lg flex items-center justify-center', c.bg)}>
-          {icon && <Icon icon={icon} className={clsx('text-xl', c.icon)} />}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2.5">
+          <div className={clsx('w-12 h-12 rounded-lg flex items-center justify-center shrink-0', c.bg)}>
+            {icon && <Icon icon={icon} className={clsx('text-2xl', c.icon)} />}
+          </div>
+          <p className={clsx('text-base font-semibold leading-tight', c.icon)}>{label}</p>
         </div>
         {info && <InfoBubble content={info} side="top" />}
       </div>
 
       <div>
         <p className="text-3xl font-extrabold text-white leading-none">{animated ?? '—'}</p>
-        <p className="text-sm text-errorgrey mt-1 font-semibold">{label}</p>
       </div>
 
       {trend !== undefined && (
