@@ -53,13 +53,41 @@ export function buildSiteSummary(siteId) {
     ? `${((( overview.s4xx + overview.s5xx) / overview.total) * 100).toFixed(1)}%`
     : '0%'
 
-  // -- Top 5 pages 404
+  // -- Top 5 pages 404 (humains uniquement — SEO pertinent)
   const top404 = db.prepare(`
     SELECT url, COUNT(*) AS hits
     FROM log_entries
-    WHERE timestamp BETWEEN ? AND ? AND status_code = 404 ${sc}
+    WHERE timestamp BETWEEN ? AND ? AND status_code = 404 AND is_bot = 0 ${sc}
     GROUP BY url ORDER BY hits DESC LIMIT 5
   `).all(from, to, ...sp).map(r => ({ url: trunc(r.url), hits: r.hits }))
+
+  // -- 404 breakdown : humains vs bots vs scans malveillants
+  const err404Detail = db.prepare(`
+    SELECT
+      SUM(CASE WHEN is_bot = 0 THEN 1 ELSE 0 END) AS human404,
+      SUM(CASE WHEN is_bot = 1 AND user_agent LIKE '%Googlebot%' THEN 1 ELSE 0 END) AS googlebot404,
+      SUM(CASE WHEN is_bot = 1 AND user_agent NOT LIKE '%Googlebot%'
+               AND (url LIKE '%wp-admin%' OR url LIKE '%wp-login%' OR url LIKE '%.env%'
+                    OR url LIKE '%/.git%' OR url LIKE '%/admin%' OR url LIKE '%/phpmyadmin%'
+                    OR url LIKE '%xmlrpc%') THEN 1 ELSE 0 END) AS scan404,
+      SUM(CASE WHEN is_bot = 1 THEN 1 ELSE 0 END) AS bot404
+    FROM log_entries
+    WHERE timestamp BETWEEN ? AND ? AND status_code = 404 ${sc}
+  `).get(from, to, ...sp)
+
+  // -- Taux d'erreur humains uniquement (SEO-pertinent)
+  const humanOverview = db.prepare(`
+    SELECT
+      COUNT(*) AS total,
+      SUM(CASE WHEN status_code BETWEEN 400 AND 499 THEN 1 ELSE 0 END) AS s4xx,
+      SUM(CASE WHEN status_code BETWEEN 500 AND 599 THEN 1 ELSE 0 END) AS s5xx
+    FROM log_entries
+    WHERE timestamp BETWEEN ? AND ? AND is_bot = 0 ${sc}
+  `).get(from, to, ...sp)
+
+  const humanErrorRate = humanOverview.total > 0
+    ? `${(((humanOverview.s4xx + humanOverview.s5xx) / humanOverview.total) * 100).toFixed(1)}%`
+    : '0%'
 
   // -- Top 5 pages visitées (humains, 200)
   const topPagesRaw = db.prepare(`
@@ -84,6 +112,25 @@ export function buildSiteSummary(siteId) {
     WHERE timestamp BETWEEN ? AND ? AND is_bot = 1 AND bot_name IS NOT NULL ${sc}
     GROUP BY bot_name ORDER BY hits DESC LIMIT 5
   `).all(from, to, ...sp).map(r => ({ name: r.name, hits: r.hits }))
+
+  // -- Googlebot spécifique (SEO-critical)
+  const googlebotStats = db.prepare(`
+    SELECT
+      COUNT(*) AS total,
+      SUM(CASE WHEN status_code BETWEEN 200 AND 299 THEN 1 ELSE 0 END) AS s2xx,
+      SUM(CASE WHEN status_code = 404 THEN 1 ELSE 0 END) AS s404,
+      SUM(CASE WHEN status_code BETWEEN 500 AND 599 THEN 1 ELSE 0 END) AS s5xx,
+      COUNT(DISTINCT DATE(timestamp)) AS activeDays
+    FROM log_entries
+    WHERE timestamp BETWEEN ? AND ? AND user_agent LIKE '%Googlebot%' ${sc}
+  `).get(from, to, ...sp)
+
+  const googlebotTop404 = db.prepare(`
+    SELECT url, COUNT(*) AS hits
+    FROM log_entries
+    WHERE timestamp BETWEEN ? AND ? AND user_agent LIKE '%Googlebot%' AND status_code = 404 ${sc}
+    GROUP BY url ORDER BY hits DESC LIMIT 5
+  `).all(from, to, ...sp).map(r => ({ url: trunc(r.url), hits: r.hits }))
 
   // -- TTFB
   const ttfbRaw = db.prepare(`
@@ -172,11 +219,28 @@ export function buildSiteSummary(siteId) {
       s3xx: overview.s3xx,
       s4xx: overview.s4xx,
       s5xx: overview.s5xx,
-      errorRate,
+      errorRate,             // taux global (humains + bots)
+      humanErrorRate,        // taux erreur humains uniquement — SEO-pertinent
     },
-    top404,
+    // 404 breakdown : humains / googlebot / scans malveillants
+    err404Detail: {
+      human404: err404Detail?.human404 ?? 0,
+      googlebot404: err404Detail?.googlebot404 ?? 0,
+      scan404: err404Detail?.scan404 ?? 0,   // wp-admin, .env, etc. — à IGNORER pour le score SEO
+      bot404: err404Detail?.bot404 ?? 0,
+    },
+    top404,           // top 404 humains uniquement
     topPages,
     topBots,
+    // Googlebot — indicateur SEO principal
+    googlebot: {
+      total: googlebotStats?.total ?? 0,
+      s2xx: googlebotStats?.s2xx ?? 0,
+      s404: googlebotStats?.s404 ?? 0,
+      s5xx: googlebotStats?.s5xx ?? 0,
+      activeDays: googlebotStats?.activeDays ?? 0,  // jours actifs sur 30
+      top404: googlebotTop404,
+    },
     ttfb,
     topCountries,
     weeklyTrend,
@@ -299,6 +363,21 @@ Generate a structured SEO analysis as strict JSON. Follow EXACTLY this format:
   ]
 }
 
+SEO SCORING PHILOSOPHY — READ CAREFULLY:
+This is an SEO-focused analysis. The score reflects what Google cares about, NOT raw server statistics.
+
+WHAT MATTERS FOR SEO (affects the score):
+1. Googlebot health: 404s seen by Googlebot, 5xx seen by Googlebot, how many days Googlebot was active
+2. Human error rate (humanErrorRate field): errors real visitors encounter
+3. TTFB: server response time affects Core Web Vitals and crawl efficiency
+4. Crawl budget waste: Googlebot crawling 404 pages wastes crawl budget
+5. Human 404s (top404 field, human visits only): broken links hurt SEO
+
+WHAT DOES NOT AFFECT SEO SCORE:
+- scan404 in err404Detail: these are security scan attempts (wp-admin, .env, .git, xmlrpc) by malicious bots — they are NOT a Google SEO problem. NEVER penalize the score for these.
+- High bot traffic ratio in general: security bots, scrapers etc. don't affect Google rankings
+- The global errorRate field includes all those bot scans — do NOT use it for scoring. Use humanErrorRate instead.
+
 SCORING RULES:
 - 80-100 → "${labels.great}", scoreColor: "green"
 - 60-79 → "${labels.good}", scoreColor: "moonstone"
@@ -307,12 +386,12 @@ SCORING RULES:
 - 0-19 → "${labels.critical}", scoreColor: "dustyred"
 
 PROBLEMS rules (3 to 5 problems):
-- impact "critique": ErrorRate > 10%, or 5xx > 2%, or TTFB avg > 1000ms
-- impact "warning": 4xx > 5%, or TTFB avg 500-1000ms, or bot ratio > 50%
-- impact "info": minor optimizations
+- impact "critique": Googlebot seeing 5xx errors, or humanErrorRate > 15%, or TTFB avg > 1000ms, or Googlebot absent (activeDays < 3)
+- impact "warning": Googlebot 404s > 10 URLs, or humanErrorRate > 5%, or TTFB avg 500-1000ms
+- impact "info": minor optimizations, security scans (mention as info only, not SEO-critical)
 
 HIGHLIGHTS rules (2 to 4 positive signals or key metrics):
-- Positive trends, active Googlebot, fast pages, etc.
+- Googlebot activity, human visit trends, fast TTFB, low human error rate, etc.
 
 ICONS rules (use only @phosphor-icons):
 - Errors/problems: ph:warning-diamond, ph:x-circle, ph:bug
