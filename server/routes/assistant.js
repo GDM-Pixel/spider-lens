@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { requireAuth } from '../middleware/auth.js'
-import { streamAnalysis, streamChat } from '../services/aiAnalyzer.js'
+import { streamAnalysis, streamChat, analyzeStructured } from '../services/aiAnalyzer.js'
 
 const router = Router()
 router.use(requireAuth)
@@ -12,6 +12,21 @@ router.post('/analyze', async (req, res) => {
   }
   const siteId = req.body.siteId != null ? parseInt(req.body.siteId, 10) : null
   await streamAnalysis(siteId, res)
+})
+
+// POST /api/assistant/analyze-structured — analyse JSON structurée
+router.post('/analyze-structured', async (req, res) => {
+  if (!process.env.GEMINI_API_KEY) {
+    return res.status(503).json({ error: 'GEMINI_API_KEY non configurée. Ajoutez-la dans le fichier .env du serveur.' })
+  }
+  const siteId = req.body.siteId != null ? parseInt(req.body.siteId, 10) : null
+  try {
+    const data = await analyzeStructured(siteId)
+    res.json(data)
+  } catch (e) {
+    console.error('[assistant] analyze-structured error:', e.message)
+    res.status(500).json({ error: e.message })
+  }
 })
 
 // POST /api/assistant/chat — chat libre avec historique

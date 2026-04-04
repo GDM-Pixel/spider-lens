@@ -210,13 +210,106 @@ DONNÉES DU SITE (30 derniers jours) :
 ${JSON.stringify(summary, null, 0)}`
 }
 
-// ── Streaming vers SSE ─────────────────────────────────────
+// ── Init Gemini ────────────────────────────────────────────
 function initGemini() {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) return null
   const genAI = new GoogleGenerativeAI(apiKey)
   return genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
 }
+
+// ── Analyse structurée JSON ────────────────────────────────
+const structuredCache = new Map()
+
+export async function analyzeStructured(siteId) {
+  const key = `structured_${siteId ?? 'all'}`
+  const cached = structuredCache.get(key)
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+    return cached.data
+  }
+
+  const model = initGemini()
+  if (!model) throw new Error('GEMINI_API_KEY non configurée')
+
+  const summary = getCachedSummary(siteId)
+
+  const prompt = `Tu es un expert SEO analysant la santé d'un site web basé sur ses logs serveur.
+
+DONNÉES DU SITE (30 derniers jours) :
+${JSON.stringify(summary)}
+
+Génère une analyse SEO structurée en JSON strict. Respecte EXACTEMENT ce format :
+
+{
+  "score": <entier 0-100>,
+  "scoreLabel": <"Critique"|"Mauvais"|"Moyen"|"Bon"|"Très Bon">,
+  "scoreColor": <"dustyred"|"amber"|"moonstone"|"green">,
+  "summary": <phrase de synthèse courte, max 120 caractères, pédagogique>,
+  "problems": [
+    {
+      "id": <identifiant snake_case>,
+      "icon": <icône phosphor ex: "ph:warning-diamond">,
+      "color": <"dustyred"|"amber"|"moonstone">,
+      "title": <titre court du problème>,
+      "detail": <explication pédagogique avec analogie, max 150 caractères>,
+      "impact": <"critique"|"warning"|"info">
+    }
+  ],
+  "recommendations": [
+    {
+      "id": <identifiant snake_case>,
+      "icon": <icône phosphor ex: "ph:arrow-bend-up-right">,
+      "title": <titre court de la recommandation>,
+      "action": <action concrète à effectuer, max 150 caractères>,
+      "why": <pourquoi c'est important pour le SEO, max 100 caractères>
+    }
+  ],
+  "highlights": [
+    {
+      "key": <nom de la métrique>,
+      "value": <valeur formatée ex: "11 344">,
+      "trend": <"up"|"down"|"neutral">,
+      "icon": <icône phosphor>
+    }
+  ]
+}
+
+RÈGLES DE SCORING :
+- 80-100 → "Très Bon", scoreColor: "green"
+- 60-79 → "Bon", scoreColor: "moonstone"
+- 40-59 → "Moyen", scoreColor: "amber"
+- 0-39 → "Mauvais"/"Critique", scoreColor: "dustyred"
+
+RÈGLES problems (3 à 5 problèmes) :
+- impact "critique" : ErrorRate > 10%, ou 5xx > 2%, ou TTFB avg > 1000ms
+- impact "warning" : 4xx > 5%, ou TTFB avg 500-1000ms, ou bot ratio > 50%
+- impact "info" : optimisations mineures
+
+RÈGLES highlights (2 à 4 points positifs ou métriques clés) :
+- Tendances positives, Googlebot actif, pages rapides, etc.
+
+RÈGLES icons (utilise uniquement des icônes @phosphor-icons) :
+- Erreurs/problèmes : ph:warning-diamond, ph:x-circle, ph:bug
+- Performance : ph:lightning, ph:gauge, ph:clock
+- Bots/crawl : ph:robot, ph:magnifying-glass
+- SEO/liens : ph:arrow-bend-up-right, ph:link, ph:files
+- Positif : ph:check-circle, ph:trend-up, ph:star
+
+Retourne UNIQUEMENT le JSON, sans markdown, sans commentaires, sans texte avant ou après.`
+
+  const result = await model.generateContent({
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    generationConfig: { responseMimeType: 'application/json' },
+  })
+
+  const raw = result.response.text()
+  const data = JSON.parse(raw)
+
+  structuredCache.set(key, { data, timestamp: Date.now() })
+  return data
+}
+
+// ── Streaming vers SSE ─────────────────────────────────────
 
 export async function streamAnalysis(siteId, res) {
   const model = initGemini()
@@ -234,7 +327,7 @@ export async function streamAnalysis(siteId, res) {
 
   try {
     const result = await model.generateContentStream({
-      systemInstruction: systemPrompt,
+      systemInstruction: { parts: [{ text: systemPrompt }] },
       contents: [{
         role: 'user',
         parts: [{ text: 'Analyse la santé SEO de ce site. Donne un **score sur 100**, liste les **3 problèmes principaux** et propose **3 recommandations prioritaires**. Sois pédagogique pour quelqu\'un qui découvre l\'analyse de logs.' }],
@@ -278,7 +371,7 @@ export async function streamChat(siteId, messages, res) {
 
   try {
     const chat = model.startChat({
-      systemInstruction: systemPrompt,
+      systemInstruction: { parts: [{ text: systemPrompt }] },
       history,
     })
 

@@ -6,6 +6,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import clsx from "clsx";
 import BeginnerBanner from "../components/ui/BeginnerBanner";
+import AnalysisSection from "../components/ui/AnalysisSection";
 import { useSite } from "../context/SiteContext";
 import novaAvatar from "../assets/nova-avatar.jpg";
 
@@ -111,19 +112,29 @@ function MessageBubble({ message }) {
 }
 
 // ── Analysis panel ────────────────────────────────────────
-function AnalysisPanel({ content, isStreaming, onStart, hasApiKey }) {
+function AnalysisPanel({ data, loading, onStart, hasApiKey }) {
   const { t } = useTranslation();
 
-  if (!content && !isStreaming) {
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center gap-4 py-12">
+        <div className="w-16 h-16 rounded-2xl bg-moonstone-400/10 border border-moonstone-400/20 flex items-center justify-center">
+          <Icon icon="ph:circle-notch" className="text-moonstone-400 text-3xl animate-spin" />
+        </div>
+        <p className="text-moonstone-400 text-sm font-medium">{t("assistant.analyzing")}</p>
+        <p className="text-errorgrey text-xs">Gemini analyse vos 30 derniers jours de logs...</p>
+      </div>
+    );
+  }
+
+  if (!data) {
     return (
       <div className="flex flex-col items-center gap-4 py-8">
         <div className="w-16 h-16 rounded-2xl bg-moonstone-400/10 border border-moonstone-400/20 flex items-center justify-center">
           <Icon icon="ph:sparkle" className="text-moonstone-400 text-3xl" />
         </div>
         <div className="text-center">
-          <p className="text-white font-semibold mb-1">
-            {t("assistant.analyzeBtn")}
-          </p>
+          <p className="text-white font-semibold mb-1">{t("assistant.analyzeBtn")}</p>
           <p className="text-errorgrey text-sm">{t("assistant.tip3")}</p>
         </div>
         <button
@@ -143,22 +154,23 @@ function AnalysisPanel({ content, isStreaming, onStart, hasApiKey }) {
     );
   }
 
-  return (
-    <div className="relative">
-      {isStreaming && (
-        <div className="flex items-center gap-2 mb-3 text-moonstone-400 text-sm">
-          <Icon icon="ph:circle-notch" className="animate-spin" />
-          {t("assistant.analyzing")}
-        </div>
-      )}
-      <div className="prose prose-invert prose-sm max-w-none [&>*:first-child]:mt-0">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+  if (data.error) {
+    return (
+      <div className="flex flex-col items-center gap-3 py-8">
+        <Icon icon="ph:warning-circle" className="text-dustyred-400 text-3xl" />
+        <p className="text-dustyred-300 text-sm text-center">{data.error}</p>
+        <button
+          onClick={onStart}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm bg-prussian-500 text-errorgrey hover:text-white border border-prussian-400 transition-colors"
+        >
+          <Icon icon="ph:arrow-clockwise" className="text-sm" />
+          Réessayer
+        </button>
       </div>
-      {isStreaming && (
-        <span className="inline-block w-1.5 h-4 bg-moonstone-400 rounded-sm animate-pulse ml-1 align-middle" />
-      )}
-    </div>
-  );
+    );
+  }
+
+  return <AnalysisSection data={data} />;
 }
 
 // ── Main page ─────────────────────────────────────────────
@@ -167,8 +179,8 @@ export default function Assistant() {
   const { activeSiteId } = useSite();
 
   // Analysis state
-  const [analysisContent, setAnalysisContent] = useState("");
-  const [analysisStreaming, setAnalysisStreaming] = useState(false);
+  const [analysisData, setAnalysisData] = useState(null);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
 
   // Chat state
   const [messages, setMessages] = useState([]);
@@ -185,26 +197,31 @@ export default function Assistant() {
 
   // ── Auto-analysis ──────────────────────────────────────
   const runAnalysis = useCallback(() => {
-    if (analysisStreaming) return;
-    setAnalysisContent("");
-    setAnalysisStreaming(true);
+    if (analysisLoading) return;
+    setAnalysisData(null);
+    setAnalysisLoading(true);
     setApiKeyMissing(false);
 
-    streamSSE(
-      "/api/assistant/analyze",
-      { siteId: activeSiteId || null },
-      (chunk) => setAnalysisContent((prev) => prev + chunk),
-      () => setAnalysisStreaming(false),
-      (err) => {
-        setAnalysisStreaming(false);
-        if (err.includes("GEMINI_API_KEY") || err.includes("503")) {
+    const token = localStorage.getItem("spider_token");
+    fetch("/api/assistant/analyze-structured", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ siteId: activeSiteId || null }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.error && (data.error.includes("GEMINI_API_KEY") || String(data.error).includes("503"))) {
           setApiKeyMissing(true);
         } else {
-          setAnalysisContent(`**Erreur :** ${err}`);
+          setAnalysisData(data);
         }
-      },
-    );
-  }, [activeSiteId, analysisStreaming]);
+      })
+      .catch((err) => setAnalysisData({ error: err.message }))
+      .finally(() => setAnalysisLoading(false));
+  }, [activeSiteId, analysisLoading]);
 
   // ── Chat send ──────────────────────────────────────────
   const sendMessage = useCallback(() => {
@@ -322,7 +339,7 @@ export default function Assistant() {
               <Icon icon="ph:sparkle" className="text-moonstone-400 text-lg" />
               <h2 className="text-white font-semibold text-sm">Analyse SEO automatique</h2>
             </div>
-            {analysisContent && !analysisStreaming && (
+            {analysisData && !analysisData.error && !analysisLoading && (
               <button
                 onClick={runAnalysis}
                 className="flex items-center gap-1.5 text-xs text-errorgrey hover:text-moonstone-400 transition-colors"
@@ -334,8 +351,8 @@ export default function Assistant() {
           </div>
 
           <AnalysisPanel
-            content={analysisContent}
-            isStreaming={analysisStreaming}
+            data={analysisData}
+            loading={analysisLoading}
             onStart={runAnalysis}
             hasApiKey={hasApiKey}
           />
