@@ -126,7 +126,7 @@ function BlockModal({ ip, onConfirm, onClose }) {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-prussian-700 text-errorgrey rounded-lg text-sm font-semibold hover:text-white transition-colors"
+              className="px-4 py-2 bg-prussian-700 text-errorgrey rounded-lg text-sm font-semibold hover:text-white hover:bg-prussian-500/50 transition-colors"
             >
               {t('network.blockModalCancel')}
             </button>
@@ -187,7 +187,7 @@ function IpUrlDetail({ ip, range, siteId }) {
             </thead>
             <tbody>
               {rows.map((r, i) => (
-                <tr key={i} className="border-t border-prussian-600 hover:bg-prussian-600/40">
+                <tr key={i} className="border-t border-prussian-600 hover:bg-prussian-500/30 transition-colors">
                   <td className="px-3 py-1.5 font-mono text-moonstone-300 truncate max-w-[340px]">{r.url}</td>
                   <td className="px-3 py-1.5 text-center">
                     <span className={clsx('font-mono font-semibold',
@@ -318,7 +318,7 @@ function IpsTab({ range, siteId }) {
                 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors',
                 botFilter === val
                   ? 'bg-moonstone-400/20 text-moonstone-300 border border-moonstone-600'
-                  : 'bg-prussian-600 text-errorgrey border border-prussian-500 hover:text-white'
+                  : 'bg-prussian-600 text-errorgrey border border-prussian-500 hover:text-white hover:bg-prussian-500'
               )}
             >{label}</button>
           ))}
@@ -362,7 +362,7 @@ function IpsTab({ range, siteId }) {
               <React.Fragment key={row.ip}>
                 <tr
                   className={clsx(
-                    'border-t border-prussian-500 hover:bg-prussian-500/40 cursor-pointer transition-colors',
+                    'border-t border-prussian-500 hover:bg-prussian-500/30 cursor-pointer transition-colors',
                     isBlocked && 'bg-dustyred-400/5'
                   )}
                   onClick={() => setExpanded(expanded === row.ip ? null : row.ip)}
@@ -538,7 +538,7 @@ function UserAgentsTab({ range, siteId }) {
                 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors',
                 botFilter === val
                   ? 'bg-moonstone-400/20 text-moonstone-300 border border-moonstone-600'
-                  : 'bg-prussian-600 text-errorgrey border border-prussian-500 hover:text-white'
+                  : 'bg-prussian-600 text-errorgrey border border-prussian-500 hover:text-white hover:bg-prussian-500'
               )}
             >{label}</button>
           ))}
@@ -572,7 +572,7 @@ function UserAgentsTab({ range, siteId }) {
               </td></tr>
             )}
             {!loading && rows.map((row, i) => (
-              <tr key={i} className="border-t border-prussian-500 hover:bg-prussian-500/40">
+              <tr key={i} className="border-t border-prussian-500 hover:bg-prussian-500/30 cursor-pointer transition-colors">
                 <td className="px-4 py-3 font-mono text-xs text-lightgrey truncate max-w-[300px]">{row.user_agent}</td>
                 <td className="px-4 py-3 text-center">
                   {row.is_bot
@@ -659,7 +659,7 @@ export default function Network() {
               'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors',
               tab === id
                 ? 'bg-prussian-500 text-white'
-                : 'text-errorgrey hover:text-white'
+                : 'text-errorgrey hover:text-white hover:bg-prussian-500/50'
             )}
           >
             <Icon icon={icon} className="text-base" />

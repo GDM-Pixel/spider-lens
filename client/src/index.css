@@ -50,7 +50,7 @@ html, body, #root {
   font-weight: 700;
   transition: box-shadow 300ms ease;
 }
-.btn-red:hover { box-shadow: 0 20px 40px rgba(0,0,0,0.25); }
+.btn-red:hover { box-shadow: 0 20px 40px rgba(0,0,0,0.25); filter: brightness(1.1); }
 
 .btn-blue {
   background: linear-gradient(to right, #00d8f5, #007e8f);
@@ -59,7 +59,7 @@ html, body, #root {
   font-weight: 700;
   transition: box-shadow 300ms ease;
 }
-.btn-blue:hover { box-shadow: 0 20px 40px rgba(0,0,0,0.25); }
+.btn-blue:hover { box-shadow: 0 20px 40px rgba(0,0,0,0.25); filter: brightness(1.1); }
 
 /* ── Recharts personnalisation ──────────────────────────── */
 .recharts-tooltip-wrapper .recharts-default-tooltip {

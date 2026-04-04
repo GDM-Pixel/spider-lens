@@ -331,7 +331,7 @@ export default function Settings() {
               {editingSiteId ? t('settings.buttonUpdate') : t('settings.buttonAdd')}
             </button>
             {editingSiteId && (
-              <button type="button" onClick={cancelEditSite} className="text-errorgrey text-sm hover:text-white transition-colors">
+              <button type="button" onClick={cancelEditSite} className="text-errorgrey text-sm hover:text-white hover:bg-prussian-500/50 rounded-lg px-2 py-1 transition-colors">
                 {t('settings.buttonCancel')}
               </button>
             )}
@@ -808,7 +808,7 @@ function RetentionSelect({ label, icon, value, onChange, t }) {
       <select
         value={value === null ? '' : value}
         onChange={e => onChange(e.target.value)}
-        className="w-full bg-prussian-600 border border-prussian-400 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-moonstone-500 transition-colors"
+        className="w-full bg-prussian-600 border border-prussian-400 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-moonstone-500 hover:border-prussian-300 cursor-pointer transition-colors"
       >
         {RETENTION_OPTIONS.map(o => (
           <option key={o.value} value={o.value}>{t(o.labelKey)}</option>
@@ -838,7 +838,7 @@ function Toggle({ enabled, onChange }) {
     <button
       type="button"
       onClick={() => onChange(!enabled)}
-      className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors ${enabled ? 'bg-moonstone-500' : 'bg-prussian-400'}`}
+      className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border transition-all hover:opacity-80 ${enabled ? 'bg-moonstone-500 border-moonstone-400' : 'bg-prussian-400 border-prussian-300'}`}
     >
       <span className={`inline-block h-5 w-5 translate-y-0.5 rounded-full bg-white shadow transition-transform ${enabled ? 'translate-x-5' : 'translate-x-0.5'}`} />
     </button>

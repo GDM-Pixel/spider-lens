@@ -29,7 +29,7 @@ export default function KPICard({ label, value, icon, color = 'moonstone', trend
   return (
     <motion.div
       variants={kpiVariants}
-      className="bg-prussian-500 rounded-xl border border-prussian-400 p-5 flex flex-col gap-3"
+      className="bg-prussian-500 rounded-xl border border-prussian-400 p-5 flex flex-col gap-3 hover:border-prussian-300 hover:shadow-lg hover:shadow-black/10 transition-all duration-200"
     >
       <div className="flex items-start justify-between">
         <div className={clsx('w-10 h-10 rounded-lg flex items-center justify-center', c.bg)}>

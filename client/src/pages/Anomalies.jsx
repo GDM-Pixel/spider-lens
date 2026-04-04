@@ -16,22 +16,24 @@ dayjs.locale('fr')
 const PAGE_SIZE = 50
 
 const TYPE_CONFIG = {
-  traffic_spike:    { icon: 'ph:trend-up',           color: 'text-orange-400' },
-  error_rate_spike: { icon: 'ph:warning-circle',     color: 'text-dustyred-400' },
-  googlebot_absent: { icon: 'ph:robot',              color: 'text-yellow-400' },
-  unknown_bot_spike:{ icon: 'ph:question',           color: 'text-purple-400' },
+  traffic_spike:    { icon: 'ph:trend-up',           color: 'text-orange-400',   i18nKey: 'trafficSpike'    },
+  error_rate_spike: { icon: 'ph:warning-circle',     color: 'text-dustyred-400', i18nKey: 'errorRate'       },
+  googlebot_absent: { icon: 'ph:robot',              color: 'text-yellow-400',   i18nKey: 'googlebotAbsent' },
+  unknown_bot_spike:{ icon: 'ph:question',           color: 'text-purple-400',   i18nKey: 'unknownBot'      },
 }
 
 function AnomalyRow({ row }) {
   const { t } = useTranslation()
-  const config = TYPE_CONFIG[row.type] || { icon: 'ph:info', color: 'text-errorgrey' }
-  const label = t(`anomalies.${row.type}`)
+  const config = TYPE_CONFIG[row.type] || { icon: 'ph:info', color: 'text-errorgrey', i18nKey: row.type }
+  const label = t(`anomalies.${config.i18nKey}`)
   const isCritical = row.severity === 'critical'
 
   return (
     <div className={clsx(
-      'bg-prussian-600 rounded-xl border p-4 flex items-start gap-4',
-      isCritical ? 'border-dustyred-700' : 'border-prussian-500'
+      'bg-prussian-600 rounded-xl border p-4 flex items-start gap-4 transition-all duration-150',
+      isCritical
+        ? 'border-dustyred-700 hover:border-dustyred-500'
+        : 'border-prussian-500 hover:border-prussian-400'
     )}>
       <div className={clsx(
         'w-10 h-10 rounded-lg flex items-center justify-center shrink-0',
@@ -156,7 +158,7 @@ export default function Anomalies() {
             'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border',
             typeFilter === ''
               ? 'bg-moonstone-400/20 text-moonstone-300 border-moonstone-600'
-              : 'bg-prussian-600 text-errorgrey border-prussian-500 hover:text-white'
+              : 'bg-prussian-600 text-errorgrey border-prussian-500 hover:text-white hover:bg-prussian-500'
           )}
         >{t('anomalies.filterAll')}</button>
         {Object.entries(TYPE_CONFIG).map(([key, config]) => (
@@ -167,11 +169,11 @@ export default function Anomalies() {
               'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border',
               typeFilter === key
                 ? 'bg-moonstone-400/20 text-moonstone-300 border-moonstone-600'
-                : 'bg-prussian-600 text-errorgrey border-prussian-500 hover:text-white'
+                : 'bg-prussian-600 text-errorgrey border-prussian-500 hover:text-white hover:bg-prussian-500'
             )}
           >
             <Icon icon={config.icon} className={clsx('text-sm', config.color)} />
-            {t(`anomalies.${key}`)}
+            {t(`anomalies.${config.i18nKey}`)}
           </button>
         ))}
       </div>

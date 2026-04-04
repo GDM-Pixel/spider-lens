@@ -5,7 +5,7 @@
 
   **SEO-focused server log analyzer — open-source, self-hosted**
 
-  [![Version](https://img.shields.io/badge/version-1.0.0-blue)](#)
+  [![Version](https://img.shields.io/badge/version-1.1.0-blue)](#)
   [![Node.js](https://img.shields.io/badge/node-%3E%3D18-green)](#)
   [![License](https://img.shields.io/badge/license-MIT-lightgrey)](#)
   [![i18n](https://img.shields.io/badge/i18n-FR%20EN%20ES%20DE%20IT%20NL-orange)](#)
@@ -19,7 +19,7 @@
 
 ---
 
-Spider-Lens reads your Apache/Nginx log files and provides a comprehensive dashboard to monitor your traffic, HTTP errors, crawl bots, and server performance (TTFB). Available as a standalone Node.js app **and** as a native WordPress plugin.
+Spider-Lens reads your Apache/Nginx log files and provides a comprehensive dashboard to monitor your traffic, HTTP errors, crawl bots, and server performance (TTFB). Powered by an AI assistant (Nova) that analyzes your data and answers your SEO questions in real time. Available as a standalone Node.js app **and** as a native WordPress plugin.
 
 ---
 
@@ -28,23 +28,26 @@ Spider-Lens reads your Apache/Nginx log files and provides a comprehensive dashb
 | View | Description |
 |------|-------------|
 | **Dashboard** | Summary KPIs: visits, bots, error rate, HTTP codes, charts |
-| **HTTP Codes** | Filterable table (2xx/3xx/4xx/5xx) + URL drill-down + CSV & Excel export |
+| **HTTP Codes** | Filterable table (2xx/3xx/4xx/5xx) + URL drill-down + User-Agent filter + CSV & Excel export |
 | **Top Pages** | Most visited pages + 404 errors list to fix |
 | **Bots & Crawlers** | Detection of 16+ bots (Googlebot, AhrefsBot, SemrushBot, ClaudeBot...) |
 | **TTFB** | Time To First Byte per URL, configurable threshold, CSV & Excel export |
-| **Network** | IP and user-agent analysis |
+| **Network** | IP and user-agent analysis with sortable columns |
 | **Anomalies** | Automatic detection of traffic spikes and abnormal patterns |
 | **Blocklist** | Block suspicious IPs and user-agents |
-| **Settings** | SMTP configuration, data retention, password change |
+| **Analyse IA** | AI-powered SEO analysis: global score, detected problems, actionable recommendations |
+| **Settings** | SMTP configuration, data retention policy, database management, password & username change |
 
 ### More
 
+- 🤖 **Nova AI assistant** — Floating chat bubble on every page; sends page context only when you ask a question (powered by Gemini 2.0 Flash via Nova-Mind.cloud)
 - 🌍 **i18n** — UI available in FR, EN, ES, DE, IT, NL (persisted via localStorage)
 - 🔒 **JWT authentication** — 7-day token, secure session
 - 📧 **Email alerts** — 404 spikes, 5xx errors, missing Googlebot (configurable SMTP)
 - 📊 **Incremental parsing** — Resume from offset, log rotation detection
 - 🌱 **Beginner mode** — Help banners and contextual tooltips, dismissible
 - 🌐 **Multi-site** — Monitor multiple sites from a single interface
+- 🗄️ **Database management** — Real-time DB stats, configurable retention policy, manual purge + VACUUM
 - 🔌 **WordPress plugin** — Native WP admin integration, no Node.js required
 
 ---
@@ -58,8 +61,11 @@ Spider-Lens reads your Apache/Nginx log files and provides a comprehensive dashb
 | Auth | JWT + bcryptjs |
 | Scheduled tasks | node-cron |
 | Emails | Nodemailer (SMTP) |
+| AI | Google Gemini 2.0 Flash · SSE streaming |
 | Frontend | React 18 · Vite 5 |
+| Animations | Framer Motion |
 | Charts | Recharts |
+| Icons | Phosphor Icons via @iconify/react |
 | Styles | Tailwind CSS 3 |
 | i18n | react-i18next · i18next-browser-languagedetector |
 | Tests | Jest 29 · Supertest |
@@ -249,6 +255,20 @@ cd server && npm test
 
 ---
 
+## 🤖 AI assistant (Nova) configuration
+
+The AI assistant requires a Google Gemini API key. Add it to `server/.env`:
+
+```env
+GEMINI_API_KEY=your-gemini-api-key
+```
+
+Without this key, the **Analyse IA** page displays a message inviting you to configure it. The rest of the application works normally.
+
+> The assistant never sends raw log data to Google — only a compact JSON summary (~500 tokens) is sent per request. Responses are streamed via SSE.
+
+---
+
 ## ⚙️ Email alert configuration
 
 From the **Settings** view in the dashboard:
@@ -278,6 +298,16 @@ cd client && npm run dev
 
 ## 🗺️ Roadmap
 
+### v1.1.0 ✅
+- [x] Nova AI assistant — floating chat bubble, page-aware context, SSE streaming
+- [x] Analyse IA — structured SEO analysis (score, problems, recommendations)
+- [x] Database management — stats, retention policy, manual purge + VACUUM
+- [x] User-Agent filter on HTTP Codes view
+- [x] Sortable columns on all tables
+- [x] Username change from Settings
+- [x] UI polish — harmonized hover effects, micro-interactions across all views
+- [x] i18n fixes — all labels and filter buttons correctly translated in all 6 languages
+
 ### v1.0.0 ✅
 - [x] Dashboard, HTTP Codes, Top Pages, Bots, TTFB, Network, Anomalies, Blocklist
 - [x] Native WordPress plugin
@@ -288,7 +318,7 @@ cd client && npm run dev
 - [x] Beginner mode
 - [x] Jest tests (27)
 
-### v1.1.0 (planned)
+### v1.2.0 (planned)
 - [ ] Advanced filters by IP and user-agent
 - [ ] Webhook API for external integrations
 - [ ] Customizable dashboard (widgets)

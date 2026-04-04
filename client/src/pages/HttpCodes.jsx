@@ -769,7 +769,7 @@ export default function HttpCodes() {
                       <tr
                         key={`${row.url}-${row.status_code}`}
                         className={clsx(
-                          "border-b border-prussian-400/40 hover:bg-prussian-400/20 transition-colors",
+                          "border-b border-prussian-400/40 hover:bg-prussian-500/30 transition-colors",
                           i % 2 === 0 ? "" : "bg-prussian-600/20",
                         )}
                       >
