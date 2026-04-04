@@ -11,7 +11,8 @@
     "settings": "設定",
     "analysis": "分析",
     "logout": "ログアウト",
-    "analyzeAI": "AI分析"
+    "analyzeAI": "AI分析",
+    "account": "マイアカウント"
   },
   "header": {
     "beginnerActive": "初心者モードが有効です — クリックして無効にする",
@@ -336,6 +337,23 @@
     "emptyTextFiltered": "このフィルターに結果がありません。",
     "observed": "観測:",
     "baseline": "ベースライン:"
+  },
+  "account": {
+    "title": "マイアカウント",
+    "sectionUsername": "ユーザー名",
+    "newUsername": "新しいユーザー名",
+    "newUsernamePlaceholder": "例: admin",
+    "currentPasswordConfirm": "現在のパスワードで確認",
+    "usernameSuccess": "ユーザー名が変更されました",
+    "buttonChangeUsername": "名前を変更",
+    "sectionPassword": "パスワード変更",
+    "currentPassword": "現在のパスワード",
+    "newPassword": "新しいパスワード",
+    "newPasswordPlaceholder": "最低8文字",
+    "confirmPassword": "確認",
+    "passwordMismatch": "パスワードが一致しません",
+    "passwordSuccess": "パスワードが変更されました",
+    "buttonChangePassword": "パスワード変更"
   },
   "blocklist": {
     "welcomeTitle": "IPブロックリスト",

@@ -11,7 +11,8 @@
     "settings": "Settings",
     "analysis": "Analysis",
     "logout": "Logout",
-    "analyzeAI": "AI Analysis"
+    "analyzeAI": "AI Analysis",
+    "account": "My Account"
   },
   "header": {
     "beginnerActive": "Beginner mode active — click to disable",
@@ -336,6 +337,23 @@
     "emptyTextFiltered": "No results for this filter.",
     "observed": "Observed:",
     "baseline": "Baseline:"
+  },
+  "account": {
+    "title": "My Account",
+    "sectionUsername": "Username",
+    "newUsername": "New username",
+    "newUsernamePlaceholder": "e.g. admin",
+    "currentPasswordConfirm": "Confirm with your current password",
+    "usernameSuccess": "Username changed successfully",
+    "buttonChangeUsername": "Change username",
+    "sectionPassword": "Change password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "newPasswordPlaceholder": "Min. 8 characters",
+    "confirmPassword": "Confirm",
+    "passwordMismatch": "Passwords do not match",
+    "passwordSuccess": "Password changed successfully",
+    "buttonChangePassword": "Change password"
   },
   "blocklist": {
     "welcomeTitle": "IP Blocklist",

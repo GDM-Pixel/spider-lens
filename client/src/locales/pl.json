@@ -11,7 +11,8 @@
     "settings": "Ustawienia",
     "analysis": "Analiza",
     "logout": "Wyloguj się",
-    "analyzeAI": "Analiza AI"
+    "analyzeAI": "Analiza AI",
+    "account": "Moje Konto"
   },
   "header": {
     "beginnerActive": "Tryb początkujący aktywny — kliknij, aby wyłączyć",
@@ -336,6 +337,23 @@
     "emptyTextFiltered": "Brak wyników dla tego filtru.",
     "observed": "Zaobserwowano:",
     "baseline": "Linia bazowa:"
+  },
+  "account": {
+    "title": "Moje Konto",
+    "sectionUsername": "Nazwa użytkownika",
+    "newUsername": "Nowa nazwa użytkownika",
+    "newUsernamePlaceholder": "np. admin",
+    "currentPasswordConfirm": "Potwierdź aktualnym hasłem",
+    "usernameSuccess": "Nazwa użytkownika zmieniona pomyślnie",
+    "buttonChangeUsername": "Zmień nazwę",
+    "sectionPassword": "Zmień hasło",
+    "currentPassword": "Aktualne hasło",
+    "newPassword": "Nowe hasło",
+    "newPasswordPlaceholder": "Min. 8 znaków",
+    "confirmPassword": "Potwierdź",
+    "passwordMismatch": "Hasła nie są zgodne",
+    "passwordSuccess": "Hasło zmienione pomyślnie",
+    "buttonChangePassword": "Zmień hasło"
   },
   "blocklist": {
     "welcomeTitle": "Lista blokowania IP",

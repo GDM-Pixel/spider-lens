@@ -11,7 +11,8 @@
     "settings": "Nastavení",
     "analysis": "Analýza",
     "logout": "Odhlášení",
-    "analyzeAI": "Analýza AI"
+    "analyzeAI": "Analýza AI",
+    "account": "Můj Účet"
   },
   "header": {
     "beginnerActive": "Režim začátečníka je aktivní — kliknutím zakažte",
@@ -336,6 +337,23 @@
     "emptyTextFiltered": "Žádné výsledky pro tento filtr.",
     "observed": "Pozorováno:",
     "baseline": "Účinnost:"
+  },
+  "account": {
+    "title": "Můj Účet",
+    "sectionUsername": "Uživatelské jméno",
+    "newUsername": "Nové uživatelské jméno",
+    "newUsernamePlaceholder": "např. admin",
+    "currentPasswordConfirm": "Potvrdit aktuálním heslem",
+    "usernameSuccess": "Uživatelské jméno úspěšně změněno",
+    "buttonChangeUsername": "Změnit jméno",
+    "sectionPassword": "Změnit heslo",
+    "currentPassword": "Aktuální heslo",
+    "newPassword": "Nové heslo",
+    "newPasswordPlaceholder": "Min. 8 znaků",
+    "confirmPassword": "Potvrdit",
+    "passwordMismatch": "Hesla se neshodují",
+    "passwordSuccess": "Heslo úspěšně změněno",
+    "buttonChangePassword": "Změnit heslo"
   },
   "blocklist": {
     "welcomeTitle": "Seznam blokování IP",

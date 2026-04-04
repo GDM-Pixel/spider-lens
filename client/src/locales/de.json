@@ -11,7 +11,8 @@
     "settings": "Einstellungen",
     "analysis": "Analyse",
     "logout": "Abmelden",
-    "analyzeAI": "KI-Analyse"
+    "analyzeAI": "KI-Analyse",
+    "account": "Mein Konto"
   },
   "header": {
     "beginnerActive": "Anfängermodus aktiv — klicken zum Deaktivieren",
@@ -336,6 +337,23 @@
     "emptyTextFiltered": "Keine Ergebnisse für diesen Filter.",
     "observed": "Beobachtet:",
     "baseline": "Grundlinie:"
+  },
+  "account": {
+    "title": "Mein Konto",
+    "sectionUsername": "Benutzername",
+    "newUsername": "Neuer Benutzername",
+    "newUsernamePlaceholder": "z.B. admin",
+    "currentPasswordConfirm": "Mit aktuellem Passwort bestätigen",
+    "usernameSuccess": "Benutzername erfolgreich geändert",
+    "buttonChangeUsername": "Namen ändern",
+    "sectionPassword": "Passwort ändern",
+    "currentPassword": "Aktuelles Passwort",
+    "newPassword": "Neues Passwort",
+    "newPasswordPlaceholder": "Min. 8 Zeichen",
+    "confirmPassword": "Bestätigen",
+    "passwordMismatch": "Passwörter stimmen nicht überein",
+    "passwordSuccess": "Passwort erfolgreich geändert",
+    "buttonChangePassword": "Passwort ändern"
   },
   "blocklist": {
     "welcomeTitle": "IP-Blocklist",

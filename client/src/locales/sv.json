@@ -11,7 +11,8 @@
     "settings": "Inställningar",
     "analysis": "Analys",
     "logout": "Logga ut",
-    "analyzeAI": "AI-analys"
+    "analyzeAI": "AI-analys",
+    "account": "Mitt Konto"
   },
   "header": {
     "beginnerActive": "Nybörjarläge är aktivt — klicka för att inaktivera",
@@ -336,6 +337,23 @@
     "emptyTextFiltered": "Inga resultat för detta filter.",
     "observed": "Observerat:",
     "baseline": "Baslinje:"
+  },
+  "account": {
+    "title": "Mitt Konto",
+    "sectionUsername": "Användarnamn",
+    "newUsername": "Nytt användarnamn",
+    "newUsernamePlaceholder": "t.ex. admin",
+    "currentPasswordConfirm": "Bekräfta med ditt nuvarande lösenord",
+    "usernameSuccess": "Användarnamn ändrat",
+    "buttonChangeUsername": "Ändra namn",
+    "sectionPassword": "Ändra lösenord",
+    "currentPassword": "Nuvarande lösenord",
+    "newPassword": "Nytt lösenord",
+    "newPasswordPlaceholder": "Min. 8 tecken",
+    "confirmPassword": "Bekräfta",
+    "passwordMismatch": "Lösenorden matchar inte",
+    "passwordSuccess": "Lösenord ändrat",
+    "buttonChangePassword": "Ändra lösenord"
   },
   "blocklist": {
     "welcomeTitle": "IP-blocklist",

@@ -102,6 +102,28 @@ export default function Sidebar({ collapsed, onToggle }) {
 
       {/* Footer */}
       <div className="border-t border-prussian-500 p-2">
+        <NavLink
+          to="/account"
+          className={({ isActive }) =>
+            clsx(
+              "flex items-center gap-3 w-full px-2 py-2.5 rounded-lg text-sm font-semibold transition-colors mb-1",
+              collapsed && "justify-center",
+              isActive
+                ? "bg-prussian-500 text-white"
+                : "text-errorgrey hover:bg-prussian-500 hover:text-white",
+            )
+          }
+        >
+          {({ isActive }) => (
+            <>
+              <Icon
+                icon="ph:user"
+                className={clsx("text-xl shrink-0", isActive ? "text-moonstone-400" : "text-errorgrey")}
+              />
+              {!collapsed && <span>{t('nav.account')}</span>}
+            </>
+          )}
+        </NavLink>
         <button
           onClick={handleLogout}
           className={clsx(

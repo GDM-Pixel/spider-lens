@@ -11,7 +11,8 @@
     "settings": "Ayarlar",
     "analysis": "Analiz",
     "logout": "Çıkış Yap",
-    "analyzeAI": "AI Analizi"
+    "analyzeAI": "AI Analizi",
+    "account": "Hesabım"
   },
   "header": {
     "beginnerActive": "Başlangıç modu etkin — devre dışı bırakmak için tıklayın",
@@ -336,6 +337,23 @@
     "emptyTextFiltered": "Bu filtre için sonuç yok.",
     "observed": "Gözlenen:",
     "baseline": "Temel:"
+  },
+  "account": {
+    "title": "Hesabım",
+    "sectionUsername": "Kullanıcı adı",
+    "newUsername": "Yeni kullanıcı adı",
+    "newUsernamePlaceholder": "örn. admin",
+    "currentPasswordConfirm": "Mevcut şifrenizle onaylayın",
+    "usernameSuccess": "Kullanıcı adı başarıyla değiştirildi",
+    "buttonChangeUsername": "Adı değiştir",
+    "sectionPassword": "Şifre değiştir",
+    "currentPassword": "Mevcut şifre",
+    "newPassword": "Yeni şifre",
+    "newPasswordPlaceholder": "Min. 8 karakter",
+    "confirmPassword": "Onayla",
+    "passwordMismatch": "Şifreler eşleşmiyor",
+    "passwordSuccess": "Şifre başarıyla değiştirildi",
+    "buttonChangePassword": "Şifreyi değiştir"
   },
   "blocklist": {
     "welcomeTitle": "IP Engelleme Listesi",

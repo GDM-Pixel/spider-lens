@@ -11,7 +11,8 @@
     "settings": "설정",
     "analysis": "분석",
     "logout": "로그아웃",
-    "analyzeAI": "AI 분석"
+    "analyzeAI": "AI 분석",
+    "account": "내 계정"
   },
   "header": {
     "beginnerActive": "초급자 모드가 활성화됨 — 클릭하여 비활성화",
@@ -336,6 +337,23 @@
     "emptyTextFiltered": "이 필터에 대한 결과가 없습니다.",
     "observed": "관찰된:",
     "baseline": "기준선:"
+  },
+  "account": {
+    "title": "내 계정",
+    "sectionUsername": "사용자 이름",
+    "newUsername": "새 사용자 이름",
+    "newUsernamePlaceholder": "예: admin",
+    "currentPasswordConfirm": "현재 비밀번호로 확인",
+    "usernameSuccess": "사용자 이름이 변경되었습니다",
+    "buttonChangeUsername": "이름 변경",
+    "sectionPassword": "비밀번호 변경",
+    "currentPassword": "현재 비밀번호",
+    "newPassword": "새 비밀번호",
+    "newPasswordPlaceholder": "최소 8자",
+    "confirmPassword": "확인",
+    "passwordMismatch": "비밀번호가 일치하지 않습니다",
+    "passwordSuccess": "비밀번호가 변경되었습니다",
+    "buttonChangePassword": "비밀번호 변경"
   },
   "blocklist": {
     "welcomeTitle": "IP 차단 목록",

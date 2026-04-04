@@ -11,7 +11,8 @@
     "settings": "Instellingen",
     "analysis": "Analyse",
     "logout": "Afmelden",
-    "analyzeAI": "AI-analyse"
+    "analyzeAI": "AI-analyse",
+    "account": "Mijn Account"
   },
   "header": {
     "beginnerActive": "Beginnermodus actief — klik om uit te schakelen",
@@ -336,6 +337,23 @@
     "emptyTextFiltered": "Geen resultaten voor dit filter.",
     "observed": "Waargenomen:",
     "baseline": "Basislijn:"
+  },
+  "account": {
+    "title": "Mijn Account",
+    "sectionUsername": "Gebruikersnaam",
+    "newUsername": "Nieuwe gebruikersnaam",
+    "newUsernamePlaceholder": "bijv. admin",
+    "currentPasswordConfirm": "Bevestig met je huidige wachtwoord",
+    "usernameSuccess": "Gebruikersnaam succesvol gewijzigd",
+    "buttonChangeUsername": "Naam wijzigen",
+    "sectionPassword": "Wachtwoord wijzigen",
+    "currentPassword": "Huidig wachtwoord",
+    "newPassword": "Nieuw wachtwoord",
+    "newPasswordPlaceholder": "Min. 8 tekens",
+    "confirmPassword": "Bevestigen",
+    "passwordMismatch": "Wachtwoorden komen niet overeen",
+    "passwordSuccess": "Wachtwoord succesvol gewijzigd",
+    "buttonChangePassword": "Wachtwoord wijzigen"
   },
   "blocklist": {
     "welcomeTitle": "IP-blokkeringslijst",

@@ -11,7 +11,8 @@
     "settings": "Indstillinger",
     "analysis": "Analyse",
     "logout": "Log ud",
-    "analyzeAI": "AI-analyse"
+    "analyzeAI": "AI-analyse",
+    "account": "Min Konto"
   },
   "header": {
     "beginnerActive": "Begyndertilstand er aktiv — klik for at deaktivere",
@@ -336,6 +337,23 @@
     "emptyTextFiltered": "Ingen resultater for dette filter.",
     "observed": "Observeret:",
     "baseline": "Baseline:"
+  },
+  "account": {
+    "title": "Min Konto",
+    "sectionUsername": "Brugernavn",
+    "newUsername": "Nyt brugernavn",
+    "newUsernamePlaceholder": "f.eks. admin",
+    "currentPasswordConfirm": "Bekræft med din nuværende adgangskode",
+    "usernameSuccess": "Brugernavn ændret",
+    "buttonChangeUsername": "Skift navn",
+    "sectionPassword": "Skift adgangskode",
+    "currentPassword": "Nuværende adgangskode",
+    "newPassword": "Ny adgangskode",
+    "newPasswordPlaceholder": "Min. 8 tegn",
+    "confirmPassword": "Bekræft",
+    "passwordMismatch": "Adgangskoderne stemmer ikke overens",
+    "passwordSuccess": "Adgangskode ændret",
+    "buttonChangePassword": "Skift adgangskode"
   },
   "blocklist": {
     "welcomeTitle": "IP-blokkeringsliste",

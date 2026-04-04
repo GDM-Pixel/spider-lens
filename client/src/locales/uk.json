@@ -11,7 +11,8 @@
     "settings": "Параметри",
     "analysis": "Аналіз",
     "logout": "Вихід",
-    "analyzeAI": "Аналіз AI"
+    "analyzeAI": "Аналіз AI",
+    "account": "Мій Акаунт"
   },
   "header": {
     "beginnerActive": "Режим новачка увімкнений — натисніть, щоб вимкнути",
@@ -336,6 +337,23 @@
     "emptyTextFiltered": "Немає результатів для цього фільтра.",
     "observed": "Спостережено:",
     "baseline": "Базова лінія:"
+  },
+  "account": {
+    "title": "Мій Акаунт",
+    "sectionUsername": "Ім'я користувача",
+    "newUsername": "Нове ім'я користувача",
+    "newUsernamePlaceholder": "напр. admin",
+    "currentPasswordConfirm": "Підтвердити поточним паролем",
+    "usernameSuccess": "Ім'я користувача успішно змінено",
+    "buttonChangeUsername": "Змінити ім'я",
+    "sectionPassword": "Змінити пароль",
+    "currentPassword": "Поточний пароль",
+    "newPassword": "Новий пароль",
+    "newPasswordPlaceholder": "Мін. 8 символів",
+    "confirmPassword": "Підтвердити",
+    "passwordMismatch": "Паролі не збігаються",
+    "passwordSuccess": "Пароль успішно змінено",
+    "buttonChangePassword": "Змінити пароль"
   },
   "blocklist": {
     "welcomeTitle": "Список блокування IP",

@@ -11,7 +11,8 @@
     "settings": "Настройки",
     "analysis": "Анализ",
     "logout": "Выход",
-    "analyzeAI": "AI анализ"
+    "analyzeAI": "AI анализ",
+    "account": "Мой Аккаунт"
   },
   "header": {
     "beginnerActive": "Режим новичка включен — нажмите, чтобы отключить",
@@ -336,6 +337,23 @@
     "emptyTextFiltered": "Нет результатов для этого фильтра.",
     "observed": "Наблюдается:",
     "baseline": "Базовая линия:"
+  },
+  "account": {
+    "title": "Мой Аккаунт",
+    "sectionUsername": "Имя пользователя",
+    "newUsername": "Новое имя пользователя",
+    "newUsernamePlaceholder": "напр. admin",
+    "currentPasswordConfirm": "Подтвердите текущим паролем",
+    "usernameSuccess": "Имя пользователя успешно изменено",
+    "buttonChangeUsername": "Изменить имя",
+    "sectionPassword": "Изменить пароль",
+    "currentPassword": "Текущий пароль",
+    "newPassword": "Новый пароль",
+    "newPasswordPlaceholder": "Мин. 8 символов",
+    "confirmPassword": "Подтвердить",
+    "passwordMismatch": "Пароли не совпадают",
+    "passwordSuccess": "Пароль успешно изменён",
+    "buttonChangePassword": "Изменить пароль"
   },
   "blocklist": {
     "welcomeTitle": "Список блокировок IP",
