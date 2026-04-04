@@ -461,7 +461,7 @@
     "analyzing": "Analizando...",
     "chatPlaceholder": "Haz una pregunta sobre tus logs...",
     "send": "Enviar",
-    "welcome": "¡Hola! Soy tu asistente SEO. Ejecuta el análisis automático o hazme una pregunta.",
+    "welcome": "Hola, soy Nova, tu asistente IA. Estoy aquí para responder a tus preguntas.",
     "noApiKey": "La clave API de Gemini no está configurada. Añade GEMINI_API_KEY a tu archivo .env.",
     "errorGeneric": "Se produjo un error. Por favor, inténtalo de nuevo.",
     "poweredBy": "desarrollado por",
