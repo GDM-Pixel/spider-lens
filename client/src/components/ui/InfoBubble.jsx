@@ -103,10 +103,10 @@ export default function InfoBubble({ title, content, impact, action, side = 'top
         onMouseLeave={hide}
         onFocus={show}
         onBlur={hide}
-        className="w-[18px] h-[18px] rounded-full bg-prussian-400 border border-prussian-300 flex items-center justify-center text-moonstone-500 hover:border-moonstone-500 hover:text-moonstone-300 hover:bg-prussian-300 transition-all duration-150 shrink-0 outline-none"
+        className="w-[36px] h-[36px] rounded-full bg-prussian-400 border border-prussian-300 flex items-center justify-center text-moonstone-500 hover:border-moonstone-500 hover:text-moonstone-300 hover:bg-prussian-300 transition-all duration-150 shrink-0 outline-none"
         aria-label="Plus d'informations"
       >
-        <Icon icon="ph:info" className="text-[10px]" />
+        <Icon icon="ph:info" className="text-[20px]" />
       </button>
 
       {/* Tooltip via portal */}
