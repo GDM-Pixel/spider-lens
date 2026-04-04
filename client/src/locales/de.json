@@ -341,6 +341,9 @@
     "copiedSnippet": "Kopiert!"
   },
   "settings": {
+    "title": "Einstellungen",
+    "subtitle": "Spider-Lens Konfiguration",
+    "alertThreshold": "Auslöseschwelle:",
     "sectionSites": "Überwachte Websites",
     "sectionSitesDesc": "Jede Website entspricht einer Apache oder Nginx Log-Datei",
     "addSite": "Eine Website hinzufügen",

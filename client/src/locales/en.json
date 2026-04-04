@@ -341,6 +341,9 @@
     "copiedSnippet": "Copied!"
   },
   "settings": {
+    "title": "Settings",
+    "subtitle": "Spider-Lens configuration",
+    "alertThreshold": "Trigger threshold:",
     "sectionSites": "Monitored sites",
     "sectionSitesDesc": "Each site corresponds to an Apache or Nginx log file",
     "addSite": "Add a site",

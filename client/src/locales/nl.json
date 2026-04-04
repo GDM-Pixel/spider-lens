@@ -341,6 +341,9 @@
     "copiedSnippet": "Gekopieerd!"
   },
   "settings": {
+    "title": "Instellingen",
+    "subtitle": "Spider-Lens configuratie",
+    "alertThreshold": "Activeringsdrempel:",
     "sectionSites": "Bewaakte Websites",
     "sectionSitesDesc": "Elke website komt overeen met een Apache of Nginx logbestand",
     "addSite": "Een website toevoegen",

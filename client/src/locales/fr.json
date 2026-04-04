@@ -341,6 +341,9 @@
     "copiedSnippet": "Copié !"
   },
   "settings": {
+    "title": "Paramètres",
+    "subtitle": "Configuration de Spider-Lens",
+    "alertThreshold": "Seuil de déclenchement :",
     "sectionSites": "Sites à surveiller",
     "sectionSitesDesc": "Chaque site correspond à un fichier de log Apache ou Nginx",
     "addSite": "Ajouter un site",

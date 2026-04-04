@@ -341,6 +341,9 @@
     "copiedSnippet": "¡Copiado!"
   },
   "settings": {
+    "title": "Configuración",
+    "subtitle": "Configuración de Spider-Lens",
+    "alertThreshold": "Umbral de activación:",
     "sectionSites": "Sitios Monitoreados",
     "sectionSitesDesc": "Cada sitio corresponde a un archivo de registro de Apache o Nginx",
     "addSite": "Agregar un sitio",
