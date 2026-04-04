@@ -412,6 +412,12 @@
     "newPasswordPlaceholder": "Min. 8 caractères",
     "confirmPassword": "Confirmer",
     "buttonChangePassword": "Changer le mot de passe",
+    "sectionUsername": "Nom d'utilisateur",
+    "newUsername": "Nouveau nom d'utilisateur",
+    "newUsernamePlaceholder": "ex. admin",
+    "currentPasswordConfirm": "Confirmer avec votre mot de passe",
+    "usernameSuccess": "Nom d'utilisateur modifié avec succès",
+    "buttonChangeUsername": "Changer le nom",
     "passwordMismatch": "Les mots de passe ne correspondent pas",
     "passwordSuccess": "Mot de passe modifié avec succès",
     "confirmDeleteSite": "Supprimer ce site ? Les données de logs associées seront conservées."

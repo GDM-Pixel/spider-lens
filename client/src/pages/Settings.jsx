@@ -23,6 +23,11 @@ export default function Settings() {
   const [pwdForm, setPwdForm] = useState({ currentPassword: '', newPassword: '', confirm: '' })
   const [pwdMsg, setPwdMsg] = useState(null)
 
+  // Username change
+  const [unForm, setUnForm] = useState({ newUsername: '', currentPassword: '' })
+  const [unMsg, setUnMsg] = useState(null)
+  const [unSaving, setUnSaving] = useState(false)
+
   // DB management
   const [dbStats, setDbStats] = useState(null)
   const [dbStatsLoading, setDbStatsLoading] = useState(false)
@@ -157,6 +162,22 @@ export default function Settings() {
       setPwdForm({ currentPassword: '', newPassword: '', confirm: '' })
     } catch (err) {
       setPwdMsg({ success: false, msg: err.response?.data?.error || 'Erreur' })
+    }
+  }
+
+  async function handleChangeUsername(e) {
+    e.preventDefault()
+    setUnMsg(null)
+    setUnSaving(true)
+    try {
+      const { data } = await api.post('/auth/change-username', unForm)
+      localStorage.setItem('spider_username', data.username)
+      setUnMsg({ success: true })
+      setUnForm({ newUsername: '', currentPassword: '' })
+    } catch (err) {
+      setUnMsg({ success: false, msg: err.response?.data?.error || 'Erreur' })
+    } finally {
+      setUnSaving(false)
     }
   }
 
@@ -706,30 +727,57 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* Changement de mot de passe */}
-      <form onSubmit={handleChangePassword} className="bg-prussian-500 rounded-xl border border-prussian-400 p-6 flex flex-col gap-4">
-        <div className="flex items-center gap-3 border-b border-prussian-400 pb-4">
-          <div className="w-8 h-8 rounded-lg bg-prussian-400 flex items-center justify-center">
-            <Icon icon="ph:lock-key" className="text-errorgrey text-base" />
+      {/* Compte — username + mot de passe en grid 2 colonnes */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        {/* Changement de nom d'utilisateur */}
+        <form onSubmit={handleChangeUsername} className="bg-prussian-500 rounded-xl border border-prussian-400 p-6 flex flex-col gap-4">
+          <div className="flex items-center gap-3 border-b border-prussian-400 pb-4">
+            <div className="w-8 h-8 rounded-lg bg-prussian-400 flex items-center justify-center">
+              <Icon icon="ph:user-gear" className="text-errorgrey text-base" />
+            </div>
+            <h3 className="text-white font-bold text-sm">{t('settings.sectionUsername')}</h3>
           </div>
-          <h3 className="text-white font-bold text-sm">{t('settings.sectionPassword')}</h3>
-        </div>
-        <Field label={t('settings.currentPassword')} type="password" value={pwdForm.currentPassword} onChange={v => setPwdForm(f => ({ ...f, currentPassword: v }))} />
-        <div className="grid grid-cols-2 gap-4">
-          <Field label={t('settings.newPassword')} type="password" value={pwdForm.newPassword} onChange={v => setPwdForm(f => ({ ...f, newPassword: v }))} placeholder={t('settings.newPasswordPlaceholder')} />
-          <Field label={t('settings.confirmPassword')} type="password" value={pwdForm.confirm} onChange={v => setPwdForm(f => ({ ...f, confirm: v }))} />
-        </div>
-        {pwdMsg && (
-          <p className={`text-sm font-semibold flex items-center gap-1.5 ${pwdMsg.success ? 'text-emerald-400' : 'text-dustyred-400'}`}>
-            <Icon icon={pwdMsg.success ? 'ph:check-circle' : 'ph:x-circle'} />
-            {pwdMsg.success ? t('settings.passwordSuccess') : t('settings.passwordMismatch')}
-          </p>
-        )}
-        <button type="submit" className="btn-blue px-5 py-2 text-sm w-fit flex items-center gap-2">
-          <Icon icon="ph:lock-key-open" className="text-base" />
-          {t('settings.buttonChangePassword')}
-        </button>
-      </form>
+          <Field label={t('settings.newUsername')} value={unForm.newUsername} onChange={v => setUnForm(f => ({ ...f, newUsername: v }))} placeholder={t('settings.newUsernamePlaceholder')} />
+          <Field label={t('settings.currentPasswordConfirm')} type="password" value={unForm.currentPassword} onChange={v => setUnForm(f => ({ ...f, currentPassword: v }))} />
+          {unMsg && (
+            <p className={`text-sm font-semibold flex items-center gap-1.5 ${unMsg.success ? 'text-emerald-400' : 'text-dustyred-400'}`}>
+              <Icon icon={unMsg.success ? 'ph:check-circle' : 'ph:x-circle'} />
+              {unMsg.success ? t('settings.usernameSuccess') : unMsg.msg}
+            </p>
+          )}
+          <button type="submit" disabled={unSaving || !unForm.newUsername.trim() || !unForm.currentPassword} className="btn-blue px-5 py-2 text-sm w-fit flex items-center gap-2 disabled:opacity-60">
+            {unSaving ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Icon icon="ph:user-check" className="text-base" />}
+            {t('settings.buttonChangeUsername')}
+          </button>
+        </form>
+
+        {/* Changement de mot de passe */}
+        <form onSubmit={handleChangePassword} className="bg-prussian-500 rounded-xl border border-prussian-400 p-6 flex flex-col gap-4">
+          <div className="flex items-center gap-3 border-b border-prussian-400 pb-4">
+            <div className="w-8 h-8 rounded-lg bg-prussian-400 flex items-center justify-center">
+              <Icon icon="ph:lock-key" className="text-errorgrey text-base" />
+            </div>
+            <h3 className="text-white font-bold text-sm">{t('settings.sectionPassword')}</h3>
+          </div>
+          <Field label={t('settings.currentPassword')} type="password" value={pwdForm.currentPassword} onChange={v => setPwdForm(f => ({ ...f, currentPassword: v }))} />
+          <div className="grid grid-cols-2 gap-4">
+            <Field label={t('settings.newPassword')} type="password" value={pwdForm.newPassword} onChange={v => setPwdForm(f => ({ ...f, newPassword: v }))} placeholder={t('settings.newPasswordPlaceholder')} />
+            <Field label={t('settings.confirmPassword')} type="password" value={pwdForm.confirm} onChange={v => setPwdForm(f => ({ ...f, confirm: v }))} />
+          </div>
+          {pwdMsg && (
+            <p className={`text-sm font-semibold flex items-center gap-1.5 ${pwdMsg.success ? 'text-emerald-400' : 'text-dustyred-400'}`}>
+              <Icon icon={pwdMsg.success ? 'ph:check-circle' : 'ph:x-circle'} />
+              {pwdMsg.success ? t('settings.passwordSuccess') : t('settings.passwordMismatch')}
+            </p>
+          )}
+          <button type="submit" className="btn-blue px-5 py-2 text-sm w-fit flex items-center gap-2">
+            <Icon icon="ph:lock-key-open" className="text-base" />
+            {t('settings.buttonChangePassword')}
+          </button>
+        </form>
+
+      </div>
     </div>
   )
 }

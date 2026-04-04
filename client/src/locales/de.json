@@ -412,6 +412,12 @@
     "newPasswordPlaceholder": "Min. 8 Zeichen",
     "confirmPassword": "Bestätigen",
     "buttonChangePassword": "Passwort ändern",
+    "sectionUsername": "Benutzername",
+    "newUsername": "Neuer Benutzername",
+    "newUsernamePlaceholder": "z.B. admin",
+    "currentPasswordConfirm": "Mit Passwort bestätigen",
+    "usernameSuccess": "Benutzername erfolgreich geändert",
+    "buttonChangeUsername": "Namen ändern",
     "passwordMismatch": "Passwörter stimmen nicht überein",
     "passwordSuccess": "Passwort erfolgreich geändert",
     "confirmDeleteSite": "Diese Website löschen? Zugehörige Log-Daten werden beibehalten."

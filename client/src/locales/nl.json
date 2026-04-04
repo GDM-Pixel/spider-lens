@@ -412,6 +412,12 @@
     "newPasswordPlaceholder": "Min. 8 tekens",
     "confirmPassword": "Bevestigen",
     "buttonChangePassword": "Wachtwoord wijzigen",
+    "sectionUsername": "Gebruikersnaam",
+    "newUsername": "Nieuwe gebruikersnaam",
+    "newUsernamePlaceholder": "bijv. admin",
+    "currentPasswordConfirm": "Bevestig met uw wachtwoord",
+    "usernameSuccess": "Gebruikersnaam succesvol gewijzigd",
+    "buttonChangeUsername": "Naam wijzigen",
     "passwordMismatch": "Wachtwoorden komen niet overeen",
     "passwordSuccess": "Wachtwoord succesvol gewijzigd",
     "confirmDeleteSite": "Deze website verwijderen? Bijbehorende loggegevens worden behouden."

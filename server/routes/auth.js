@@ -68,4 +68,32 @@ router.post('/change-password', requireAuth, (req, res) => {
   res.json({ success: true })
 })
 
+// POST /api/auth/change-username (authentification requise)
+router.post('/change-username', requireAuth, (req, res) => {
+  const { newUsername, currentPassword } = req.body
+
+  if (!newUsername || !currentPassword) {
+    return res.status(400).json({ error: 'Champs manquants' })
+  }
+  const trimmed = newUsername.trim()
+  if (trimmed.length < 3) {
+    return res.status(400).json({ error: "Le nom d'utilisateur doit faire au moins 3 caractères" })
+  }
+
+  const db = getDb()
+  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id)
+  if (!user || !bcrypt.compareSync(currentPassword, user.password_hash)) {
+    return res.status(401).json({ error: 'Mot de passe incorrect' })
+  }
+
+  const existing = db.prepare('SELECT id FROM users WHERE username = ? AND id != ?').get(trimmed, user.id)
+  if (existing) {
+    return res.status(409).json({ error: "Ce nom d'utilisateur est déjà pris" })
+  }
+
+  db.prepare('UPDATE users SET username = ? WHERE id = ?').run(trimmed, user.id)
+
+  res.json({ success: true, username: trimmed })
+})
+
 export default router
