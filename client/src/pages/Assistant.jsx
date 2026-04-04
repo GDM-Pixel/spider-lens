@@ -5,31 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
 import BeginnerBanner from "../components/ui/BeginnerBanner";
 import AnalysisSection from "../components/ui/AnalysisSection";
+import NovaAnalysisLoader from "../components/ui/NovaAnalysisLoader";
 import { useSite } from "../context/SiteContext";
 import { useChat } from "../context/ChatContext";
-
-// ── Loading skeleton ──────────────────────────────────────
-function AnalysisSkeleton() {
-  return (
-    <div className="flex flex-col gap-6 animate-pulse">
-      {/* Score row */}
-      <div className="bg-prussian-600 rounded-xl border border-prussian-500 p-6 flex flex-col sm:flex-row items-center gap-6">
-        <div className="w-36 h-36 rounded-full bg-prussian-500 shrink-0" />
-        <div className="flex-1 flex flex-col gap-3 w-full">
-          <div className="h-4 bg-prussian-500 rounded w-1/3" />
-          <div className="h-3 bg-prussian-500 rounded w-3/4" />
-          <div className="grid grid-cols-2 gap-2 mt-2">
-            {[1,2,3,4].map(i => <div key={i} className="h-10 bg-prussian-500 rounded-xl" />)}
-          </div>
-        </div>
-      </div>
-      {/* Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {[1,2,3,4,5].map(i => <div key={i} className="h-16 bg-prussian-600 rounded-xl border border-prussian-500" />)}
-      </div>
-    </div>
-  );
-}
 
 // ── Empty state ───────────────────────────────────────────
 function EmptyState({ onStart, hasApiKey, t }) {
@@ -65,7 +43,7 @@ function EmptyState({ onStart, hasApiKey, t }) {
 
 // ── Main page ─────────────────────────────────────────────
 export default function Assistant() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { activeSiteId } = useSite();
   const { setPageContext, clearPageContext } = useChat();
 
@@ -98,7 +76,7 @@ export default function Assistant() {
     fetch("/api/assistant/analyze-structured", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ siteId: activeSiteId || null }),
+      body: JSON.stringify({ siteId: activeSiteId || null, language: i18n.language }),
     })
       .then((r) => r.json())
       .then((data) => {
@@ -141,7 +119,7 @@ export default function Assistant() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Icon icon="ph:sparkle" className="text-moonstone-400 text-lg" />
-          <h2 className="text-white font-semibold">Analyse SEO automatique</h2>
+          <h2 className="text-white font-semibold">{t("assistant.autoTitle")}</h2>
         </div>
         {analysisData && !analysisData.error && !analysisLoading && (
           <button
@@ -155,7 +133,9 @@ export default function Assistant() {
       </div>
 
       {/* Content */}
-      {analysisLoading && <AnalysisSkeleton />}
+      <AnimatePresence>
+        {analysisLoading && <NovaAnalysisLoader t={t} />}
+      </AnimatePresence>
 
       {!analysisLoading && !analysisData && (
         <EmptyState onStart={runAnalysis} hasApiKey={hasApiKey} t={t} />

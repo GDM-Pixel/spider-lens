@@ -5,21 +5,48 @@
 
   **SEO-focused server log analyzer — open-source, self-hosted**
 
-  [![Version](https://img.shields.io/badge/version-1.1.0-blue)](#)
+  [![Version](https://img.shields.io/badge/version-1.2.0-blue)](#)
   [![Node.js](https://img.shields.io/badge/node-%3E%3D18-green)](#)
   [![License](https://img.shields.io/badge/license-MIT-lightgrey)](#)
-  [![i18n](https://img.shields.io/badge/i18n-FR%20EN%20ES%20DE%20IT%20NL-orange)](#)
+  [![i18n](https://img.shields.io/badge/i18n-16%20languages-orange)](#)
   [![WordPress](https://img.shields.io/badge/WordPress-plugin-blue?logo=wordpress)](#)
 
 </div>
 
 ---
 
-<img src=".github/banner.jpg" alt="Spider-Lens Dashboard" width="100%" />
+Spider-Lens reads your Apache/Nginx log files and gives you a comprehensive dashboard to monitor traffic, HTTP errors, crawl bots, and server performance (TTFB). Powered by **Nova** — an AI assistant built on Gemini that analyzes your SEO data, scores your site health, and answers questions in real time. Available as a standalone Node.js app **and** as a native WordPress plugin.
 
 ---
 
-Spider-Lens reads your Apache/Nginx log files and provides a comprehensive dashboard to monitor your traffic, HTTP errors, crawl bots, and server performance (TTFB). Powered by an AI assistant — **Nova** — that analyzes your SEO data and answers your questions in real time. Available as a standalone Node.js app **and** as a native WordPress plugin.
+## 📸 Screenshots
+
+<table>
+  <tr>
+    <td><img src="https://raw.githubusercontent.com/GDM-Pixel/Spider-lens/main/.github/screenshots/dashboard.png" alt="Dashboard" /></td>
+    <td><img src="https://raw.githubusercontent.com/GDM-Pixel/Spider-lens/main/.github/screenshots/http-codes.png" alt="HTTP Codes" /></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Dashboard</b> — KPIs, charts, bot distribution</td>
+    <td align="center"><b>HTTP Codes</b> — Daily evolution + filterable table</td>
+  </tr>
+  <tr>
+    <td><img src="https://raw.githubusercontent.com/GDM-Pixel/Spider-lens/main/.github/screenshots/bots.png" alt="Bots & Crawlers" /></td>
+    <td><img src="https://raw.githubusercontent.com/GDM-Pixel/Spider-lens/main/.github/screenshots/load-time.png" alt="Load Time (TTFB)" /></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Bots & Crawlers</b> — Crawl budget visualization</td>
+    <td align="center"><b>Load Time (TTFB)</b> — Per-URL performance breakdown</td>
+  </tr>
+  <tr>
+    <td><img src="https://raw.githubusercontent.com/GDM-Pixel/Spider-lens/main/.github/screenshots/network.png" alt="Network" /></td>
+    <td><img src="https://raw.githubusercontent.com/GDM-Pixel/Spider-lens/main/.github/screenshots/ai-analysis.png" alt="AI Analysis" /></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Network</b> — IP addresses, countries, HTTP codes</td>
+    <td align="center"><b>AI Analysis</b> — SEO score, problems, recommendations</td>
+  </tr>
+</table>
 
 ---
 
@@ -27,28 +54,30 @@ Spider-Lens reads your Apache/Nginx log files and provides a comprehensive dashb
 
 | View | Description |
 |------|-------------|
-| **Dashboard** | Summary KPIs: human visits, bots, error rate, HTTP codes, hourly/daily charts |
-| **HTTP Codes** | Filterable table (2xx/3xx/4xx/5xx) + URL drill-down + User-Agent filter + CSV & Excel export |
-| **Top Pages** | Most visited pages + 404 list to fix, sortable columns |
-| **Bots & Crawlers** | Detection of 16+ bots (Googlebot, AhrefsBot, SemrushBot, ClaudeBot…) with dedicated charts |
-| **TTFB** | Time To First Byte per URL, configurable threshold, CSV & Excel export |
-| **Network** | IP and user-agent analysis — bot/human filters, sortable columns, direct block action |
-| **Anomalies** | Automatic detection: traffic spikes, high error rates, missing Googlebot, unknown bot surges |
-| **Blocklist** | Block suspicious IPs and user-agents directly from the interface |
-| **Analyse IA** | AI-powered SEO analysis: global score, detected problems, actionable recommendations |
-| **Settings** | SMTP alerts, retention policy, database management, password & username change |
+| **Dashboard** | Summary KPIs: total requests, human visits, bots, error rate — HTTP evolution chart, bot distribution pie chart, 12-week trends |
+| **HTTP Codes** | Full breakdown by status code (2xx/3xx/4xx/5xx) — filterable by code, user-agent, humans/bots — CSV & Excel export |
+| **Top Pages** | Most visited pages (top 200) + 404 list with Googlebot exposure — sortable columns |
+| **Bots & Crawlers** | Detection of 16+ bots (Googlebot, AhrefsBot, SemrushBot, ClaudeBot…) — crawl budget pie chart + volume bar chart |
+| **Load Time (TTFB)** | Time To First Byte per URL — configurable slow threshold — fast/acceptable/slow breakdown — CSV & Excel export |
+| **Network** | IP and user-agent analysis — countries, bot/human split, HTTP code badges, one-click block action |
+| **Anomalies** | Automatic detection: traffic spikes, high error rates, missing Googlebot, unknown bot surges — email alerts on critical events |
+| **Blocklist** | Block suspicious IPs directly from the interface — export nginx or Apache deny rules |
+| **AI Analysis** | Nova-powered SEO audit: global health score, detected problems with severity, actionable recommendations |
+| **Settings** | SMTP alerts, webhook notifications, retention policy, database management, password & username change |
 
-### More
+### Additional highlights
 
-- 🤖 **Nova AI assistant** — Floating chat bubble on every page. Nova automatically receives the current page context when you ask a question (never on navigation). SSE streaming, session history, Nova avatar. Powered by Gemini 3 Flash Preview.
-- 🌍 **i18n** — UI available in FR, EN, ES, DE, IT, NL (persisted via localStorage)
+- 🤖 **Nova AI assistant** — Floating chat bubble on every page. Nova receives the current page context automatically, enabling targeted answers without copy-pasting. SSE streaming, conversation history, animated Nova avatar. Powered by **Gemini 3 Flash Preview**.
+- 🎯 **AI SEO Analysis** — One-click full audit: global health score (0–100), categorized problems (Critical / Warning / Info), priority recommendations. Animated Nova loader during generation. Cached per-site per-language.
+- 🌍 **16 languages** — FR, EN, ES, DE, IT, NL, PT, JA, PL, SV, KO, TR, RU, CS, DA, UK — persisted via localStorage, auto-detected from browser.
 - 🔒 **JWT authentication** — 7-day token, secure session
-- 📧 **Email alerts** — 404 spikes, 5xx errors, missing Googlebot (configurable SMTP)
+- 📧 **Email alerts** — 404 spikes, 5xx errors, missing Googlebot (configurable SMTP + optional webhook for Discord/Slack)
 - 📊 **Incremental parsing** — Resume from offset, log rotation detection
-- 🌱 **Beginner mode** — Help banners and contextual tooltips, dismissible
+- 🌱 **Beginner mode** — Contextual help banners and tooltips, dismissible
 - 🌐 **Multi-site** — Monitor multiple sites from a single interface
-- 🗄️ **Database management** — Real-time stats (size, rows per table, date range), configurable retention policy, manual purge + VACUUM with inline feedback
-- 🎨 **Polished UI** — Framer Motion animations, consistent micro-interactions across all views, dark prussian theme
+- 🗄️ **Database management** — Real-time stats (size, rows, date range), configurable retention policy, manual purge + VACUUM
+- 🎨 **Polished UI** — Framer Motion animations, custom dark tooltip on all Recharts charts, consistent micro-interactions, dark prussian theme
+- 📋 **Weekly report** — Automated summary every Monday by email and/or webhook
 
 ---
 
@@ -64,8 +93,8 @@ Spider-Lens reads your Apache/Nginx log files and provides a comprehensive dashb
 | AI | Google Gemini 3 Flash Preview · SSE streaming |
 | Frontend | React 18 · Vite 5 |
 | Animations | Framer Motion |
-| Charts | Recharts |
-| Icons | Phosphor Icons via @iconify/react |
+| Charts | Recharts + custom dark tooltip |
+| Icons | Phosphor Icons + custom FA Pro via @iconify/react |
 | Styles | Tailwind CSS 3 |
 | i18n | react-i18next · i18next-browser-languagedetector |
 | Tests | Jest 29 · Supertest |
@@ -113,8 +142,11 @@ LOG_FILE_PATH=/var/log/apache2/access.log
 DB_PATH=./spider-lens.db
 SITE_NAME=My Site
 
-# Optional — required for the Nova AI assistant
+# Optional — required for Nova AI assistant and AI Analysis
 GEMINI_API_KEY=your-gemini-api-key
+
+# Optional — override the Gemini model (default: gemini-3-flash-preview)
+# GEMINI_MODEL=gemini-3-flash-preview
 ```
 
 > ⚠️ **Security**: Change `JWT_SECRET` and `ADMIN_PASS` before going live!
@@ -218,17 +250,26 @@ Go to **Spider-Lens** in the admin menu. The database and settings are configura
 
 ---
 
-## 🤖 Nova AI assistant — configuration
+## 🤖 Nova AI assistant
 
-The AI assistant requires a Google Gemini API key. Add it to `server/.env`:
+Nova is a floating chat assistant available on every page. She automatically receives the context of the current view (page name, active filters, key metrics) so you can ask targeted questions without copy-pasting data.
+
+### Configuration
+
+Add your Gemini API key to `server/.env`:
 
 ```env
 GEMINI_API_KEY=your-gemini-api-key
 ```
 
-Without this key, the **Analyse IA** page displays a message inviting you to configure it. The rest of the application works normally.
+Without this key, the **AI Analysis** page and Nova chat display a friendly configuration prompt. The rest of the application works normally.
 
-> Nova never sends raw log data to Google — only a compact JSON summary (~500 tokens) is transmitted per request. Responses are streamed via SSE for progressive display.
+### How it works
+
+- **AI Analysis page** — One-click full SEO audit. Nova analyzes your last 30 days of log data and returns a structured report: health score (0–100), categorized problems (Critical / Warning / Info), and priority recommendations. Results are cached per site and per language.
+- **Chat bubble** — Ask any question in natural language: *"Why isn't Googlebot crawling /contact?"*, *"Which pages have the most 4xx errors?"*, *"Is my TTFB acceptable?"*. Nova streams the answer progressively via SSE.
+- **Privacy** — Nova never sends raw log data to Google. Only a compact JSON summary (~500 tokens) is transmitted per request.
+- **Language-aware** — Nova responds in the language selected in the UI.
 
 ---
 
@@ -255,9 +296,9 @@ access_log /var/log/nginx/access.log combined_time;
 
 ---
 
-## ⚙️ Email alert configuration
+## ⚙️ Email & webhook alerts
 
-From the **Settings** view in the dashboard:
+Configure alerts from the **Settings** view:
 
 | Field | Description |
 |-------|-------------|
@@ -267,6 +308,8 @@ From the **Settings** view in the dashboard:
 | 404 threshold | Number of 404s/hour triggering an alert |
 | 5xx threshold | Number of server errors/hour |
 | Missing Googlebot | Days without a Googlebot visit |
+| Webhook URL | Discord, Slack, or any HTTP POST JSON endpoint |
+| Weekly report | Automated summary every Monday at 8am |
 
 ---
 
@@ -299,15 +342,24 @@ cd client && npm run dev
 
 ## 🗺️ Roadmap
 
+### v1.2.0 ✅
+- [x] 16-language i18n — PT, JA, PL, SV, KO, TR, RU, CS, DA, UK added
+- [x] Nova AI assistant — conversational mode, language-aware responses
+- [x] AI Analysis — Nova loader animation, fully i18n'd report titles and steps
+- [x] Custom dark ChartTooltip with series-colored values on all Recharts charts
+- [x] KPI cards redesign — icon + colored label side-by-side, value below
+- [x] Font Awesome Pro custom icons (gauge-low, etc.)
+- [x] Lightflux animated gradient border on Nova chat panel
+
 ### v1.1.0 ✅
 - [x] Nova — floating AI assistant, page-aware context, SSE streaming
-- [x] Analyse IA — global score, detected problems, actionable recommendations
+- [x] AI Analysis — global score, detected problems, actionable recommendations
 - [x] Database management — stats, retention policy, manual purge + VACUUM
 - [x] User-Agent filter on HTTP Codes view
 - [x] Sortable columns on all tables
 - [x] Username change from Settings
 - [x] UI polish — harmonized micro-interactions across all views
-- [x] i18n fixes — all labels and filter buttons translated in all 6 languages
+- [x] i18n — all labels and filter buttons translated in all 6 languages
 
 ### v1.0.0 ✅
 - [x] Dashboard, HTTP Codes, Top Pages, Bots, TTFB, Network, Anomalies, Blocklist
@@ -319,7 +371,7 @@ cd client && npm run dev
 - [x] Beginner mode
 - [x] Jest tests (27)
 
-### v1.2.0 (planned)
+### v1.3.0 (planned)
 - [ ] Advanced filters by IP and user-agent
 - [ ] Webhook API for external integrations
 - [ ] Customizable dashboard (widgets)

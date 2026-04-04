@@ -170,9 +170,11 @@ export default function NovaChatBubble() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 24, scale: 0.95 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="fixed bottom-24 right-6 z-50 w-[360px] flex flex-col rounded-2xl bg-prussian-700 border border-prussian-500 shadow-2xl overflow-hidden"
+            className="fixed bottom-24 right-6 z-50 w-[360px] rounded-2xl shadow-2xl"
             style={{ height: '500px' }}
           >
+          <div className="lightflux" style={{ height: '100%', borderRadius: 'inherit' }}>
+          <div className="lightflux-inner">
             {/* Header */}
             <div className="flex items-center gap-3 px-4 py-3 border-b border-prussian-500 shrink-0">
               <img src={novaAvatar} alt="Nova"
@@ -255,6 +257,8 @@ export default function NovaChatBubble() {
                 Nova-Mind.cloud
               </a>
             </p>
+          </div>
+          </div>
           </motion.div>
         )}
       </AnimatePresence>

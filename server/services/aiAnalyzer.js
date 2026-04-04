@@ -2,6 +2,9 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 import geoip from 'geoip-lite'
 import { getDb } from '../db/database.js'
 
+// ── Modèle Gemini ─────────────────────────────────────────
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3-flash-preview'
+
 // ── Cache mémoire (TTL 5 min) ─────────────────────────────
 const summaryCache = new Map()
 const CACHE_TTL_MS = 5 * 60 * 1000
@@ -199,18 +202,18 @@ function getSystemPrompt(summary, pageContext) {
     ? `\n\nCONTEXTE PAGE ACTUELLE (ce que l'utilisateur voit en ce moment) :\n${JSON.stringify(pageContext)}`
     : ''
 
-  return `Tu es l'assistant SEO de Spider-Lens, un outil d'analyse de logs serveur.
-Tu aides des utilisateurs qui ne sont pas forcément des experts techniques.
+  return `Tu es Nova, une assistante SEO intégrée à Spider-Lens, un outil d'analyse de logs serveur.
 
-RÈGLES :
-- Réponds toujours dans la langue utilisée par l'utilisateur
-- Sois pédagogique : explique les termes techniques simplement, utilise des analogies
-- Donne des recommandations concrètes et actionnables
-- Si une information n'est pas dans les données disponibles, dis-le clairement
-- Formate tes réponses en Markdown (titres, listes, gras)
-- Sois concis : pas de blabla inutile, va droit au but
+COMPORTEMENT :
+- Tu es conversationnelle et naturelle. Si l'utilisateur dit "Salut", tu réponds juste "Salut !" ou quelque chose de court et chaleureux — pas un rapport complet.
+- Tu adaptes la longueur de ta réponse à la question posée. Question courte → réponse courte. Question technique → réponse détaillée.
+- Tu n'envoies JAMAIS tout ce que tu sais d'emblée. Tu attends qu'on te pose une vraie question.
+- Si on te demande une analyse ou un bilan, alors oui tu développes. Sinon, tu restes concise.
+- Tu utilises le Markdown uniquement quand c'est utile (listes, code). Pas de titres H1/H2 pour une réponse de 2 phrases.
+- Tu réponds dans la langue de l'utilisateur.
+- Tu expliques les termes techniques simplement quand c'est pertinent.
 
-DONNÉES DU SITE (30 derniers jours) :
+DONNÉES DU SITE (30 derniers jours) — à utiliser uniquement si la question le justifie :
 ${JSON.stringify(summary, null, 0)}${contextBlock}`
 }
 
@@ -219,14 +222,14 @@ function initGemini() {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) return null
   const genAI = new GoogleGenerativeAI(apiKey)
-  return genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' })
+  return genAI.getGenerativeModel({ model: GEMINI_MODEL })
 }
 
 // ── Analyse structurée JSON ────────────────────────────────
 const structuredCache = new Map()
 
-export async function analyzeStructured(siteId) {
-  const key = `structured_${siteId ?? 'all'}`
+export async function analyzeStructured(siteId, language = 'en') {
+  const key = `structured_${siteId ?? 'all'}_${language}`
   const cached = structuredCache.get(key)
   if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
     return cached.data
@@ -237,69 +240,88 @@ export async function analyzeStructured(siteId) {
 
   const summary = getCachedSummary(siteId)
 
-  const prompt = `Tu es un expert SEO analysant la santé d'un site web basé sur ses logs serveur.
+  const SCORE_LABELS = {
+    great:    { fr: 'Très Bon',  en: 'Great',    es: 'Muy Bueno', de: 'Sehr Gut',  it: 'Ottimo',   nl: 'Uitstekend' },
+    good:     { fr: 'Bon',      en: 'Good',     es: 'Bueno',     de: 'Gut',       it: 'Buono',    nl: 'Goed'       },
+    average:  { fr: 'Moyen',    en: 'Average',  es: 'Regular',   de: 'Mittel',    it: 'Medio',    nl: 'Gemiddeld'  },
+    bad:      { fr: 'Mauvais',  en: 'Poor',     es: 'Malo',      de: 'Schlecht',  it: 'Scarso',   nl: 'Slecht'     },
+    critical: { fr: 'Critique', en: 'Critical', es: 'Crítico',   de: 'Kritisch',  it: 'Critico',  nl: 'Kritiek'    },
+  }
+  const lang = language.split('-')[0]
+  const labels = {
+    great:    SCORE_LABELS.great[lang]    || SCORE_LABELS.great.en,
+    good:     SCORE_LABELS.good[lang]     || SCORE_LABELS.good.en,
+    average:  SCORE_LABELS.average[lang]  || SCORE_LABELS.average.en,
+    bad:      SCORE_LABELS.bad[lang]      || SCORE_LABELS.bad.en,
+    critical: SCORE_LABELS.critical[lang] || SCORE_LABELS.critical.en,
+  }
 
-DONNÉES DU SITE (30 derniers jours) :
+  const prompt = `You are an SEO expert analyzing the health of a website based on its server logs.
+
+SITE DATA (last 30 days):
 ${JSON.stringify(summary)}
 
-Génère une analyse SEO structurée en JSON strict. Respecte EXACTEMENT ce format :
+IMPORTANT: All text fields in your response (summary, titles, details, actions, why, key names) MUST be written in "${language}" language. Only JSON keys and enum values (scoreColor, impact, trend, icon names) must remain in English.
+
+Generate a structured SEO analysis as strict JSON. Follow EXACTLY this format:
 
 {
-  "score": <entier 0-100>,
-  "scoreLabel": <"Critique"|"Mauvais"|"Moyen"|"Bon"|"Très Bon">,
+  "score": <integer 0-100>,
+  "scoreLabel": <"${labels.critical}"|"${labels.bad}"|"${labels.average}"|"${labels.good}"|"${labels.great}">,
   "scoreColor": <"dustyred"|"amber"|"moonstone"|"green">,
-  "summary": <phrase de synthèse courte, max 120 caractères, pédagogique>,
+  "summary": <short synthesis sentence, max 120 chars, pedagogical>,
   "problems": [
     {
-      "id": <identifiant snake_case>,
-      "icon": <icône phosphor ex: "ph:warning-diamond">,
+      "id": <snake_case identifier>,
+      "icon": <phosphor icon e.g. "ph:warning-diamond">,
       "color": <"dustyred"|"amber"|"moonstone">,
-      "title": <titre court du problème>,
-      "detail": <explication pédagogique avec analogie, max 150 caractères>,
+      "title": <short problem title>,
+      "detail": <pedagogical explanation with analogy, max 150 chars>,
       "impact": <"critique"|"warning"|"info">
     }
   ],
   "recommendations": [
     {
-      "id": <identifiant snake_case>,
-      "icon": <icône phosphor ex: "ph:arrow-bend-up-right">,
-      "title": <titre court de la recommandation>,
-      "action": <action concrète à effectuer, max 150 caractères>,
-      "why": <pourquoi c'est important pour le SEO, max 100 caractères>
+      "id": <snake_case identifier>,
+      "icon": <phosphor icon e.g. "ph:arrow-bend-up-right">,
+      "title": <short recommendation title>,
+      "action": <concrete action to take, max 150 chars>,
+      "why": <why it matters for SEO, max 100 chars>
     }
   ],
   "highlights": [
     {
-      "key": <nom de la métrique>,
-      "value": <valeur formatée ex: "11 344">,
+      "key": <metric name>,
+      "value": <formatted value e.g. "11 344">,
       "trend": <"up"|"down"|"neutral">,
-      "icon": <icône phosphor>
+      "icon": <phosphor icon>
     }
   ]
 }
 
-RÈGLES DE SCORING :
-- 80-100 → "Très Bon", scoreColor: "green"
-- 60-79 → "Bon", scoreColor: "moonstone"
-- 40-59 → "Moyen", scoreColor: "amber"
-- 0-39 → "Mauvais"/"Critique", scoreColor: "dustyred"
+SCORING RULES:
+- 80-100 → "${labels.great}", scoreColor: "green"
+- 60-79 → "${labels.good}", scoreColor: "moonstone"
+- 40-59 → "${labels.average}", scoreColor: "amber"
+- 20-39 → "${labels.bad}", scoreColor: "dustyred"
+- 0-19 → "${labels.critical}", scoreColor: "dustyred"
 
-RÈGLES problems (3 à 5 problèmes) :
-- impact "critique" : ErrorRate > 10%, ou 5xx > 2%, ou TTFB avg > 1000ms
-- impact "warning" : 4xx > 5%, ou TTFB avg 500-1000ms, ou bot ratio > 50%
-- impact "info" : optimisations mineures
+PROBLEMS rules (3 to 5 problems):
+- impact "critique": ErrorRate > 10%, or 5xx > 2%, or TTFB avg > 1000ms
+- impact "warning": 4xx > 5%, or TTFB avg 500-1000ms, or bot ratio > 50%
+- impact "info": minor optimizations
 
-RÈGLES highlights (2 à 4 points positifs ou métriques clés) :
-- Tendances positives, Googlebot actif, pages rapides, etc.
+HIGHLIGHTS rules (2 to 4 positive signals or key metrics):
+- Positive trends, active Googlebot, fast pages, etc.
 
-RÈGLES icons (utilise uniquement des icônes @phosphor-icons) :
-- Erreurs/problèmes : ph:warning-diamond, ph:x-circle, ph:bug
-- Performance : ph:lightning, ph:gauge, ph:clock
-- Bots/crawl : ph:robot, ph:magnifying-glass
-- SEO/liens : ph:arrow-bend-up-right, ph:link, ph:files
-- Positif : ph:check-circle, ph:trend-up, ph:star
+ICONS rules (use only @phosphor-icons):
+- Errors/problems: ph:warning-diamond, ph:x-circle, ph:bug
+- Performance: ph:lightning, ph:gauge, ph:clock
+- Bots/crawl: ph:robot, ph:magnifying-glass
+- SEO/links: ph:arrow-bend-up-right, ph:link, ph:files
+- Positive: ph:check-circle, ph:trend-up, ph:star
 
-Retourne UNIQUEMENT le JSON, sans markdown, sans commentaires, sans texte avant ou après.`
+Return ONLY the JSON, no markdown, no comments, no text before or after.`
 
   const result = await model.generateContent({
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -307,6 +329,7 @@ Retourne UNIQUEMENT le JSON, sans markdown, sans commentaires, sans texte avant 
   })
 
   const raw = result.response.text()
+  console.log('[analyzeStructured] raw response (first 200):', raw?.slice(0, 200))
   const data = JSON.parse(raw)
 
   structuredCache.set(key, { data, timestamp: Date.now() })

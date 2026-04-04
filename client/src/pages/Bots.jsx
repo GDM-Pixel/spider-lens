@@ -8,6 +8,7 @@ import DateRangePicker from '../components/ui/DateRangePicker'
 import InfoBubble from '../components/ui/InfoBubble'
 import BeginnerBanner from '../components/ui/BeginnerBanner'
 import KPICard from '../components/ui/KPICard'
+import ChartTooltip from '../components/ui/ChartTooltip'
 import { usePersistentRange } from '../hooks/usePersistentRange'
 import { useSite } from '../context/SiteContext'
 import api from '../api/client'
@@ -128,7 +129,7 @@ export default function Bots() {
                       <Pie data={bots} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={2} dataKey="hits">
                         {bots.map((_, i) => <Cell key={i} fill={BOT_COLORS[i % BOT_COLORS.length]} />)}
                       </Pie>
-                      <Tooltip contentStyle={{ background: '#262e40', border: '1px solid #273043', borderRadius: 8, color: '#fff' }} formatter={(v) => v.toLocaleString('fr-FR')} />
+                      <Tooltip content={<ChartTooltip />} />
                     </PieChart>
                   </ResponsiveContainer>
                   <ul className="flex flex-col gap-2 mt-2">
@@ -159,7 +160,7 @@ export default function Bots() {
                     <CartesianGrid strokeDasharray="3 3" stroke="#273043" horizontal={false} />
                     <XAxis type="number" tick={{ fill: '#898989', fontSize: 11 }} />
                     <YAxis type="category" dataKey="name" tick={{ fill: '#d1d1d1', fontSize: 11 }} width={90} />
-                    <Tooltip contentStyle={{ background: '#262e40', border: '1px solid #273043', borderRadius: 8, color: '#fff' }} formatter={v => v.toLocaleString('fr-FR')} />
+                    <Tooltip content={<ChartTooltip />} />
                     <Bar dataKey="hits" name="Requêtes" radius={[0, 4, 4, 0]}>
                       {bots.map((_, i) => <Cell key={i} fill={BOT_COLORS[i % BOT_COLORS.length]} />)}
                     </Bar>

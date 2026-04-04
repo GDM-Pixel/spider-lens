@@ -20,8 +20,9 @@ router.post('/analyze-structured', async (req, res) => {
     return res.status(503).json({ error: 'GEMINI_API_KEY non configurée. Ajoutez-la dans le fichier .env du serveur.' })
   }
   const siteId = req.body.siteId != null ? parseInt(req.body.siteId, 10) : null
+  const language = typeof req.body.language === 'string' ? req.body.language.slice(0, 5) : 'en'
   try {
-    const data = await analyzeStructured(siteId)
+    const data = await analyzeStructured(siteId, language)
     res.json(data)
   } catch (e) {
     console.error('[assistant] analyze-structured error:', e.message)

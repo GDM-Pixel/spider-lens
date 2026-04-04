@@ -12,6 +12,7 @@ addIcon('fa-custom:gauge-low', {
   height: 512,
   body: '<path fill="currentColor" d="M256 464a208 208 0 1 0 0-416 208 208 0 1 0 0 416zM256 0a256 256 0 1 1 0 512A256 256 0 1 1 256 0zm32 112a32 32 0 1 1 -64 0 32 32 0 1 1 64 0zM256 408c-30.9 0-56-25.1-56-56c0-14 5.1-26.8 13.7-36.6L146 161.7c-5.3-12.1 .2-26.3 12.3-31.6s26.3 .2 31.6 12.3L257.6 296c30.2 .8 54.4 25.6 54.4 56c0 30.9-25.1 56-56 56zM384 160a32 32 0 1 1 -64 0 32 32 0 1 1 64 0zm16 64a32 32 0 1 1 0 64 32 32 0 1 1 0-64zM144 256a32 32 0 1 1 -64 0 32 32 0 1 1 64 0z"/>',
 })
+import ChartTooltip from '../components/ui/ChartTooltip'
 import * as XLSX from 'xlsx'
 import DateRangePicker from '../components/ui/DateRangePicker'
 import InfoBubble from '../components/ui/InfoBubble'
@@ -293,11 +294,7 @@ export default function TTFB() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#273043" />
                   <XAxis dataKey="day" tick={{ fill: '#898989', fontSize: 11 }} tickFormatter={v => dayjs(v).format('DD/MM')} />
                   <YAxis tick={{ fill: '#898989', fontSize: 11 }} unit="ms" />
-                  <Tooltip
-                    contentStyle={{ background: '#262e40', border: '1px solid #273043', borderRadius: 8, color: '#fff' }}
-                    labelFormatter={v => dayjs(v).format('DD/MM/YYYY')}
-                    formatter={(v, name) => [`${Math.round(v)} ms`, name]}
-                  />
+                  <Tooltip content={<ChartTooltip labelFormatter={v => dayjs(v).format('DD/MM/YYYY')} unit=" ms" />} />
                   <Legend wrapperStyle={{ fontSize: 12, color: '#d1d1d1' }} />
                   {/* Lignes de référence */}
                   <ReferenceLine y={200} stroke="#10b981" strokeDasharray="4 4" label={{ value: '200ms', fill: '#10b981', fontSize: 10, position: 'right' }} />

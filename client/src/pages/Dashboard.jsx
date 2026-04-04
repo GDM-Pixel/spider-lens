@@ -6,6 +6,7 @@ import { Icon } from '@iconify/react'
 import { Link } from 'react-router-dom'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Legend } from 'recharts'
 import KPICard from '../components/ui/KPICard'
+import ChartTooltip from '../components/ui/ChartTooltip'
 import DateRangePicker from '../components/ui/DateRangePicker'
 import InfoBubble from '../components/ui/InfoBubble'
 import BeginnerBanner from '../components/ui/BeginnerBanner'
@@ -185,10 +186,7 @@ export default function Dashboard() {
                     <CartesianGrid strokeDasharray="3 3" stroke="#273043" />
                     <XAxis dataKey="day" tick={{ fill: '#898989', fontSize: 11 }} tickFormatter={v => dayjs(v).format('DD/MM')} />
                     <YAxis tick={{ fill: '#898989', fontSize: 11 }} />
-                    <Tooltip
-                      contentStyle={{ background: '#262e40', border: '1px solid #273043', borderRadius: 8, color: '#fff' }}
-                      labelFormatter={v => dayjs(v).format('DD/MM/YYYY')}
-                    />
+                    <Tooltip content={<ChartTooltip labelFormatter={v => dayjs(v).format('DD/MM/YYYY')} />} />
                     <Legend wrapperStyle={{ fontSize: 12, color: '#d1d1d1' }} />
                     <Line type="monotone" dataKey="s2xx" name="2xx" stroke="#00c6e0" strokeWidth={2} dot={false} />
                     <Line type="monotone" dataKey="s3xx" name="3xx" stroke="#f59e0b" strokeWidth={2} dot={false} />
@@ -220,7 +218,7 @@ export default function Dashboard() {
                           <Cell key={i} fill={BOT_COLORS[i % BOT_COLORS.length]} />
                         ))}
                       </Pie>
-                      <Tooltip contentStyle={{ background: '#262e40', border: '1px solid #273043', borderRadius: 8, color: '#fff' }} />
+                      <Tooltip content={<ChartTooltip />} />
                     </PieChart>
                   </ResponsiveContainer>
                   <ul className="flex flex-col gap-1.5 mt-2">
@@ -272,7 +270,7 @@ export default function Dashboard() {
                       <CartesianGrid strokeDasharray="3 3" stroke="#273043" />
                       <XAxis dataKey="week_label" tick={{ fill: '#898989', fontSize: 10 }} />
                       <YAxis tick={{ fill: '#898989', fontSize: 10 }} />
-                      <Tooltip contentStyle={{ background: '#262e40', border: '1px solid #273043', borderRadius: 8, color: '#fff' }} />
+                      <Tooltip content={<ChartTooltip />} />
                       <Legend wrapperStyle={{ fontSize: 11, color: '#d1d1d1' }} />
                       <Area type="monotone" dataKey="humans" name={t('dashboard.trendsHumans')} stroke="#00c6e0" fill="url(#gHumans)" strokeWidth={2} dot={false} />
                       <Area type="monotone" dataKey="bots" name={t('dashboard.trendsBots')} stroke="#8b5cf6" fill="url(#gBots)" strokeWidth={2} dot={false} />
@@ -288,7 +286,7 @@ export default function Dashboard() {
                       <LineChart data={weeklyTrends}>
                         <XAxis dataKey="week_label" tick={false} axisLine={false} tickLine={false} />
                         <YAxis hide />
-                        <Tooltip contentStyle={{ background: '#262e40', border: '1px solid #273043', borderRadius: 8, color: '#fff', fontSize: 11 }} />
+                        <Tooltip content={<ChartTooltip />} />
                         <Line type="monotone" dataKey="googlebot" name="Googlebot" stroke="#10b981" strokeWidth={2} dot={false} />
                       </LineChart>
                     </ResponsiveContainer>
@@ -299,10 +297,7 @@ export default function Dashboard() {
                       <LineChart data={weeklyTrends}>
                         <XAxis dataKey="week_label" tick={false} axisLine={false} tickLine={false} />
                         <YAxis hide />
-                        <Tooltip
-                          contentStyle={{ background: '#262e40', border: '1px solid #273043', borderRadius: 8, color: '#fff', fontSize: 11 }}
-                          formatter={(v) => [`${v} ms`, 'TTFB']}
-                        />
+                        <Tooltip content={<ChartTooltip unit=" ms" />} />
                         <Line
                           type="monotone"
                           dataKey="avg_ttfb"

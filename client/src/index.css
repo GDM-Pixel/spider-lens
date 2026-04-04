@@ -13,9 +13,15 @@
 }
 
 /* ── Base ───────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   margin: 0;
   padding: 0;
@@ -26,21 +32,43 @@ html, body, #root {
 }
 
 /* ── Scrollbar dark ─────────────────────────────────────── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #171c27; }
-::-webkit-scrollbar-thumb { background: #273043; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #35415a; }
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #171c27;
+}
+::-webkit-scrollbar-thumb {
+  background: #273043;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #35415a;
+}
 
 /* ── Utilitaires layout ─────────────────────────────────── */
 @layer utilities {
-  .sidebar-width { width: 260px; }
-  .sidebar-collapsed { width: 72px; }
-  .content-margin { margin-left: 260px; }
-  .content-margin-collapsed { margin-left: 72px; }
+  .sidebar-width {
+    width: 260px;
+  }
+  .sidebar-collapsed {
+    width: 72px;
+  }
+  .content-margin {
+    margin-left: 260px;
+  }
+  .content-margin-collapsed {
+    margin-left: 72px;
+  }
 }
 
 /* ── Transitions ────────────────────────────────────────── */
-.sidebar-transition { transition: width 200ms ease, margin 200ms ease; }
+.sidebar-transition {
+  transition:
+    width 200ms ease,
+    margin 200ms ease;
+}
 
 /* ── Boutons GDM-Pixel ──────────────────────────────────── */
 .btn-red {
@@ -50,7 +78,10 @@ html, body, #root {
   font-weight: 700;
   transition: box-shadow 300ms ease;
 }
-.btn-red:hover { box-shadow: 0 20px 40px rgba(0,0,0,0.25); filter: brightness(1.1); }
+.btn-red:hover {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  filter: brightness(1.1);
+}
 
 .btn-blue {
   background: linear-gradient(to right, #00d8f5, #007e8f);
@@ -59,13 +90,56 @@ html, body, #root {
   font-weight: 700;
   transition: box-shadow 300ms ease;
 }
-.btn-blue:hover { box-shadow: 0 20px 40px rgba(0,0,0,0.25); filter: brightness(1.1); }
+.btn-blue:hover {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  filter: brightness(1.1);
+}
 
 /* ── Recharts personnalisation ──────────────────────────── */
-.recharts-tooltip-wrapper .recharts-default-tooltip {
-  background: #262e40 !important;
-  border: 1px solid #273043 !important;
-  border-radius: 8px !important;
-  color: #fff !important;
+.recharts-cartesian-grid line {
+  stroke: #273043 !important;
 }
-.recharts-cartesian-grid line { stroke: #273043 !important; }
+
+/* ── Lightflux — chat bubble (Nova-Mind style) ──────────── */
+@keyframes steam {
+  0% {
+    background-position: 0 0;
+  }
+  50% {
+    background-position: 400% 0;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+
+.lightflux {
+  position: relative;
+}
+.lightflux::before,
+.lightflux::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(135deg, #00c6e0, #d62246, #00c6e0, #d62246);
+  background-size: 400%;
+  animation: steam 120s linear infinite forwards;
+  opacity: 1;
+}
+.lightflux::after {
+  filter: blur(12px);
+  opacity: 0.8;
+}
+/* Fond opaque à poser sur le contenu direct pour masquer le gradient */
+.lightflux-inner {
+  position: relative;
+  z-index: 0;
+  background: #1e2535; /* prussian-700 */
+  border-radius: inherit;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}

@@ -13,6 +13,7 @@ import {
   Cell,
 } from "recharts";
 import { Icon } from "@iconify/react";
+import ChartTooltip from "../components/ui/ChartTooltip";
 import * as XLSX from "xlsx";
 import { useTranslation } from "react-i18next";
 import DateRangePicker from "../components/ui/DateRangePicker";
@@ -447,15 +448,7 @@ export default function HttpCodes() {
                       tickFormatter={(v) => dayjs(v).format("DD/MM")}
                     />
                     <YAxis tick={{ fill: "#898989", fontSize: 11 }} />
-                    <Tooltip
-                      contentStyle={{
-                        background: "#262e40",
-                        border: "1px solid #273043",
-                        borderRadius: 8,
-                        color: "#fff",
-                      }}
-                      labelFormatter={(v) => dayjs(v).format("DD/MM/YYYY")}
-                    />
+                    <Tooltip content={<ChartTooltip labelFormatter={(v) => dayjs(v).format("DD/MM/YYYY")} />} />
                     <Legend wrapperStyle={{ fontSize: 12, color: "#d1d1d1" }} />
                     <Line
                       type="monotone"
@@ -502,15 +495,7 @@ export default function HttpCodes() {
                       tickFormatter={(v) => dayjs(v).format("DD/MM")}
                     />
                     <YAxis tick={{ fill: "#898989", fontSize: 11 }} />
-                    <Tooltip
-                      contentStyle={{
-                        background: "#262e40",
-                        border: "1px solid #273043",
-                        borderRadius: 8,
-                        color: "#fff",
-                      }}
-                      labelFormatter={(v) => dayjs(v).format("DD/MM/YYYY")}
-                    />
+                    <Tooltip content={<ChartTooltip labelFormatter={(v) => dayjs(v).format("DD/MM/YYYY")} />} />
                     <Legend wrapperStyle={{ fontSize: 12, color: "#d1d1d1" }} />
                     <Bar dataKey="s2xx" name="2xx" fill="#00c6e0" stackId="a" />
                     <Bar dataKey="s3xx" name="3xx" fill="#f59e0b" stackId="a" />

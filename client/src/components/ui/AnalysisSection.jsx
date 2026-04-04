@@ -1,5 +1,6 @@
 import React from 'react'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import ScoreGauge from './ScoreGauge'
 import ProblemCard, { problemVariants } from './ProblemCard'
 import RecommendationCard, { recoVariants } from './RecommendationCard'
@@ -7,10 +8,11 @@ import HighlightBadge, { highlightVariants } from './HighlightBadge'
 
 const stagger = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.08 } },
+  visible: { transition: { staggerChildren: 0.14 } },
 }
 
 export default function AnalysisSection({ data }) {
+  const { t } = useTranslation()
   if (!data) return null
 
   return (
@@ -31,7 +33,7 @@ export default function AnalysisSection({ data }) {
           color={data.scoreColor ?? 'moonstone'}
         />
         <div className="flex-1">
-          <p className="text-white text-base font-semibold mb-1">Score de santé SEO</p>
+          <p className="text-white text-base font-semibold mb-1">{t('assistant.seoHealthScore')}</p>
           <p className="text-lightgrey text-sm leading-relaxed">{data.summary}</p>
           {/* Highlights */}
           {data.highlights?.length > 0 && (
@@ -54,7 +56,7 @@ export default function AnalysisSection({ data }) {
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2 mb-1">
               <span className="w-5 h-5 rounded-full bg-dustyred-400/20 flex items-center justify-center text-dustyred-400 text-xs font-bold">{data.problems.length}</span>
-              <h3 className="text-white font-semibold text-sm">Problèmes détectés</h3>
+              <h3 className="text-white font-semibold text-sm">{t('assistant.detectedProblems')}</h3>
             </div>
             <motion.div className="flex flex-col gap-3" variants={stagger}>
               {data.problems.map((p) => (
@@ -69,7 +71,7 @@ export default function AnalysisSection({ data }) {
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2 mb-1">
               <span className="w-5 h-5 rounded-full bg-moonstone-400/20 flex items-center justify-center text-moonstone-400 text-xs font-bold">{data.recommendations.length}</span>
-              <h3 className="text-white font-semibold text-sm">Recommandations prioritaires</h3>
+              <h3 className="text-white font-semibold text-sm">{t('assistant.priorityRecommendations')}</h3>
             </div>
             <motion.div className="flex flex-col gap-3" variants={stagger}>
               {data.recommendations.map((r, i) => (

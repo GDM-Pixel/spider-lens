@@ -3,12 +3,22 @@ import { useTranslation } from 'react-i18next'
 import { Icon } from '@iconify/react'
 
 const LANGUAGES = [
-  { code: 'fr', label: 'Français', flag: '🇫🇷' },
-  { code: 'en', label: 'English',  flag: '🇬🇧' },
-  { code: 'es', label: 'Español',  flag: '🇪🇸' },
-  { code: 'de', label: 'Deutsch',  flag: '🇩🇪' },
-  { code: 'it', label: 'Italiano', flag: '🇮🇹' },
-  { code: 'nl', label: 'Nederlands', flag: '🇳🇱' },
+  { code: 'fr', label: 'Français',    flag: '🇫🇷' },
+  { code: 'en', label: 'English',     flag: '🇬🇧' },
+  { code: 'es', label: 'Español',     flag: '🇪🇸' },
+  { code: 'de', label: 'Deutsch',     flag: '🇩🇪' },
+  { code: 'it', label: 'Italiano',    flag: '🇮🇹' },
+  { code: 'nl', label: 'Nederlands',  flag: '🇳🇱' },
+  { code: 'pt', label: 'Português',   flag: '🇵🇹' },
+  { code: 'ja', label: '日本語',        flag: '🇯🇵' },
+  { code: 'pl', label: 'Polski',      flag: '🇵🇱' },
+  { code: 'sv', label: 'Svenska',     flag: '🇸🇪' },
+  { code: 'ko', label: '한국어',         flag: '🇰🇷' },
+  { code: 'tr', label: 'Türkçe',      flag: '🇹🇷' },
+  { code: 'ru', label: 'Русский',     flag: '🇷🇺' },
+  { code: 'cs', label: 'Čeština',     flag: '🇨🇿' },
+  { code: 'da', label: 'Dansk',       flag: '🇩🇰' },
+  { code: 'uk', label: 'Українська',  flag: '🇺🇦' },
 ]
 
 export default function LanguageSwitcher() {
@@ -43,7 +53,7 @@ export default function LanguageSwitcher() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 bg-prussian-600 border border-prussian-500 rounded-lg shadow-xl z-50 py-1 min-w-[140px]">
+        <div className="absolute right-0 top-full mt-1 bg-prussian-600 border border-prussian-500 rounded-lg shadow-xl z-50 py-1 min-w-[160px] max-h-72 overflow-y-auto">
           {LANGUAGES.map(lang => (
             <button
               key={lang.code}

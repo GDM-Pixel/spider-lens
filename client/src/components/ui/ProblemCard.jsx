@@ -29,8 +29,8 @@ const COLOR_MAP = {
 }
 
 export const problemVariants = {
-  hidden: { opacity: 0, x: -12 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.3, ease: 'easeOut' } },
+  hidden: { opacity: 0, x: -32, scale: 0.95 },
+  visible: { opacity: 1, x: 0, scale: 1, transition: { type: 'spring', stiffness: 260, damping: 22 } },
 }
 
 export default function ProblemCard({ problem }) {
