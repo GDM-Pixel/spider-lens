@@ -11,6 +11,7 @@ import InfoBubble from '../components/ui/InfoBubble'
 import BeginnerBanner from '../components/ui/BeginnerBanner'
 import { usePersistentRange } from '../hooks/usePersistentRange'
 import { useSite } from '../context/SiteContext'
+import { useChat } from '../context/ChatContext'
 import api from '../api/client'
 import dayjs from 'dayjs'
 
@@ -25,6 +26,7 @@ const HTTP_COLORS = {
 export default function Dashboard() {
   const { t } = useTranslation()
   const { activeSiteId } = useSite()
+  const { setPageContext, clearPageContext } = useChat()
   const [range, setRange] = usePersistentRange('dashboard')
   const [overview, setOverview] = useState(null)
   const [httpData, setHttpData] = useState([])
@@ -50,6 +52,22 @@ export default function Dashboard() {
       setWeeklyTrends(trends.data)
     }).finally(() => setLoading(false))
   }, [range, activeSiteId])
+
+  useEffect(() => {
+    if (overview) {
+      setPageContext({
+        page: 'dashboard',
+        period: `${range.from} → ${range.to}`,
+        total: overview.total,
+        humans: overview.humans,
+        bots: overview.bots,
+        errorRate: overview.errorRate,
+        s4xx: overview.s4xx,
+        s5xx: overview.s5xx,
+      })
+    }
+    return () => clearPageContext()
+  }, [overview])
 
   const botPieData = botsData
     .filter(d => d.is_bot === 1)

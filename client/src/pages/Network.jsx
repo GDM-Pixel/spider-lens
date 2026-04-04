@@ -8,6 +8,7 @@ import { usePersistentRange } from '../hooks/usePersistentRange'
 import { useSort } from '../hooks/useSort'
 import SortableHeader from '../components/ui/SortableHeader'
 import { useSite } from '../context/SiteContext'
+import { useChat } from '../context/ChatContext'
 import api from '../api/client'
 import dayjs from 'dayjs'
 import clsx from 'clsx'
@@ -618,8 +619,14 @@ function UserAgentsTab({ range, siteId }) {
 export default function Network() {
   const { t } = useTranslation()
   const { activeSiteId } = useSite()
+  const { setPageContext, clearPageContext } = useChat()
   const [range, setRange] = usePersistentRange('network')
   const [tab, setTab] = useState('ips')
+
+  useEffect(() => {
+    setPageContext({ page: 'network', tab })
+    return () => clearPageContext()
+  }, [tab])
 
   return (
     <div className="flex flex-col gap-6">

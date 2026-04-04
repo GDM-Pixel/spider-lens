@@ -194,7 +194,11 @@ export function getCachedSummary(siteId) {
 }
 
 // ── System prompt ─────────────────────────────────────────
-function getSystemPrompt(summary) {
+function getSystemPrompt(summary, pageContext) {
+  const contextBlock = pageContext
+    ? `\n\nCONTEXTE PAGE ACTUELLE (ce que l'utilisateur voit en ce moment) :\n${JSON.stringify(pageContext)}`
+    : ''
+
   return `Tu es l'assistant SEO de Spider-Lens, un outil d'analyse de logs serveur.
 Tu aides des utilisateurs qui ne sont pas forcément des experts techniques.
 
@@ -207,7 +211,7 @@ RÈGLES :
 - Sois concis : pas de blabla inutile, va droit au but
 
 DONNÉES DU SITE (30 derniers jours) :
-${JSON.stringify(summary, null, 0)}`
+${JSON.stringify(summary, null, 0)}${contextBlock}`
 }
 
 // ── Init Gemini ────────────────────────────────────────────
@@ -347,7 +351,7 @@ export async function streamAnalysis(siteId, res) {
   }
 }
 
-export async function streamChat(siteId, messages, res) {
+export async function streamChat(siteId, messages, pageContext, res) {
   const model = initGemini()
   if (!model) {
     res.status(503).json({ error: 'GEMINI_API_KEY non configurée' })
@@ -355,7 +359,7 @@ export async function streamChat(siteId, messages, res) {
   }
 
   const summary = getCachedSummary(siteId)
-  const systemPrompt = getSystemPrompt(summary)
+  const systemPrompt = getSystemPrompt(summary, pageContext || null)
 
   res.setHeader('Content-Type', 'text/event-stream')
   res.setHeader('Cache-Control', 'no-cache')

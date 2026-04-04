@@ -23,6 +23,7 @@ import { usePersistentRange } from "../hooks/usePersistentRange";
 import { useSort } from "../hooks/useSort";
 import SortableHeader from "../components/ui/SortableHeader";
 import { useSite } from "../context/SiteContext";
+import { useChat } from "../context/ChatContext";
 import { motion } from "framer-motion";
 import { kpiVariants } from "../components/ui/KPICard";
 import api from "../api/client";
@@ -70,6 +71,7 @@ const PAGE_SIZE = 50;
 export default function HttpCodes() {
   const { t } = useTranslation();
   const { activeSiteId } = useSite();
+  const { setPageContext, clearPageContext } = useChat();
   const [range, setRange] = usePersistentRange("http-codes");
   const [chartData, setChartData] = useState([]);
   const [overview, setOverview] = useState(null);
@@ -139,6 +141,20 @@ export default function HttpCodes() {
       })
       .finally(() => setLoadingChart(false));
   }, [range, activeSiteId, uaFilter]);
+
+  useEffect(() => {
+    if (overview) {
+      setPageContext({
+        page: 'http-codes',
+        filter: activeFilter,
+        total: overview.total,
+        s2xx: overview.s2xx,
+        s4xx: overview.s4xx,
+        s5xx: overview.s5xx,
+      })
+    }
+    return () => clearPageContext()
+  }, [overview, activeFilter]);
 
   // ── Charger tableau drill-down ────────────────────────
   useEffect(() => {

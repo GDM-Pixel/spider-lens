@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import BeginnerModeProvider from './context/BeginnerModeProvider'
 import SiteProvider from './context/SiteContext'
+import { ChatProvider } from './context/ChatContext'
 import './i18n'
 import './index.css'
 
@@ -21,11 +22,13 @@ class ErrorBoundary extends React.Component {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <ErrorBoundary>
     <BrowserRouter>
-      <BeginnerModeProvider>
-        <SiteProvider>
-          <App />
-        </SiteProvider>
-      </BeginnerModeProvider>
+      <ChatProvider>
+        <BeginnerModeProvider>
+          <SiteProvider>
+            <App />
+          </SiteProvider>
+        </BeginnerModeProvider>
+      </ChatProvider>
     </BrowserRouter>
   </ErrorBoundary>
 )

@@ -8,6 +8,7 @@ import { usePersistentRange } from '../hooks/usePersistentRange'
 import { useSort } from '../hooks/useSort'
 import SortableHeader from '../components/ui/SortableHeader'
 import { useSite } from '../context/SiteContext'
+import { useChat } from '../context/ChatContext'
 import api from '../api/client'
 import dayjs from 'dayjs'
 import clsx from 'clsx'
@@ -132,6 +133,7 @@ function TablePages({ data }) {
 export default function TopPages() {
   const { t } = useTranslation()
   const { activeSiteId } = useSite()
+  const { setPageContext, clearPageContext } = useChat()
   const [range, setRange] = usePersistentRange('top-pages')
   const [tab, setTab] = useState('404') // '404' | 'pages'
   const [data404, setData404] = useState([])
@@ -149,6 +151,19 @@ export default function TopPages() {
       setDataPages(rpages.data)
     }).finally(() => setLoading(false))
   }, [range, activeSiteId])
+
+  useEffect(() => {
+    const activeData = tab === '404' ? data404 : dataPages
+    if (activeData.length > 0) {
+      setPageContext({
+        page: 'top-pages',
+        tab,
+        count: activeData.length,
+        topUrls: activeData.slice(0, 5).map(r => ({ url: r.url, hits: r.hits })),
+      })
+    }
+    return () => clearPageContext()
+  }, [data404, dataPages, tab])
 
   function exportCSV() {
     setExporting(true)

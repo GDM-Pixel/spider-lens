@@ -11,7 +11,7 @@
     "settings": "Instellingen",
     "analysis": "Analyse",
     "logout": "Afmelden",
-    "assistant": "AI-assistent"
+    "analyzeAI": "AI-analyse"
   },
   "header": {
     "beginnerActive": "Beginnermodus actief — klik om uit te schakelen",
@@ -31,7 +31,7 @@
       "anomalies":  { "title": "Anomalieën",      "subtitle": "Automatisch gedetecteerd abnormaal gedrag" },
       "blocklist":  { "title": "Blokkeringslijst",      "subtitle": "Geblokkeerde IP's" },
       "settings":   { "title": "Instellingen",       "subtitle": "Spider-Lens-configuratie" },
-      "assistant":  { "title": "AI-assistent",       "subtitle": "Analyseer uw logs in natuurlijke taal" }
+      "assistant":  { "title": "AI-analyse",          "subtitle": "Analyseer uw logs in natuurlijke taal" }
     }
   },
   "common": {

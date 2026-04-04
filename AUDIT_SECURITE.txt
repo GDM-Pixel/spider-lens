@@ -1,0 +1,186 @@
+================================================================================
+                    AUDIT DE SECURITE - SPIDER-LENS v0.7.0
+================================================================================
+
+Date: 03 avril 2026
+Statut: CRITIQUES DETECTES - Ne pas deployer en production
+
+================================================================================
+CRITICITE: CRITICAL (3 problemes)
+================================================================================
+
+1. FICHIER .env COMMIT DANS LE REPOSITORY
+   - Contient JWT_SECRET, ADMIN_PASS, LOG_FILE_PATH en clair
+   - Doit etre supprime du git history immediatement
+   - Action: git filter-branch --tree-filter 'rm -f server/.env' -- --all
+
+2. BASE DE DONNEES SQLITE COMMISE (82 MB)
+   - server/spider-lens.db contient tous les logs, IPs, URLs, user-agents
+   - Exposition massive de donnees de trafic
+   - Action: git filter-branch --tree-filter 'rm -f server/spider-lens.db*' -- --all
+
+3. MOT DE PASSE ADMIN EN CONSOLE
+   - server/index.js ligne 61 affiche le mot de passe en clair
+   - console.log(`[init] Utilisateur cree : ${username} / ${password}`)
+   - Action: Supprimer cette ligne, ne jamais logger les secrets
+
+================================================================================
+SEVERITE: HIGH (4 problemes)
+================================================================================
+
+4. JWT STOCKE EN LOCALSTORAGE (XSS Vulnerable)
+   - localStorage.getItem('spider_token')
+   - Accessible via JavaScript si XSS exploit
+   - Solution: Passer a httpOnly cookies
+
+5. /api/auth/change-password SANS AUTHENTIFICATION
+   - Pas de middleware requireAuth
+   - Vulnerable au brute force
+   - Action: Ajouter requireAuth middleware
+
+6. PAS DE RATE LIMITING
+   - /api/auth/login peut etre brute-force indefiniment
+   - Solution: npm install express-rate-limit
+   - Ajouter limiter sur login (5 tentatives par 15 min)
+
+7. CONTENT SECURITY POLICY DESACTIVEE
+   - helmet({ contentSecurityPolicy: false })
+   - Pas de protection contre XSS
+   - Solution: Activer CSP avec directives strictes
+
+================================================================================
+SEVERITE: MEDIUM (5 problemes)
+================================================================================
+
+8. VALIDATION INSUFFISANTE DES IPs EN BLOCKLIST
+   - Pas de verification que c'est une adresse IP valide
+   - On peut inserer n'importe quelle string
+   - Solution: Valider format IPv4 avec regex et octets
+
+9. PAS DE VALIDATION DES VARIABLES D'ENVIRONNEMENT
+   - JWT_SECRET n'est jamais verifie (longueur, format)
+   - NODE_ENV par defaut en development si non defini
+   - Solution: Validation stricte au demarrage
+
+10. ISOLATION MULTI-TENANT ABSENTE
+    - Tout utilisateur authentifie voit les stats de TOUS les sites
+    - Pas d'ACL (Access Control List) par site
+    - Solution: Implémenter table user_site_access
+
+11. CORS CONFIGURATION FRAGILE
+    - En production: origin: false (bon)
+    - Mais frontend et backend peuvent etre separes
+    - Solution: Configurer dynamiquement avec FRONTEND_URL env var
+
+12. EXTRACTION D'IP WORDPRESS POTENTIELLEMENT SPOOFABLE
+    - Si get_client_ip() regarde HTTP_X_FORWARDED_FOR sans validation
+    - Un attaquant peut spoofier son IP
+    - Solution: Valider X-Forwarded-For seulement si derriere proxy de confiance
+
+================================================================================
+PLAN D'ACTION IMMEDIAT
+================================================================================
+
+JOUR 1 - SECURISER LES SECRETS:
+[ ] Supprimer .env et *.db du git (git filter-branch)
+[ ] git push --force pour mettre a jour remote
+[ ] Generer nouveaux secrets: openssl rand -hex 32
+[ ] Retirer le mot de passe de la console au demarrage
+[ ] Creer un .env.example avec les valeurs par defaut
+
+JOUR 2 - AUTHENTIFICATION:
+[ ] Ajouter requireAuth a /api/auth/change-password
+[ ] Passer JWT a httpOnly cookie
+[ ] Ajouter rate limiting sur /api/auth/login
+[ ] Configurer expiration JWT a 7 jours (deja fait)
+
+JOUR 3 - HEADERS & VALIDATION:
+[ ] Activer CSP dans helmet
+[ ] Ajouter HSTS, X-Frame-Options, Referrer-Policy
+[ ] Valider les IPs en blocklist (format IPv4)
+[ ] Valider les variables d'environnement au demarrage
+
+SEMAINE 2 - AVANT PRODUCTION:
+[ ] Ajouter error handler global (ne pas exposer stack en prod)
+[ ] Implémenter isolation multi-tenant par site
+[ ] Audit des dependances (npm audit)
+[ ] Tests de securite: brute force, XSS, CORS, SQL injection
+[ ] Review par un autre developpeur
+
+================================================================================
+FICHIERS A MODIFIER
+================================================================================
+
+server/index.js:
+- Ligne 26: Activer CSP
+- Ligne 27: Configurer CORS dynamiquement
+- Ligne 61: Retirer le console.log du mot de passe
+- Ajouter: Validation des variables d'environnement
+- Ajouter: Error handler global
+- Ajouter: Rate limiting
+
+server/routes/auth.js:
+- Ligne 38: Ajouter requireAuth a /change-password
+- Ajouter: Passer JWT en httpOnly cookie au lieu de retourner en JSON
+
+server/routes/blocklist.js:
+- Ligne 35: Ajouter validation IPv4
+
+server/middleware/auth.js:
+- Actualiser pour lire depuis les cookies au lieu du header Authorization
+
+client/src/hooks/useAuth.js:
+- Remplacer localStorage par cookie automatique du navigateur
+
+client/src/api/client.js:
+- Retirer la logique de localStorage
+- Les cookies seront envoyes automatiquement
+
+wp-plugin/includes/Collector.php:
+- Verifier la fonction get_client_ip()
+- S'assurer qu'elle valide X-Forwarded-For
+
+================================================================================
+VERIFICATION POST-CORRECTION
+================================================================================
+
+# Verifier que les secrets ne sont plus en git
+git log --all --oneline -- server/.env
+git log --all --oneline -- server/spider-lens.db
+(Doit etre vide apres filter-branch)
+
+# Verifier qu'aucun secret n'est en dur dans le code
+grep -r "spider-lens-dev-secret" server/
+grep -r "spider-lens-change-me" server/
+(Doit etre vide sauf dans .env.example)
+
+# Verifier la validité du JWT_SECRET
+echo "JWT_SECRET doit faire au moins 32 caracteres:"
+echo "${JWT_SECRET}" | wc -c
+
+# Tester le rate limiting
+for i in {1..10}; do curl -X POST http://localhost:3000/api/auth/login; done
+(Doit retourner 429 apres 5 tentatives)
+
+# Tester httpOnly cookies
+curl -i http://localhost:3000/api/auth/login
+(Doit avoir: Set-Cookie: spider_token=...; HttpOnly; Secure; SameSite=Strict)
+
+# Verifier les headers de securite
+curl -i http://localhost:3000/api/health | grep -E "X-|Strict-Transport|Content-Security"
+(Doit avoir tous les headers de securite)
+
+================================================================================
+CONCLUSION
+================================================================================
+
+STATUT: Multiples vulnerabilites critiques detaillees.
+       Architecture correcte mais securisation insuffisante.
+
+RISQUE IMMEDIAT: Secrets exposes en git = Acces non autorise en production.
+
+RECOMMANDATION: Ne pas deployer en production avant resolution des
+                problemes critiques et high.
+
+Timeline estimee pour correction: 2-3 jours pour un developpeur experience.
+

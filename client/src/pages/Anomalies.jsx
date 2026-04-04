@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Icon } from '@iconify/react'
 import BeginnerBanner from '../components/ui/BeginnerBanner'
 import { useSite } from '../context/SiteContext'
+import { useChat } from '../context/ChatContext'
 import api from '../api/client'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -94,6 +95,7 @@ function AnomalyRow({ row }) {
 export default function Anomalies() {
   const { t } = useTranslation()
   const { activeSiteId } = useSite()
+  const { setPageContext, clearPageContext } = useChat()
   const [rows, setRows]         = useState([])
   const [total, setTotal]       = useState(0)
   const [offset, setOffset]     = useState(0)
@@ -112,6 +114,18 @@ export default function Anomalies() {
 
   useEffect(() => { fetchData() }, [fetchData])
   useEffect(() => { setOffset(0) }, [activeSiteId, typeFilter])
+
+  useEffect(() => {
+    if (rows.length > 0) {
+      setPageContext({
+        page: 'anomalies',
+        total,
+        filter: typeFilter || 'all',
+        anomalies: rows.slice(0, 5).map(r => ({ type: r.type, severity: r.severity, date: r.detected_at })),
+      })
+    }
+    return () => clearPageContext()
+  }, [rows, typeFilter])
 
   return (
     <div className="flex flex-col gap-6">

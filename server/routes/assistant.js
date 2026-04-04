@@ -35,7 +35,7 @@ router.post('/chat', async (req, res) => {
     return res.status(503).json({ error: 'GEMINI_API_KEY non configurée. Ajoutez-la dans le fichier .env du serveur.' })
   }
 
-  const { siteId, messages } = req.body
+  const { siteId, messages, pageContext } = req.body
 
   if (!Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: 'messages requis' })
@@ -48,7 +48,8 @@ router.post('/chat', async (req, res) => {
   }))
 
   const parsedSiteId = siteId != null ? parseInt(siteId, 10) : null
-  await streamChat(parsedSiteId, trimmed, res)
+  const ctx = pageContext && typeof pageContext === 'object' ? pageContext : null
+  await streamChat(parsedSiteId, trimmed, ctx, res)
 })
 
 export default router

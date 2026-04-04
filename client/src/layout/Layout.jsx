@@ -2,6 +2,7 @@ import React, { useState, useEffect, Suspense } from 'react'
 import { Outlet, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import Sidebar from '../components/partials/sidebar/Sidebar'
 import Header from '../components/partials/header/Header'
+import NovaChatBubble from '../components/chat/NovaChatBubble'
 
 export default function Layout() {
   const token = localStorage.getItem('spider_token')
@@ -39,6 +40,8 @@ export default function Layout() {
           </Suspense>
         </main>
       </div>
+
+      <NovaChatBubble />
     </div>
   )
 }

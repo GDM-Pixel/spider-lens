@@ -11,7 +11,7 @@
     "settings": "Settings",
     "analysis": "Analysis",
     "logout": "Logout",
-    "assistant": "AI Assistant"
+    "analyzeAI": "AI Analysis"
   },
   "header": {
     "beginnerActive": "Beginner mode active — click to disable",
@@ -31,7 +31,7 @@
       "anomalies":  { "title": "Anomalies",      "subtitle": "Automatically detected abnormal behaviour" },
       "blocklist":  { "title": "Blocklist",      "subtitle": "Blocked IPs" },
       "settings":   { "title": "Settings",       "subtitle": "Spider-Lens configuration" },
-      "assistant":  { "title": "AI Assistant",   "subtitle": "Analyze your logs in natural language" }
+      "assistant":  { "title": "AI Analysis",    "subtitle": "Analyze your logs in natural language" }
     }
   },
   "common": {

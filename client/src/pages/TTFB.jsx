@@ -15,6 +15,7 @@ import { usePersistentRange } from '../hooks/usePersistentRange'
 import { useSort } from '../hooks/useSort'
 import SortableHeader from '../components/ui/SortableHeader'
 import { useSite } from '../context/SiteContext'
+import { useChat } from '../context/ChatContext'
 import api from '../api/client'
 import dayjs from 'dayjs'
 import clsx from 'clsx'
@@ -46,6 +47,7 @@ const PAGE_SIZE = 50
 export default function TTFB() {
   const { t } = useTranslation()
   const { activeSiteId } = useSite()
+  const { setPageContext, clearPageContext } = useChat()
   const [range, setRange]           = usePersistentRange('ttfb')
   const [threshold, setThreshold]   = useState(800)   // seuil "lent" configurable
   const [overview, setOverview]     = useState(null)
@@ -82,6 +84,19 @@ export default function TTFB() {
       setByDay(bd.data)
     }).finally(() => setLoading(false))
   }, [range, threshold, activeSiteId])
+
+  useEffect(() => {
+    if (overview) {
+      setPageContext({
+        page: 'ttfb',
+        avgTTFB: overview.avg_ttfb,
+        slowCount: overview.slow_count,
+        total: overview.total,
+        threshold,
+      })
+    }
+    return () => clearPageContext()
+  }, [overview, threshold])
 
   // Charger tableau URLs
   useEffect(() => {

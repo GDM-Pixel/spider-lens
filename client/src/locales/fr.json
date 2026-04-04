@@ -11,7 +11,7 @@
     "settings": "Paramètres",
     "analysis": "Analyse",
     "logout": "Déconnexion",
-    "assistant": "Assistant IA"
+    "analyzeAI": "Analyse IA"
   },
   "header": {
     "beginnerActive": "Mode débutant actif — cliquez pour désactiver",
@@ -31,7 +31,7 @@
       "anomalies":  { "title": "Anomalies",           "subtitle": "Comportements anormaux détectés" },
       "blocklist":  { "title": "Blocklist",           "subtitle": "IPs bloquées" },
       "settings":   { "title": "Paramètres",          "subtitle": "Configuration de Spider-Lens" },
-      "assistant":  { "title": "Assistant IA",        "subtitle": "Analysez vos logs en langage naturel" }
+      "assistant":  { "title": "Analyse IA",           "subtitle": "Analysez vos logs en langage naturel" }
     }
   },
   "common": {
