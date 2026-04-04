@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next'
 import { useChat } from '../../context/ChatContext'
 import { useSite } from '../../context/SiteContext'
 import novaAvatar from '../../assets/nova-avatar.jpg'
+import novaBubbleIcon from '../../assets/nova-bubble-icon.png'
 
 // ── SSE streaming ─────────────────────────────────────────
 async function streamSSE(url, body, onChunk, onDone, onError) {
@@ -266,7 +267,7 @@ export default function NovaChatBubble() {
         className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-2xl overflow-hidden border-2 border-moonstone-400/40 focus:outline-none"
         title="Nova — Assistante SEO"
       >
-        <img src={novaAvatar} alt="Nova" className="nova-avatar w-full h-full object-cover" />
+        <img src={novaBubbleIcon} alt="Nova" className="w-full h-full object-cover" />
 
         {/* Unread badge */}
         <AnimatePresence>
