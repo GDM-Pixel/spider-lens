@@ -58,19 +58,11 @@ export function buildSiteSummary(siteId) {
   const SCAN_UA_SQL = `(user_agent IS NOT NULL AND user_agent != '-' AND user_agent NOT LIKE '"%')`
 
   // URLs universellement suspectes (aucun site légitime ne les sert) — pour l'estimation des scans
-  // Ces patterns apparaissent UNIQUEMENT dans des scans automatiques, jamais dans un vrai trafic humain
   const SCAN_ONLY_URL_SQL = `(
     url LIKE '%wp-login%' OR url LIKE '%xmlrpc%'
     OR url LIKE '%.env%' OR url LIKE '%/.git%' OR url LIKE '%/phpmyadmin%'
     OR url LIKE '%wlwmanifest%' OR url LIKE '%/actuator%'
-    OR url LIKE '%/info.php%' OR url LIKE '%secrets.json%'
-    OR url LIKE '%config.js%' OR url LIKE '%/wp-config%'
-    OR url LIKE '%/.well-known/traffic-advice%'
-    OR url LIKE '%/wp-admin%' OR url LIKE '%/wp-content%' OR url LIKE '%/wp-includes%'
-    OR url = '/ip' OR url = '/order' OR url = '/cart' OR url = '/checkout'
-    OR url LIKE '//wp%' OR url LIKE '//wordpress%' OR url LIKE '//web/%'
-    OR url LIKE '//test/%' OR url LIKE '//site/%' OR url LIKE '//shop/%'
-    OR url LIKE '//cms/%'
+    OR url LIKE '%/info.php%'
   )`
 
   // -- Top 5 pages 404 humains réels (hors UA vides/corrompus — inclut URLs WP légitimes)
@@ -105,7 +97,7 @@ export function buildSiteSummary(siteId) {
     WHERE timestamp BETWEEN ? AND ? AND status_code = 404 ${sc}
   `).get(from, to, ...sp)
 
-  // -- Taux d'erreur humains réels (SEO-pertinent — hors UA vides/corrompus ET hors URLs de scan)
+  // -- Taux d'erreur humains réels (SEO-pertinent — hors UA vides/corrompus uniquement)
   const humanOverview = db.prepare(`
     SELECT
       COUNT(*) AS total,
@@ -113,8 +105,7 @@ export function buildSiteSummary(siteId) {
       SUM(CASE WHEN status_code BETWEEN 500 AND 599 THEN 1 ELSE 0 END) AS s5xx
     FROM log_entries
     WHERE timestamp BETWEEN ? AND ? AND is_bot = 0
-      AND ${SCAN_UA_SQL}
-      AND NOT ${SCAN_ONLY_URL_SQL} ${sc}
+      AND ${SCAN_UA_SQL} ${sc}
   `).get(from, to, ...sp)
 
   const humanErrorRate = humanOverview.total > 0
@@ -163,6 +154,31 @@ export function buildSiteSummary(siteId) {
     WHERE timestamp BETWEEN ? AND ? AND user_agent LIKE '%Googlebot%' AND status_code = 404 ${sc}
     GROUP BY url ORDER BY hits DESC LIMIT 5
   `).all(from, to, ...sp).map(r => ({ url: trunc(r.url), hits: r.hits }))
+
+  // -- Bots SEO tiers (Bingbot, AhrefsBot, SemrushBot, MJ12bot, ClaudeBot, etc.)
+  // Données de crawl par bot — ce qu'ils voient comme codes HTTP = reflet réel de la santé du site
+  const SEO_BOTS = [
+    { key: 'bingbot',    pattern: '%Bingbot%'    },
+    { key: 'ahrefsbot',  pattern: '%AhrefsBot%'  },
+    { key: 'semrushbot', pattern: '%SemrushBot%' },
+    { key: 'mj12bot',    pattern: '%MJ12bot%'    },
+    { key: 'claudebot',  pattern: '%ClaudeBot%'  },
+    { key: 'gptbot',     pattern: '%GPTBot%'     },
+  ]
+  const seoBotStats = {}
+  for (const bot of SEO_BOTS) {
+    const row = db.prepare(`
+      SELECT
+        COUNT(*) AS total,
+        SUM(CASE WHEN status_code BETWEEN 200 AND 299 THEN 1 ELSE 0 END) AS s2xx,
+        SUM(CASE WHEN status_code = 404 THEN 1 ELSE 0 END) AS s404,
+        SUM(CASE WHEN status_code BETWEEN 500 AND 599 THEN 1 ELSE 0 END) AS s5xx,
+        COUNT(DISTINCT DATE(timestamp)) AS activeDays
+      FROM log_entries
+      WHERE timestamp BETWEEN ? AND ? AND user_agent LIKE ? ${sc}
+    `).get(from, to, bot.pattern, ...sp)
+    if (row?.total > 0) seoBotStats[bot.key] = row
+  }
 
   // -- TTFB
   const ttfbRaw = db.prepare(`
@@ -307,6 +323,7 @@ export function buildSiteSummary(siteId) {
     weeklyTrend,
     recentAnomalies,
     crawlSummary,    // données on-page du crawler (null si pas encore crawlé)
+    seoBotStats,     // codes HTTP vus par Bingbot, AhrefsBot, SemrushBot, MJ12bot, ClaudeBot, GPTBot
   }
 }
 
@@ -429,17 +446,18 @@ SEO SCORING PHILOSOPHY — READ CAREFULLY:
 This is an SEO-focused analysis. The score reflects what Google cares about, NOT raw server statistics.
 
 WHAT MATTERS FOR SEO (affects the score):
-1. Googlebot health: 404s seen by Googlebot, 5xx seen by Googlebot, how many days Googlebot was active
-2. Human error rate (humanErrorRate field): errors real visitors encounter
-3. TTFB: server response time affects Core Web Vitals and crawl efficiency
-4. Crawl budget waste: Googlebot crawling 404 pages wastes crawl budget
-5. Human 404s (top404 field, human visits only): broken links hurt SEO
+1. Googlebot health (googlebot field): 404s and 5xx seen by Googlebot, activeDays — this is the PRIMARY SEO signal.
+2. SEO bot health (seoBotStats field): HTTP codes seen by Bingbot, AhrefsBot, SemrushBot, MJ12bot, ClaudeBot, GPTBot. High 404/5xx rates across multiple bots = confirmed site health issue. Use this to corroborate Googlebot findings.
+3. TTFB: server response time affects Core Web Vitals and crawl efficiency.
+4. Crawl budget waste: Googlebot crawling 404 pages wastes crawl budget.
+5. Human 404s (top404 field): only penalize those with inCrawl: true (real internal broken links confirmed by crawler).
 
 WHAT DOES NOT AFFECT SEO SCORE:
-- scan404 in err404Detail: these are security scan attempts (wp-login, .env, .git, xmlrpc) by malicious bots — NOT a Google SEO problem. NEVER penalize the score for these.
-- High bot traffic ratio in general: security bots, scrapers etc. don't affect Google rankings
-- The global errorRate field includes all those bot scans — do NOT use it for scoring. Use humanErrorRate instead.
-- scanRequestsEstimate in overview: estimated requests to known scan URLs from bots disguised as humans. If humanErrorRate seems high AND scanRequestsEstimate is significant (> 50), the true human error rate is likely lower. Mention it as informational only.
+- humanErrorRate may be inflated by automated scanners (bots with human-looking User-Agents hitting wp-login, .env, etc.). Do NOT use humanErrorRate as a primary scoring signal — use it only as secondary context.
+- scan404 in err404Detail: security scan attempts — NOT an SEO problem.
+- The global errorRate includes all bot scans — do NOT use it for scoring.
+- scanRequestsEstimate: if significant (> 50), humanErrorRate is likely inflated. Mention as info only.
+- top404 entries with inCrawl: false — these URLs don't exist on the site (scanners, external links). Do NOT penalize the score for these.
 
 CRAWLER DATA (top404 cross-reference — when crawlSummary is available):
 - top404 entries with "inCrawl: true": the URL was found during sitemap crawl → this is a REAL broken internal link. Penalize the score accordingly.
