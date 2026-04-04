@@ -118,11 +118,17 @@ export default function HttpCodes() {
       .get("/stats/top-user-agents", { params: range })
       .then((r) => {
         const data = r.data;
-        const googlebot = data.filter((ua) => /googlebot/i.test(ua.user_agent));
+        // Fusionner toutes les variantes Googlebot en une seule entrée
+        const googlebotHits = data
+          .filter((ua) => /googlebot/i.test(ua.user_agent))
+          .reduce((sum, ua) => sum + ua.hits, 0);
+        const googlebotEntry = googlebotHits > 0
+          ? [{ user_agent: '__googlebot__', display: 'Googlebot', hits: googlebotHits }]
+          : [];
         const others = data
           .filter((ua) => !/googlebot/i.test(ua.user_agent))
           .sort((a, b) => a.user_agent.localeCompare(b.user_agent));
-        setTopUAs([...googlebot, ...others]);
+        setTopUAs([...googlebotEntry, ...others]);
       })
       .catch(() => {});
   }, [range, activeSiteId]);
@@ -314,7 +320,7 @@ export default function HttpCodes() {
                 onChange={(e) => setUaFilter(e.target.value)}
                 className={clsx(
                   "border rounded-lg pl-7 pr-6 py-1.5 text-xs focus:outline-none transition-colors appearance-none cursor-pointer max-w-[200px]",
-                  uaFilter && /googlebot/i.test(uaFilter)
+                  uaFilter && uaFilter === '__googlebot__'
                     ? "bg-emerald-900/60 border-emerald-600 text-emerald-300 focus:border-emerald-400"
                     : uaFilter
                       ? "bg-moonstone-900/40 border-moonstone-600 text-moonstone-300 focus:border-moonstone-400"
@@ -323,19 +329,15 @@ export default function HttpCodes() {
               >
                 <option value="">{t("httpCodes.filterAllUA")}</option>
                 {topUAs.map((ua) => {
-                  const isGooglebot = /googlebot/i.test(ua.user_agent);
+                  const isGooglebot = ua.user_agent === '__googlebot__';
                   return (
                     <option
                       key={ua.user_agent}
                       value={ua.user_agent}
-                      style={
-                        isGooglebot
-                          ? { background: "#14532d", color: "#86efac" }
-                          : {}
-                      }
+                      style={isGooglebot ? { background: "#14532d", color: "#86efac" } : {}}
                     >
                       {isGooglebot ? "🤖 " : ""}
-                      {truncateUA(ua.user_agent)} (
+                      {ua.display || truncateUA(ua.user_agent)} (
                       {ua.hits.toLocaleString("fr-FR")})
                     </option>
                   );
@@ -569,26 +571,22 @@ export default function HttpCodes() {
                     onChange={(e) => setUaFilter(e.target.value)}
                     className={clsx(
                       "border rounded-lg pl-7 pr-6 py-1.5 text-xs focus:outline-none transition-colors appearance-none cursor-pointer max-w-[200px]",
-                      uaFilter && /googlebot/i.test(uaFilter)
+                      uaFilter && uaFilter === '__googlebot__'
                         ? "bg-emerald-900/60 border-emerald-600 text-emerald-300 focus:border-emerald-400"
                         : "bg-prussian-600 border-prussian-400 text-white focus:border-moonstone-600",
                     )}
                   >
                     <option value="">{t("httpCodes.filterAllUA")}</option>
                     {topUAs.map((ua) => {
-                      const isGooglebot = /googlebot/i.test(ua.user_agent);
+                      const isGooglebot = ua.user_agent === '__googlebot__';
                       return (
                         <option
                           key={ua.user_agent}
                           value={ua.user_agent}
-                          style={
-                            isGooglebot
-                              ? { background: "#14532d", color: "#86efac" }
-                              : {}
-                          }
+                          style={isGooglebot ? { background: "#14532d", color: "#86efac" } : {}}
                         >
                           {isGooglebot ? "🤖 " : ""}
-                          {truncateUA(ua.user_agent)} (
+                          {ua.display || truncateUA(ua.user_agent)} (
                           {ua.hits.toLocaleString("fr-FR")})
                         </option>
                       );

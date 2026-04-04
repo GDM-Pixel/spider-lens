@@ -19,14 +19,19 @@ function getSiteFilter(req) {
   return { clause: '', params: [] }
 }
 
+// Filtre User-Agent — gère la valeur spéciale '__googlebot__' (LIKE)
+function getUaFilter(ua) {
+  if (!ua) return { clause: '', params: [] }
+  if (ua === '__googlebot__') return { clause: "AND user_agent LIKE '%Googlebot%'", params: [] }
+  return { clause: 'AND user_agent = ?', params: [ua] }
+}
+
 // GET /api/stats/overview — KPIs globaux
 router.get('/overview', (req, res) => {
   const db = getDb()
   const { from, to } = getDateRange(req)
   const { clause: sf, params: sp } = getSiteFilter(req)
-  const uaFilter = req.query.ua
-  const uaWhere  = uaFilter ? 'AND user_agent = ?' : ''
-  const uaParams = uaFilter ? [uaFilter] : []
+  const { clause: uaWhere, params: uaParams } = getUaFilter(req.query.ua)
 
   const total = db.prepare(`
     SELECT COUNT(*) as cnt FROM log_entries WHERE timestamp BETWEEN ? AND ? ${sf} ${uaWhere}
@@ -69,9 +74,7 @@ router.get('/http-codes', (req, res) => {
   const db = getDb()
   const { from, to } = getDateRange(req)
   const { clause: sf, params: sp } = getSiteFilter(req)
-  const uaFilter = req.query.ua
-  const uaWhere  = uaFilter ? 'AND user_agent = ?' : ''
-  const uaParams = uaFilter ? [uaFilter] : []
+  const { clause: uaWhere, params: uaParams } = getUaFilter(req.query.ua)
 
   const rows = db.prepare(`
     SELECT
@@ -197,21 +200,17 @@ router.get('/url-detail', (req, res) => {
   const ipFilter    = req.query.ip
   const ipWhere     = ipFilter ? 'AND ip = ?' : ''
   const ipParams    = ipFilter ? [ipFilter] : []
-  const uaFilter    = req.query.ua
-  const uaWhere     = uaFilter ? 'AND user_agent = ?' : ''
-  const uaParams    = uaFilter ? [uaFilter] : []
+  const { clause: uaWhere, params: uaParams } = getUaFilter(req.query.ua)
 
   const where = `timestamp BETWEEN ? AND ? ${statusWhere} ${botWhere} ${searchWhere} ${ipWhere} ${uaWhere} ${sf}`
   const params = [from, to, ...statusParams, ...searchParams, ...ipParams, ...uaParams, ...sp]
 
-  // Sous-requête top_ua : si filtre UA actif, on retourne directement ce UA
-  const topUaSubquery = uaFilter
-    ? `? AS top_ua`
-    : `(SELECT user_agent FROM log_entries le2
-       WHERE le2.url = le.url AND le2.status_code = le.status_code
-         AND le2.timestamp BETWEEN ? AND ? ${sf}
-       GROUP BY user_agent ORDER BY COUNT(*) DESC LIMIT 1) AS top_ua`
-  const topUaParams = uaFilter ? [uaFilter] : [from, to, ...sp]
+  // Sous-requête top_ua
+  const topUaSubquery = `(SELECT user_agent FROM log_entries le2
+     WHERE le2.url = le.url AND le2.status_code = le.status_code
+       AND le2.timestamp BETWEEN ? AND ? ${sf}
+     GROUP BY user_agent ORDER BY COUNT(*) DESC LIMIT 1) AS top_ua`
+  const topUaParams = [from, to, ...sp]
 
   const rows = db.prepare(`
     SELECT
