@@ -12,6 +12,7 @@
     "analysis": "Análise",
     "logout": "Sair",
     "analyzeAI": "Análise com IA",
+    "crawler": "Crawler",
     "account": "Minha Conta"
   },
   "header": {
@@ -62,6 +63,10 @@
       "assistant": {
         "title": "Análise com IA",
         "subtitle": "Analise seus logs em linguagem natural"
+      },
+      "crawler": {
+        "title": "Crawler SEO",
+        "subtitle": "Dados on-page dos seus sites rastreados"
       }
     }
   },
@@ -389,6 +394,46 @@
     "guideApacheSnippet": "Include /etc/apache2/blocklist.conf",
     "copySnippet": "Copiar",
     "copiedSnippet": "Copiado!"
+  },
+  "crawler": {
+    "welcomeTitle": "Análise On-Page do Crawler",
+    "tip1": "O crawler analisa as páginas reais do seu site para detectar problemas SEO on-page.",
+    "tip2": "Páginas sem title ou H1 são penalizadas pelo Google — corrija-as primeiro.",
+    "tip3": "Conteúdo escasso (< 300 palavras) pode diluir a autoridade do seu site.",
+    "tip4": "Os dados do crawler são cruzados com análise de IA para um score SEO mais preciso.",
+    "totalCrawled": "Páginas rastreadas",
+    "missingTitle": "Sem title",
+    "missingTitleInfo": "Tag <title> ausente — crítica para o SEO",
+    "missingH1": "Sem H1",
+    "missingH1Info": "Recomenda-se pelo menos um H1 por página",
+    "noindexPages": "Páginas noindex",
+    "noindexInfo": "Páginas com meta robots noindex",
+    "thinContent": "Conteúdo escasso",
+    "thinContentInfo": "Páginas com menos de 300 palavras",
+    "crawlErrors": "Erros de crawl",
+    "filterAll": "Todas",
+    "filterMissingTitle": "Sem title",
+    "filterMissingH1": "Sem H1",
+    "filterNoindex": "Noindex",
+    "filterErrors": "Erros",
+    "columnUrl": "URL",
+    "columnStatus": "Status",
+    "columnTitle": "Title",
+    "columnH1": "H1",
+    "columnWords": "Palavras",
+    "columnDepth": "Profundidade",
+    "columnSource": "Fonte",
+    "recentRuns": "Histórico de crawls",
+    "runDate": "Data",
+    "runStatus": "Status",
+    "runPagesFound": "Páginas encontradas",
+    "runPagesCrawled": "Páginas rastreadas",
+    "runError": "Erro",
+    "noSiteSelected": "Selecione um site para ver os dados do crawler",
+    "noData": "Sem dados de crawl",
+    "noDataHint": "Lance um crawl em Configurações → Sites",
+    "noIssues": "Nenhuma página com este filtro",
+    "absent": "ausente"
   },
   "settings": {
     "title": "Configurações",

@@ -12,6 +12,7 @@
     "analysis": "Analyse",
     "logout": "Abmelden",
     "analyzeAI": "KI-Analyse",
+    "crawler": "Crawler",
     "account": "Mein Konto"
   },
   "header": {
@@ -62,6 +63,10 @@
       "assistant": {
         "title": "KI-Analyse",
         "subtitle": "Analysieren Sie Ihre Logs in natürlicher Sprache"
+      },
+      "crawler": {
+        "title": "SEO-Crawler",
+        "subtitle": "On-Page-Daten Ihrer gecrawlten Seiten"
       }
     }
   },
@@ -389,6 +394,46 @@
     "guideApacheSnippet": "Include /etc/apache2/blocklist.conf",
     "copySnippet": "Kopieren",
     "copiedSnippet": "Kopiert!"
+  },
+  "crawler": {
+    "welcomeTitle": "On-Page Crawler-Analyse",
+    "tip1": "Der Crawler analysiert die echten Seiten Ihrer Website, um On-Page-SEO-Probleme zu erkennen.",
+    "tip2": "Seiten ohne Title oder H1 werden von Google bestraft — beheben Sie diese zuerst.",
+    "tip3": "Dünner Content (< 300 Wörter) kann die Autorität Ihrer Website verwässern.",
+    "tip4": "Crawler-Daten werden mit der KI-Analyse für einen genaueren SEO-Score abgeglichen.",
+    "totalCrawled": "Gecrawlte Seiten",
+    "missingTitle": "Kein Title",
+    "missingTitleInfo": "Fehlender <title>-Tag — kritisch für SEO",
+    "missingH1": "Kein H1",
+    "missingH1Info": "Mindestens ein H1 pro Seite empfohlen",
+    "noindexPages": "Noindex-Seiten",
+    "noindexInfo": "Seiten mit Meta-Robots noindex",
+    "thinContent": "Dünner Inhalt",
+    "thinContentInfo": "Seiten mit weniger als 300 Wörtern",
+    "crawlErrors": "Crawl-Fehler",
+    "filterAll": "Alle",
+    "filterMissingTitle": "Kein Title",
+    "filterMissingH1": "Kein H1",
+    "filterNoindex": "Noindex",
+    "filterErrors": "Fehler",
+    "columnUrl": "URL",
+    "columnStatus": "Status",
+    "columnTitle": "Title",
+    "columnH1": "H1",
+    "columnWords": "Wörter",
+    "columnDepth": "Tiefe",
+    "columnSource": "Quelle",
+    "recentRuns": "Crawl-Verlauf",
+    "runDate": "Datum",
+    "runStatus": "Status",
+    "runPagesFound": "Seiten gefunden",
+    "runPagesCrawled": "Seiten gecrawlt",
+    "runError": "Fehler",
+    "noSiteSelected": "Wählen Sie eine Website aus, um Crawler-Daten anzuzeigen",
+    "noData": "Keine Crawl-Daten",
+    "noDataHint": "Starten Sie einen Crawl unter Einstellungen → Websites",
+    "noIssues": "Keine Seiten für diesen Filter",
+    "absent": "fehlt"
   },
   "settings": {
     "title": "Einstellungen",

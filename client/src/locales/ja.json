@@ -12,6 +12,7 @@
     "analysis": "分析",
     "logout": "ログアウト",
     "analyzeAI": "AI分析",
+    "crawler": "クローラー",
     "account": "マイアカウント"
   },
   "header": {
@@ -62,6 +63,10 @@
       "assistant": {
         "title": "AI分析",
         "subtitle": "自然言語でログを分析する"
+      },
+      "crawler": {
+        "title": "SEOクローラー",
+        "subtitle": "クロールされたサイトのページ内データ"
       }
     }
   },
@@ -389,6 +394,46 @@
     "guideApacheSnippet": "Include /etc/apache2/blocklist.conf",
     "copySnippet": "コピー",
     "copiedSnippet": "コピーしました!"
+  },
+  "crawler": {
+    "welcomeTitle": "ページ内クローラー分析",
+    "tip1": "クローラーはサイトの実際のページを分析して、ページ内のSEOの問題を検出します。",
+    "tip2": "タイトルまたはH1がないページはGoogleにペナルティを与えられます - まずこれらを修正してください。",
+    "tip3": "薄いコンテンツ(< 300単語)はサイトの権限を低下させる可能性があります。",
+    "tip4": "クローラーデータはより正確なSEOスコアのためにAI分析と相互参照されます。",
+    "totalCrawled": "クロールされたページ",
+    "missingTitle": "タイトルなし",
+    "missingTitleInfo": "欠落している<title>タグ - SEOに重要",
+    "missingH1": "H1なし",
+    "missingH1Info": "ページごとに少なくとも1つのH1が推奨されます",
+    "noindexPages": "Noindexページ",
+    "noindexInfo": "メタロボットnoindexを持つページ",
+    "thinContent": "薄いコンテンツ",
+    "thinContentInfo": "300語未満のページ",
+    "crawlErrors": "クロールエラー",
+    "filterAll": "すべて",
+    "filterMissingTitle": "タイトルなし",
+    "filterMissingH1": "H1なし",
+    "filterNoindex": "Noindex",
+    "filterErrors": "エラー",
+    "columnUrl": "URL",
+    "columnStatus": "ステータス",
+    "columnTitle": "Title",
+    "columnH1": "H1",
+    "columnWords": "単語数",
+    "columnDepth": "深さ",
+    "columnSource": "ソース",
+    "recentRuns": "最近のクロール",
+    "runDate": "日付",
+    "runStatus": "ステータス",
+    "runPagesFound": "見つかったページ",
+    "runPagesCrawled": "クロールされたページ",
+    "runError": "エラー",
+    "noSiteSelected": "クローラーデータを表示するにはサイトを選択してください",
+    "noData": "クロールデータなし",
+    "noDataHint": "設定 → サイトからクロールを開始してください",
+    "noIssues": "このフィルターに一致するページはありません",
+    "absent": "なし"
   },
   "settings": {
     "title": "設定",

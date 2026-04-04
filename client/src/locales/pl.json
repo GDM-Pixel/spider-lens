@@ -12,6 +12,7 @@
     "analysis": "Analiza",
     "logout": "Wyloguj się",
     "analyzeAI": "Analiza AI",
+    "crawler": "Crawler",
     "account": "Moje Konto"
   },
   "header": {
@@ -62,6 +63,10 @@
       "assistant": {
         "title": "Analiza AI",
         "subtitle": "Analizuj dzienniki w języku naturalnym"
+      },
+      "crawler": {
+        "title": "Crawler SEO",
+        "subtitle": "Dane on-page z zaindeksowanych witryn"
       }
     }
   },
@@ -389,6 +394,46 @@
     "guideApacheSnippet": "Include /etc/apache2/blocklist.conf",
     "copySnippet": "Kopiuj",
     "copiedSnippet": "Skopiowano!"
+  },
+  "crawler": {
+    "welcomeTitle": "Analiza On-Page Crawlera",
+    "tip1": "Crawler analizuje rzeczywiste strony Twojej witryny w celu wykrycia problemów SEO on-page.",
+    "tip2": "Strony bez title lub H1 są karane przez Google — napraw je w pierwszej kolejności.",
+    "tip3": "Cienka zawartość (< 300 słów) może rozcieńczać autorytet Twojej witryny.",
+    "tip4": "Dane crawlera są porównywane z analizą AI w celu uzyskania dokładniejszego wyniku SEO.",
+    "totalCrawled": "Zaindeksowane strony",
+    "missingTitle": "Bez title",
+    "missingTitleInfo": "Brak tagu <title> — krytyczne dla SEO",
+    "missingH1": "Bez H1",
+    "missingH1Info": "Zaleca się co najmniej jeden H1 na stronę",
+    "noindexPages": "Strony noindex",
+    "noindexInfo": "Strony z meta robots noindex",
+    "thinContent": "Cienka treść",
+    "thinContentInfo": "Strony z mniej niż 300 słowami",
+    "crawlErrors": "Błędy crawlera",
+    "filterAll": "Wszystkie",
+    "filterMissingTitle": "Bez title",
+    "filterMissingH1": "Bez H1",
+    "filterNoindex": "Noindex",
+    "filterErrors": "Błędy",
+    "columnUrl": "URL",
+    "columnStatus": "Status",
+    "columnTitle": "Title",
+    "columnH1": "H1",
+    "columnWords": "Słowa",
+    "columnDepth": "Głębokość",
+    "columnSource": "Źródło",
+    "recentRuns": "Historia crawli",
+    "runDate": "Data",
+    "runStatus": "Status",
+    "runPagesFound": "Znalezione strony",
+    "runPagesCrawled": "Zaindeksowane strony",
+    "runError": "Błąd",
+    "noSiteSelected": "Wybierz witrynę, aby zobaczyć dane crawlera",
+    "noData": "Brak danych crawlera",
+    "noDataHint": "Uruchom crawl w Ustawienia → Witryny",
+    "noIssues": "Brak stron dla tego filtra",
+    "absent": "brak"
   },
   "settings": {
     "title": "Ustawienia",

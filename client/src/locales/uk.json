@@ -12,6 +12,7 @@
     "analysis": "Аналіз",
     "logout": "Вихід",
     "analyzeAI": "Аналіз AI",
+    "crawler": "Crawler",
     "account": "Мій Акаунт"
   },
   "header": {
@@ -62,6 +63,10 @@
       "assistant": {
         "title": "Аналіз AI",
         "subtitle": "Аналізуйте журнали природною мовою"
+      },
+      "crawler": {
+        "title": "SEO Crawler",
+        "subtitle": "On-page дані ваших сканованих сайтів"
       }
     }
   },
@@ -389,6 +394,46 @@
     "guideApacheSnippet": "Include /etc/apache2/blocklist.conf",
     "copySnippet": "Копіювати",
     "copiedSnippet": "Скопійовано!"
+  },
+  "crawler": {
+    "welcomeTitle": "Аналіз On-Page Crawler",
+    "tip1": "Crawler аналізує реальні сторінки вашого сайту для виявлення проблем SEO на сторінці.",
+    "tip2": "Сторінки без title або H1 штрафуються Google — виправте їх спочатку.",
+    "tip3": "Мало контенту (< 300 слів) може послабити авторитет вашого сайту.",
+    "tip4": "Дані crawler порівнюються з AI-аналізом для більш точного SEO-показника.",
+    "totalCrawled": "Проіндексовані сторінки",
+    "missingTitle": "Без title",
+    "missingTitleInfo": "Відсутній тег <title> — критичний для SEO",
+    "missingH1": "Без H1",
+    "missingH1Info": "Рекомендується мінімум один H1 на сторінку",
+    "noindexPages": "Сторінки noindex",
+    "noindexInfo": "Сторінки з meta robots noindex",
+    "thinContent": "Мало контенту",
+    "thinContentInfo": "Сторінки менше ніж з 300 словами",
+    "crawlErrors": "Помилки crawler",
+    "filterAll": "Всі",
+    "filterMissingTitle": "Без title",
+    "filterMissingH1": "Без H1",
+    "filterNoindex": "Noindex",
+    "filterErrors": "Помилки",
+    "columnUrl": "URL",
+    "columnStatus": "Статус",
+    "columnTitle": "Title",
+    "columnH1": "H1",
+    "columnWords": "Слова",
+    "columnDepth": "Глибина",
+    "columnSource": "Джерело",
+    "recentRuns": "Історія сканувань",
+    "runDate": "Дата",
+    "runStatus": "Статус",
+    "runPagesFound": "Знайдені сторінки",
+    "runPagesCrawled": "Проіндексовані сторінки",
+    "runError": "Помилка",
+    "noSiteSelected": "Виберіть сайт для перегляду даних crawler",
+    "noData": "Немає даних crawler",
+    "noDataHint": "Запустіть сканування в Параметри → Сайти",
+    "noIssues": "Немає сторінок для цього фільтра",
+    "absent": "відсутній"
   },
   "settings": {
     "title": "Параметри",

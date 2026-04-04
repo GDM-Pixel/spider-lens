@@ -12,6 +12,7 @@
     "analysis": "Analisi",
     "logout": "Esci",
     "analyzeAI": "Analisi IA",
+    "crawler": "Crawler",
     "account": "Il Mio Account"
   },
   "header": {
@@ -62,6 +63,10 @@
       "assistant": {
         "title": "Analisi IA",
         "subtitle": "Analizza i tuoi log in linguaggio naturale"
+      },
+      "crawler": {
+        "title": "Crawler SEO",
+        "subtitle": "Dati on-page dei siti scansionati"
       }
     }
   },
@@ -389,6 +394,46 @@
     "guideApacheSnippet": "Include /etc/apache2/blocklist.conf",
     "copySnippet": "Copia",
     "copiedSnippet": "Copiato!"
+  },
+  "crawler": {
+    "welcomeTitle": "Analisi On-Page del Crawler",
+    "tip1": "Il crawler analizza le pagine reali del sito per rilevare problemi SEO on-page.",
+    "tip2": "Le pagine senza title o H1 sono penalizzate da Google — correggile per prime.",
+    "tip3": "Il contenuto esile (< 300 parole) può diluire l'autorità del sito.",
+    "tip4": "I dati del crawler vengono incrociati con l'analisi IA per un punteggio SEO più preciso.",
+    "totalCrawled": "Pagine scansionate",
+    "missingTitle": "Senza title",
+    "missingTitleInfo": "Tag <title> mancante — critico per il SEO",
+    "missingH1": "Senza H1",
+    "missingH1Info": "Almeno un H1 è raccomandato per pagina",
+    "noindexPages": "Pagine noindex",
+    "noindexInfo": "Pagine con meta robots noindex",
+    "thinContent": "Contenuto esile",
+    "thinContentInfo": "Pagine con meno di 300 parole",
+    "crawlErrors": "Errori di crawl",
+    "filterAll": "Tutte",
+    "filterMissingTitle": "Senza title",
+    "filterMissingH1": "Senza H1",
+    "filterNoindex": "Noindex",
+    "filterErrors": "Errori",
+    "columnUrl": "URL",
+    "columnStatus": "Stato",
+    "columnTitle": "Title",
+    "columnH1": "H1",
+    "columnWords": "Parole",
+    "columnDepth": "Profondità",
+    "columnSource": "Fonte",
+    "recentRuns": "Storico crawl",
+    "runDate": "Data",
+    "runStatus": "Stato",
+    "runPagesFound": "Pagine trovate",
+    "runPagesCrawled": "Pagine scansionate",
+    "runError": "Errore",
+    "noSiteSelected": "Seleziona un sito per vedere i dati del crawler",
+    "noData": "Nessun dato di crawl",
+    "noDataHint": "Avvia un crawl da Impostazioni → Siti",
+    "noIssues": "Nessuna pagina con questo filtro",
+    "absent": "assente"
   },
   "settings": {
     "title": "Impostazioni",

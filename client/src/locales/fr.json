@@ -12,6 +12,7 @@
     "analysis": "Analyse",
     "logout": "Déconnexion",
     "analyzeAI": "Analyse IA",
+    "crawler": "Crawler",
     "account": "Mon Compte"
   },
   "header": {
@@ -62,6 +63,10 @@
       "assistant": {
         "title": "Analyse IA",
         "subtitle": "Analysez vos logs en langage naturel"
+      },
+      "crawler": {
+        "title": "Crawler SEO",
+        "subtitle": "Données on-page de vos sites crawlés"
       }
     }
   },
@@ -389,6 +394,46 @@
     "guideApacheSnippet": "Include /etc/apache2/blocklist.conf",
     "copySnippet": "Copier",
     "copiedSnippet": "Copié !"
+  },
+  "crawler": {
+    "welcomeTitle": "Analyse On-Page du Crawler",
+    "tip1": "Le crawler analyse les vraies pages de votre site pour détecter les problèmes SEO on-page.",
+    "tip2": "Les pages sans title ou H1 sont pénalisées par Google — corrigez-les en priorité.",
+    "tip3": "Le contenu mince (< 300 mots) peut diluer l'autorité de votre site.",
+    "tip4": "Les données du crawler sont croisées avec l'analyse IA pour un score SEO plus précis.",
+    "totalCrawled": "Pages crawlées",
+    "missingTitle": "Sans title",
+    "missingTitleInfo": "Balise <title> manquante — critique pour le référencement",
+    "missingH1": "Sans H1",
+    "missingH1Info": "Au moins un H1 est recommandé par page",
+    "noindexPages": "Pages noindex",
+    "noindexInfo": "Pages avec meta robots noindex — exclues de l'index Google",
+    "thinContent": "Contenu mince",
+    "thinContentInfo": "Pages avec moins de 300 mots",
+    "crawlErrors": "Erreurs de crawl",
+    "filterAll": "Toutes",
+    "filterMissingTitle": "Sans title",
+    "filterMissingH1": "Sans H1",
+    "filterNoindex": "Noindex",
+    "filterErrors": "Erreurs",
+    "columnUrl": "URL",
+    "columnStatus": "Statut",
+    "columnTitle": "Title",
+    "columnH1": "H1",
+    "columnWords": "Mots",
+    "columnDepth": "Profondeur",
+    "columnSource": "Source",
+    "recentRuns": "Historique des crawls",
+    "runDate": "Date",
+    "runStatus": "Statut",
+    "runPagesFound": "Pages trouvées",
+    "runPagesCrawled": "Pages crawlées",
+    "runError": "Erreur",
+    "noSiteSelected": "Sélectionnez un site pour voir les données du crawler",
+    "noData": "Aucune donnée de crawl",
+    "noDataHint": "Lancez un crawl depuis Paramètres → Sites",
+    "noIssues": "Aucune page avec ce filtre",
+    "absent": "absent"
   },
   "settings": {
     "title": "Paramètres",

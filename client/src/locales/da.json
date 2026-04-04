@@ -12,6 +12,7 @@
     "analysis": "Analyse",
     "logout": "Log ud",
     "analyzeAI": "AI-analyse",
+    "crawler": "Crawler",
     "account": "Min Konto"
   },
   "header": {
@@ -62,6 +63,10 @@
       "assistant": {
         "title": "AI-analyse",
         "subtitle": "Analyser dine logs på naturligt sprog"
+      },
+      "crawler": {
+        "title": "SEO Crawler",
+        "subtitle": "On-page-data fra dine crawlede websteder"
       }
     }
   },
@@ -389,6 +394,46 @@
     "guideApacheSnippet": "Include /etc/apache2/blocklist.conf",
     "copySnippet": "Kopier",
     "copiedSnippet": "Kopieret!"
+  },
+  "crawler": {
+    "welcomeTitle": "On-Page Crawler-analyse",
+    "tip1": "Crawleren analyserer dine websteds faktiske sider for at detektere SEO-problemer på siden.",
+    "tip2": "Sider uden title eller H1 straffes af Google — løs disse først.",
+    "tip3": "Tyndt indhold (< 300 ord) kan fortynde dit websteds autoritet.",
+    "tip4": "Crawlerdata krydscheckes med AI-analyse for en mere nøjagtig SEO-score.",
+    "totalCrawled": "Crawlede sider",
+    "missingTitle": "Uden title",
+    "missingTitleInfo": "Manglende <title>-tag — kritisk for SEO",
+    "missingH1": "Uden H1",
+    "missingH1Info": "Mindst en H1 anbefales pr. side",
+    "noindexPages": "Noindex-sider",
+    "noindexInfo": "Sider med meta robots noindex",
+    "thinContent": "Tyndt indhold",
+    "thinContentInfo": "Sider med færre end 300 ord",
+    "crawlErrors": "Crawlfejl",
+    "filterAll": "Alle",
+    "filterMissingTitle": "Uden title",
+    "filterMissingH1": "Uden H1",
+    "filterNoindex": "Noindex",
+    "filterErrors": "Fejl",
+    "columnUrl": "URL",
+    "columnStatus": "Status",
+    "columnTitle": "Title",
+    "columnH1": "H1",
+    "columnWords": "Ord",
+    "columnDepth": "Dybde",
+    "columnSource": "Kilde",
+    "recentRuns": "Seneste crawls",
+    "runDate": "Dato",
+    "runStatus": "Status",
+    "runPagesFound": "Sider fundet",
+    "runPagesCrawled": "Crawlede sider",
+    "runError": "Fejl",
+    "noSiteSelected": "Vælg et websted for at se crawlerdata",
+    "noData": "Ingen crawlerdata",
+    "noDataHint": "Start en crawl fra Indstillinger → Websteder",
+    "noIssues": "Ingen sider for dette filter",
+    "absent": "mangler"
   },
   "settings": {
     "title": "Indstillinger",

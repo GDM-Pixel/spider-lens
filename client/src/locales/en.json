@@ -12,6 +12,7 @@
     "analysis": "Analysis",
     "logout": "Logout",
     "analyzeAI": "AI Analysis",
+    "crawler": "Crawler",
     "account": "My Account"
   },
   "header": {
@@ -62,6 +63,10 @@
       "assistant": {
         "title": "AI Analysis",
         "subtitle": "Analyze your logs in natural language"
+      },
+      "crawler": {
+        "title": "SEO Crawler",
+        "subtitle": "On-page data from your crawled sites"
       }
     }
   },
@@ -389,6 +394,46 @@
     "guideApacheSnippet": "Include /etc/apache2/blocklist.conf",
     "copySnippet": "Copy",
     "copiedSnippet": "Copied!"
+  },
+  "crawler": {
+    "welcomeTitle": "On-Page Crawler Analysis",
+    "tip1": "The crawler analyzes your site's real pages to detect on-page SEO issues.",
+    "tip2": "Pages missing title or H1 are penalized by Google — fix them first.",
+    "tip3": "Thin content (< 300 words) can dilute your site's authority.",
+    "tip4": "Crawler data is cross-referenced with AI analysis for a more accurate SEO score.",
+    "totalCrawled": "Pages Crawled",
+    "missingTitle": "Missing title",
+    "missingTitleInfo": "Missing <title> tag — critical for SEO",
+    "missingH1": "Missing H1",
+    "missingH1Info": "At least one H1 is recommended per page",
+    "noindexPages": "Noindex pages",
+    "noindexInfo": "Pages with meta robots noindex — excluded from Google index",
+    "thinContent": "Thin content",
+    "thinContentInfo": "Pages with less than 300 words",
+    "crawlErrors": "Crawl errors",
+    "filterAll": "All",
+    "filterMissingTitle": "Missing title",
+    "filterMissingH1": "Missing H1",
+    "filterNoindex": "Noindex",
+    "filterErrors": "Errors",
+    "columnUrl": "URL",
+    "columnStatus": "Status",
+    "columnTitle": "Title",
+    "columnH1": "H1",
+    "columnWords": "Words",
+    "columnDepth": "Depth",
+    "columnSource": "Source",
+    "recentRuns": "Recent crawl runs",
+    "runDate": "Date",
+    "runStatus": "Status",
+    "runPagesFound": "Pages found",
+    "runPagesCrawled": "Pages crawled",
+    "runError": "Error",
+    "noSiteSelected": "Select a site to view crawler data",
+    "noData": "No crawl data",
+    "noDataHint": "Launch a crawl from Settings → Sites",
+    "noIssues": "No pages matching this filter",
+    "absent": "absent"
   },
   "settings": {
     "title": "Settings",

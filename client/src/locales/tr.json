@@ -12,6 +12,7 @@
     "analysis": "Analiz",
     "logout": "Çıkış Yap",
     "analyzeAI": "AI Analizi",
+    "crawler": "Crawler",
     "account": "Hesabım"
   },
   "header": {
@@ -62,6 +63,10 @@
       "assistant": {
         "title": "AI Analizi",
         "subtitle": "Kayıtlarınızı doğal dilde analiz edin"
+      },
+      "crawler": {
+        "title": "SEO Tarayıcı",
+        "subtitle": "Taranan sitelerinizin sayfada veriler"
       }
     }
   },
@@ -389,6 +394,46 @@
     "guideApacheSnippet": "Include /etc/apache2/blocklist.conf",
     "copySnippet": "Kopyala",
     "copiedSnippet": "Kopyalandı!"
+  },
+  "crawler": {
+    "welcomeTitle": "Sayfada Tarayıcı Analizi",
+    "tip1": "Tarayıcı, sayfada SEO sorunlarını tespit etmek için sitenizin gerçek sayfalarını analiz eder.",
+    "tip2": "Title veya H1 olmayan sayfalar Google tarafından cezalandırılır — önce bunları düzeltin.",
+    "tip3": "İnce içerik (< 300 kelime) sitenizin otoritesini zayıflatabilir.",
+    "tip4": "Tarayıcı verileri daha doğru bir SEO skoru için AI analizi ile çapraz kontrol edilir.",
+    "totalCrawled": "Taranan sayfalar",
+    "missingTitle": "Başlıksız",
+    "missingTitleInfo": "Eksik <title> etiketi — SEO için kritik",
+    "missingH1": "H1 yok",
+    "missingH1Info": "Sayfa başına en az bir H1 önerilir",
+    "noindexPages": "Noindex sayfalar",
+    "noindexInfo": "Meta robots noindex ile sayfalar",
+    "thinContent": "İnce içerik",
+    "thinContentInfo": "300 kelimeden az sayfalar",
+    "crawlErrors": "Tarama hataları",
+    "filterAll": "Tümü",
+    "filterMissingTitle": "Başlıksız",
+    "filterMissingH1": "H1 yok",
+    "filterNoindex": "Noindex",
+    "filterErrors": "Hatalar",
+    "columnUrl": "URL",
+    "columnStatus": "Durum",
+    "columnTitle": "Title",
+    "columnH1": "H1",
+    "columnWords": "Kelimeler",
+    "columnDepth": "Derinlik",
+    "columnSource": "Kaynak",
+    "recentRuns": "Son taramalar",
+    "runDate": "Tarih",
+    "runStatus": "Durum",
+    "runPagesFound": "Bulunan sayfalar",
+    "runPagesCrawled": "Taranan sayfalar",
+    "runError": "Hata",
+    "noSiteSelected": "Tarayıcı verilerini görmek için bir site seçin",
+    "noData": "Tarayıcı verisi yok",
+    "noDataHint": "Ayarlar → Siteler'den bir tarama başlatın",
+    "noIssues": "Bu filtre için sayfa yok",
+    "absent": "eksik"
   },
   "settings": {
     "title": "Ayarlar",

@@ -12,6 +12,7 @@
     "analysis": "Analys",
     "logout": "Logga ut",
     "analyzeAI": "AI-analys",
+    "crawler": "Crawler",
     "account": "Mitt Konto"
   },
   "header": {
@@ -62,6 +63,10 @@
       "assistant": {
         "title": "AI-analys",
         "subtitle": "Analysera dina loggar på naturligt språk"
+      },
+      "crawler": {
+        "title": "SEO Crawler",
+        "subtitle": "On-page-data från dina crawlade webbplatser"
       }
     }
   },
@@ -389,6 +394,46 @@
     "guideApacheSnippet": "Include /etc/apache2/blocklist.conf",
     "copySnippet": "Kopiera",
     "copiedSnippet": "Kopierad!"
+  },
+  "crawler": {
+    "welcomeTitle": "On-Page Crawleranalys",
+    "tip1": "Crawlern analyserar dina webbplatsens faktiska sidor för att upptäcka SEO-problem på sidan.",
+    "tip2": "Sidor utan title eller H1 straffas av Google — åtgärda dessa först.",
+    "tip3": "Tunt innehål (< 300 ord) kan försvaga din webbplats auktoritet.",
+    "tip4": "Crawlerdata korskontrolleras med AI-analys för ett mer exakt SEO-värde.",
+    "totalCrawled": "Crawlade sidor",
+    "missingTitle": "Utan title",
+    "missingTitleInfo": "Saknad <title>-tagg — kritisk för SEO",
+    "missingH1": "Utan H1",
+    "missingH1Info": "Minst en H1 rekommenderas per sida",
+    "noindexPages": "Noindex-sidor",
+    "noindexInfo": "Sidor med meta robots noindex",
+    "thinContent": "Tunt innehål",
+    "thinContentInfo": "Sidor med mindre än 300 ord",
+    "crawlErrors": "Crawlfel",
+    "filterAll": "Alla",
+    "filterMissingTitle": "Utan title",
+    "filterMissingH1": "Utan H1",
+    "filterNoindex": "Noindex",
+    "filterErrors": "Fel",
+    "columnUrl": "URL",
+    "columnStatus": "Status",
+    "columnTitle": "Title",
+    "columnH1": "H1",
+    "columnWords": "Ord",
+    "columnDepth": "Djup",
+    "columnSource": "Källa",
+    "recentRuns": "Senaste crawls",
+    "runDate": "Datum",
+    "runStatus": "Status",
+    "runPagesFound": "Sidor hittade",
+    "runPagesCrawled": "Crawlade sidor",
+    "runError": "Fel",
+    "noSiteSelected": "Välj en webbplats för att se crawler-data",
+    "noData": "Inga crawler-data",
+    "noDataHint": "Starta en crawl från Inställningar → Webbplatser",
+    "noIssues": "Inga sidor för det här filtret",
+    "absent": "saknas"
   },
   "settings": {
     "title": "Inställningar",

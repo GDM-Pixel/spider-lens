@@ -12,6 +12,7 @@
     "analysis": "Анализ",
     "logout": "Выход",
     "analyzeAI": "AI анализ",
+    "crawler": "Crawler",
     "account": "Мой Аккаунт"
   },
   "header": {
@@ -62,6 +63,10 @@
       "assistant": {
         "title": "AI анализ",
         "subtitle": "Анализируйте логи на естественном языке"
+      },
+      "crawler": {
+        "title": "SEO Crawler",
+        "subtitle": "On-page данные ваших просканированных сайтов"
       }
     }
   },
@@ -389,6 +394,46 @@
     "guideApacheSnippet": "Include /etc/apache2/blocklist.conf",
     "copySnippet": "Копировать",
     "copiedSnippet": "Скопировано!"
+  },
+  "crawler": {
+    "welcomeTitle": "Анализ On-Page Краулера",
+    "tip1": "Краулер анализирует реальные страницы вашего сайта для выявления проблем SEO на странице.",
+    "tip2": "Страницы без title или H1 штрафуются Google — исправьте их в первую очередь.",
+    "tip3": "Мало контента (< 300 слов) может ослабить авторитет вашего сайта.",
+    "tip4": "Данные краулера сопоставляются с AI-анализом для более точного SEO-показателя.",
+    "totalCrawled": "Просканированные страницы",
+    "missingTitle": "Без title",
+    "missingTitleInfo": "Отсутствующий тег <title> — критический для SEO",
+    "missingH1": "Без H1",
+    "missingH1Info": "Рекомендуется минимум один H1 на странице",
+    "noindexPages": "Страницы noindex",
+    "noindexInfo": "Страницы с meta robots noindex",
+    "thinContent": "Мало контента",
+    "thinContentInfo": "Страницы менее чем с 300 словами",
+    "crawlErrors": "Ошибки краулера",
+    "filterAll": "Все",
+    "filterMissingTitle": "Без title",
+    "filterMissingH1": "Без H1",
+    "filterNoindex": "Noindex",
+    "filterErrors": "Ошибки",
+    "columnUrl": "URL",
+    "columnStatus": "Статус",
+    "columnTitle": "Title",
+    "columnH1": "H1",
+    "columnWords": "Слова",
+    "columnDepth": "Глубина",
+    "columnSource": "Источник",
+    "recentRuns": "История сканирований",
+    "runDate": "Дата",
+    "runStatus": "Статус",
+    "runPagesFound": "Найденные страницы",
+    "runPagesCrawled": "Просканированные страницы",
+    "runError": "Ошибка",
+    "noSiteSelected": "Выберите сайт для просмотра данных краулера",
+    "noData": "Нет данных краулера",
+    "noDataHint": "Запустите сканирование в Настройки → Сайты",
+    "noIssues": "Нет страниц для этого фильтра",
+    "absent": "отсутствует"
   },
   "settings": {
     "title": "Настройки",

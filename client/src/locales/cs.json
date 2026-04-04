@@ -12,6 +12,7 @@
     "analysis": "Analýza",
     "logout": "Odhlášení",
     "analyzeAI": "Analýza AI",
+    "crawler": "Crawler",
     "account": "Můj Účet"
   },
   "header": {
@@ -62,6 +63,10 @@
       "assistant": {
         "title": "Analýza AI",
         "subtitle": "Analyzujte své logy v přirozeném jazyce"
+      },
+      "crawler": {
+        "title": "SEO Crawler",
+        "subtitle": "On-page data z procházených webů"
       }
     }
   },
@@ -389,6 +394,46 @@
     "guideApacheSnippet": "Include /etc/apache2/blocklist.conf",
     "copySnippet": "Kopírovat",
     "copiedSnippet": "Zkopírováno!"
+  },
+  "crawler": {
+    "welcomeTitle": "Analiza On-Page Crawleru",
+    "tip1": "Crawler analyzuje skutečné stránky vašeho webu, aby zjistil problémy se SEO na stránce.",
+    "tip2": "Stránky bez title nebo H1 jsou penalizovány Googlem — opravte je nejdříve.",
+    "tip3": "Tenký obsah (< 300 slov) může snížit autoritu vašeho webu.",
+    "tip4": "Data crawleru jsou zpřížena s analýzou AI pro přesnější SEO skóre.",
+    "totalCrawled": "Procházené stránky",
+    "missingTitle": "Bez title",
+    "missingTitleInfo": "Chybějící tag <title> — kritický pro SEO",
+    "missingH1": "Bez H1",
+    "missingH1Info": "Doporučuje se alespoň jeden H1 na stránku",
+    "noindexPages": "Stránky noindex",
+    "noindexInfo": "Stránky s meta robots noindex",
+    "thinContent": "Tenký obsah",
+    "thinContentInfo": "Stránky s méně než 300 slovy",
+    "crawlErrors": "Chyby crawleru",
+    "filterAll": "Vše",
+    "filterMissingTitle": "Bez title",
+    "filterMissingH1": "Bez H1",
+    "filterNoindex": "Noindex",
+    "filterErrors": "Chyby",
+    "columnUrl": "URL",
+    "columnStatus": "Stav",
+    "columnTitle": "Title",
+    "columnH1": "H1",
+    "columnWords": "Slova",
+    "columnDepth": "Hloubka",
+    "columnSource": "Zdroj",
+    "recentRuns": "Historie prohledávání",
+    "runDate": "Datum",
+    "runStatus": "Stav",
+    "runPagesFound": "Nalezené stránky",
+    "runPagesCrawled": "Procházené stránky",
+    "runError": "Chyba",
+    "noSiteSelected": "Vyberte web pro zobrazení dat crawleru",
+    "noData": "Žádná data crawleru",
+    "noDataHint": "Spusťte crawl v Nastavení → Weby",
+    "noIssues": "Žádné stránky pro tento filtr",
+    "absent": "chybí"
   },
   "settings": {
     "title": "Nastavení",

@@ -12,6 +12,7 @@
     "analysis": "Analyse",
     "logout": "Afmelden",
     "analyzeAI": "AI-analyse",
+    "crawler": "Crawler",
     "account": "Mijn Account"
   },
   "header": {
@@ -62,6 +63,10 @@
       "assistant": {
         "title": "AI-analyse",
         "subtitle": "Analyseer uw logs in natuurlijke taal"
+      },
+      "crawler": {
+        "title": "SEO Crawler",
+        "subtitle": "On-page gegevens van gecrawlde sites"
       }
     }
   },
@@ -389,6 +394,46 @@
     "guideApacheSnippet": "Include /etc/apache2/blocklist.conf",
     "copySnippet": "Kopiëren",
     "copiedSnippet": "Gekopieerd!"
+  },
+  "crawler": {
+    "welcomeTitle": "On-Page Crawler Analyse",
+    "tip1": "De crawler analyseert de echte pagina's van uw site om on-page SEO-problemen te detecteren.",
+    "tip2": "Pagina's zonder title of H1 worden door Google gestraft — zet deze eerst recht.",
+    "tip3": "Dunne inhoud (< 300 woorden) kan de autoriteit van uw site verzwakken.",
+    "tip4": "Crawler-gegevens worden gekoppeld aan AI-analyse voor een nauwkeuriger SEO-score.",
+    "totalCrawled": "Gecrawlde pagina's",
+    "missingTitle": "Zonder title",
+    "missingTitleInfo": "Ontbrekende <title>-tag — kritisch voor SEO",
+    "missingH1": "Zonder H1",
+    "missingH1Info": "Minimaal één H1 aanbevolen per pagina",
+    "noindexPages": "Noindex pagina's",
+    "noindexInfo": "Pagina's met meta robots noindex",
+    "thinContent": "Dunne inhoud",
+    "thinContentInfo": "Pagina's met minder dan 300 woorden",
+    "crawlErrors": "Crawlfouten",
+    "filterAll": "Alle",
+    "filterMissingTitle": "Zonder title",
+    "filterMissingH1": "Zonder H1",
+    "filterNoindex": "Noindex",
+    "filterErrors": "Fouten",
+    "columnUrl": "URL",
+    "columnStatus": "Status",
+    "columnTitle": "Title",
+    "columnH1": "H1",
+    "columnWords": "Woorden",
+    "columnDepth": "Diepte",
+    "columnSource": "Bron",
+    "recentRuns": "Recente crawls",
+    "runDate": "Datum",
+    "runStatus": "Status",
+    "runPagesFound": "Pagina's gevonden",
+    "runPagesCrawled": "Pagina's gecrawld",
+    "runError": "Fout",
+    "noSiteSelected": "Selecteer een site om crawlergegevens te bekijken",
+    "noData": "Geen crawlgegevens",
+    "noDataHint": "Start een crawl via Instellingen → Sites",
+    "noIssues": "Geen pagina's voor dit filter",
+    "absent": "afwezig"
   },
   "settings": {
     "title": "Instellingen",
