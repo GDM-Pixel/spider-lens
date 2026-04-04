@@ -462,7 +462,10 @@
     "crawlRunning": "Crawl läuft",
     "crawlPages": "Seiten",
     "lastCrawl": "Letzter Crawl",
-    "noCrawlYet": "Noch kein Crawl"
+    "noCrawlYet": "Noch kein Crawl",
+    "sectionCrawler": "SEO-Crawler",
+    "sectionCrawlerDesc": "Crawlen Sie Ihre echten Seiten für präziseres KI-Scoring",
+    "noSitesForCrawler": "Keine Website konfiguriert"
   },
   "dbAdmin": {
     "sectionTitle": "Datenbankverwaltung",

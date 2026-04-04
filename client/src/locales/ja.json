@@ -462,7 +462,10 @@
     "crawlRunning": "クロール中",
     "crawlPages": "ページ",
     "lastCrawl": "最終クロール",
-    "noCrawlYet": "クロール未実施"
+    "noCrawlYet": "クロール未実施",
+    "sectionCrawler": "SEOクローラー",
+    "sectionCrawlerDesc": "実際のページをクロールしてAIスコアの精度を向上",
+    "noSitesForCrawler": "サイトが未設定"
   },
   "dbAdmin": {
     "sectionTitle": "データベース管理",

@@ -462,7 +462,10 @@
     "crawlRunning": "Crawl in corso",
     "crawlPages": "pagine",
     "lastCrawl": "Ultimo crawl",
-    "noCrawlYet": "Nessun crawl ancora"
+    "noCrawlYet": "Nessun crawl ancora",
+    "sectionCrawler": "Crawler SEO",
+    "sectionCrawlerDesc": "Analizza le pagine reali dei tuoi siti per migliorare il punteggio IA",
+    "noSitesForCrawler": "Nessun sito configurato"
   },
   "dbAdmin": {
     "sectionTitle": "Gestione del database",

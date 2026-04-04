@@ -462,7 +462,10 @@
     "crawlRunning": "Crawl pågår",
     "crawlPages": "sidor",
     "lastCrawl": "Senaste crawl",
-    "noCrawlYet": "Ingen crawl ännu"
+    "noCrawlYet": "Ingen crawl ännu",
+    "sectionCrawler": "SEO-crawler",
+    "sectionCrawlerDesc": "Crawla dina riktiga sidor för mer exakt AI-poängsättning",
+    "noSitesForCrawler": "Ingen webbplats konfigurerad"
   },
   "dbAdmin": {
     "sectionTitle": "Databashantering",

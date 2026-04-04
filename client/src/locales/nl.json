@@ -462,7 +462,10 @@
     "crawlRunning": "Crawl bezig",
     "crawlPages": "pagina's",
     "lastCrawl": "Laatste crawl",
-    "noCrawlYet": "Nog geen crawl"
+    "noCrawlYet": "Nog geen crawl",
+    "sectionCrawler": "SEO-crawler",
+    "sectionCrawlerDesc": "Crawl uw echte sitepaginas voor nauwkeuriger AI-scoring",
+    "noSitesForCrawler": "Geen site geconfigureerd"
   },
   "dbAdmin": {
     "sectionTitle": "Databasebeheer",

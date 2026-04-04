@@ -462,7 +462,10 @@
     "crawlRunning": "Краулінг виконується",
     "crawlPages": "сторінок",
     "lastCrawl": "Останній краулінг",
-    "noCrawlYet": "Краулінг ще не виконувався"
+    "noCrawlYet": "Краулінг ще не виконувався",
+    "sectionCrawler": "SEO-краулер",
+    "sectionCrawlerDesc": "Сканування реальних сторінок для точної ШІ-оцінки",
+    "noSitesForCrawler": "Сайт не налаштовано"
   },
   "dbAdmin": {
     "sectionTitle": "Управління базою даних",

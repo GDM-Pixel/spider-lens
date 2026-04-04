@@ -462,7 +462,10 @@
     "crawlRunning": "Краулинг выполняется",
     "crawlPages": "страниц",
     "lastCrawl": "Последний краулинг",
-    "noCrawlYet": "Краулинг не выполнялся"
+    "noCrawlYet": "Краулинг не выполнялся",
+    "sectionCrawler": "SEO-краулер",
+    "sectionCrawlerDesc": "Сканируйте реальные страницы для точной ИИ-оценки",
+    "noSitesForCrawler": "Сайт не настроен"
   },
   "dbAdmin": {
     "sectionTitle": "Управление базой данных",

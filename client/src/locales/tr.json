@@ -462,7 +462,10 @@
     "crawlRunning": "Tarama devam ediyor",
     "crawlPages": "sayfa",
     "lastCrawl": "Son tarama",
-    "noCrawlYet": "Henüz tarama yok"
+    "noCrawlYet": "Henüz tarama yok",
+    "sectionCrawler": "SEO Tarayıcı",
+    "sectionCrawlerDesc": "Daha doğru yapay zeka puanlaması için gerçek sayfalarınızı tarayın",
+    "noSitesForCrawler": "Site yapılandırılmamış"
   },
   "dbAdmin": {
     "sectionTitle": "Veritabanı yönetimi",

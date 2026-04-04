@@ -462,7 +462,10 @@
     "crawlRunning": "Crawl w toku",
     "crawlPages": "stron",
     "lastCrawl": "Ostatni crawl",
-    "noCrawlYet": "Brak crawla"
+    "noCrawlYet": "Brak crawla",
+    "sectionCrawler": "Crawler SEO",
+    "sectionCrawlerDesc": "Przeszukaj prawdziwe strony, aby poprawić dokładność oceny IA",
+    "noSitesForCrawler": "Brak skonfigurowanej strony"
   },
   "dbAdmin": {
     "sectionTitle": "Zarządzanie bazą danych",

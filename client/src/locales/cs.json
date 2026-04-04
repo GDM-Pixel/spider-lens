@@ -462,7 +462,10 @@
     "crawlRunning": "Crawl probíhá",
     "crawlPages": "stránek",
     "lastCrawl": "Poslední crawl",
-    "noCrawlYet": "Zatím žádný crawl"
+    "noCrawlYet": "Zatím žádný crawl",
+    "sectionCrawler": "SEO crawler",
+    "sectionCrawlerDesc": "Procházejte skutečné stránky pro přesnější AI hodnocení",
+    "noSitesForCrawler": "Žádná stránka nenakonfigurována"
   },
   "dbAdmin": {
     "sectionTitle": "Správa databáze",

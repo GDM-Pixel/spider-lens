@@ -462,7 +462,10 @@
     "crawlRunning": "Crawl kørende",
     "crawlPages": "sider",
     "lastCrawl": "Seneste crawl",
-    "noCrawlYet": "Ingen crawl endnu"
+    "noCrawlYet": "Ingen crawl endnu",
+    "sectionCrawler": "SEO-crawler",
+    "sectionCrawlerDesc": "Crawler dine rigtige sider for mere præcis AI-scoring",
+    "noSitesForCrawler": "Ingen side konfigureret"
   },
   "dbAdmin": {
     "sectionTitle": "Databasestyring",
