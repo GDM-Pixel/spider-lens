@@ -275,24 +275,56 @@ Without this key, the **AI Analysis** page and Nova chat display a friendly conf
 
 ## 📊 Supported log formats
 
-**Apache Combined Log Format**
+Spider-Lens parses the **Apache/Nginx Combined Log Format**, with an optional `$request_time` field at the end for TTFB data.
+
+### Basic format (no TTFB)
+
+Works out of the box with the default Nginx or Apache `combined` log format:
+
 ```
-127.0.0.1 - - [10/Oct/2023:13:55:36 -0700] "GET /page HTTP/1.1" 200 1234 "http://ref" "Mozilla/5.0" 150
+127.0.0.1 - - [10/Oct/2023:13:55:36 +0000] "GET /page HTTP/1.1" 200 1234 "https://ref" "Mozilla/5.0"
 ```
 
-**Nginx** (standard format)
-```
-127.0.0.1 - - [10/Oct/2023:13:55:36 -0700] "GET /page HTTP/1.1" 200 1234
-```
+### With TTFB (recommended)
 
-The optional last field (`150`) is the response time in ms (TTFB). To enable it in Nginx:
+Append `$request_time` (seconds, float) to the log line. Spider-Lens automatically converts it to milliseconds.
+
+**Nginx** — add a custom `log_format` in `/etc/nginx/nginx.conf` (inside the `http {}` block):
 
 ```nginx
-log_format combined_time '$remote_addr - $remote_user [$time_local] '
-                         '"$request" $status $body_bytes_sent '
-                         '"$http_referer" "$http_user_agent" $request_time';
-access_log /var/log/nginx/access.log combined_time;
+log_format spider_lens '$remote_addr - $remote_user [$time_local] '
+                       '"$request" $status $body_bytes_sent '
+                       '"$http_referer" "$http_user_agent" $request_time';
 ```
+
+Then use it in each virtual host you want to monitor:
+
+```nginx
+access_log /var/log/nginx/your-site.access.log spider_lens;
+```
+
+**Apache** — enable `%D` (microseconds) or `%T` (seconds) in your `LogFormat`:
+
+```apache
+LogFormat "%h - %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" %D" spider_lens
+CustomLog /var/log/apache2/access.log spider_lens
+```
+
+> **Note:** Apache's `%D` is in **microseconds** — Spider-Lens handles both formats automatically.
+
+### What gets parsed
+
+| Field | Source |
+|-------|--------|
+| IP address | `$remote_addr` |
+| Timestamp | `[$time_local]` |
+| HTTP method | `"$request"` |
+| URL | `"$request"` |
+| Status code | `$status` |
+| Response size | `$body_bytes_sent` |
+| Referrer | `"$http_referer"` |
+| User-Agent | `"$http_user_agent"` |
+| TTFB (ms) | `$request_time` (optional) |
 
 ---
 
