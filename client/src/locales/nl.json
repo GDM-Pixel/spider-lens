@@ -412,5 +412,33 @@
     "passwordMismatch": "Wachtwoorden komen niet overeen",
     "passwordSuccess": "Wachtwoord succesvol gewijzigd",
     "confirmDeleteSite": "Deze website verwijderen? Bijbehorende loggegevens worden behouden."
+  },
+  "dbAdmin": {
+    "sectionTitle": "Databasebeheer",
+    "refresh": "Vernieuwen",
+    "statsTitle": "Databasestatus",
+    "fileSize": "Bestandsgrootte",
+    "logEntries": "Logvermeldingen",
+    "anomalies": "Anomalieën",
+    "alertHistory": "Waarschuwingsgeschiedenis",
+    "logRange": "Logperiode",
+    "retentionTitle": "Bewaarbeleid",
+    "retentionLogs": "Logs bewaren gedurende",
+    "retentionAnomalies": "Anomalieën bewaren gedurende",
+    "retentionAlerts": "Waarschuwingsgeschiedenis bewaren gedurende",
+    "days7": "7 dagen",
+    "days30": "30 dagen",
+    "days90": "90 dagen",
+    "days180": "180 dagen",
+    "days365": "1 jaar",
+    "unlimited": "Onbeperkt",
+    "unlimitedWarning": "⚠️ Zonder bewaarlimieten kan de database onbeperkt groeien en de prestaties verslechteren. We raden minimaal 90 dagen aan.",
+    "retentionSave": "Opslaan",
+    "retentionSaved": "Opgeslagen!",
+    "actionsTitle": "Handmatige acties",
+    "purgeDescription": "Past het bewaarbeleid onmiddellijk toe en comprimeert het DB-bestand (VACUUM).",
+    "purgeNow": "Nu opschonen",
+    "purging": "Bezig met opschonen…",
+    "purgeResult": "{{logs}} logs, {{anomalies}} anomalieën, {{alerts}} waarschuwingen verwijderd — DB: {{size}}"
   }
 }

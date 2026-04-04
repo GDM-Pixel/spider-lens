@@ -412,5 +412,33 @@
     "passwordMismatch": "Les mots de passe ne correspondent pas",
     "passwordSuccess": "Mot de passe modifié avec succès",
     "confirmDeleteSite": "Supprimer ce site ? Les données de logs associées seront conservées."
+  },
+  "dbAdmin": {
+    "sectionTitle": "Gestion de la base de données",
+    "refresh": "Actualiser",
+    "statsTitle": "État de la base",
+    "fileSize": "Taille du fichier",
+    "logEntries": "Entrées de logs",
+    "anomalies": "Anomalies",
+    "alertHistory": "Historique alertes",
+    "logRange": "Plage de logs",
+    "retentionTitle": "Politique de rétention",
+    "retentionLogs": "Conserver les logs",
+    "retentionAnomalies": "Conserver les anomalies",
+    "retentionAlerts": "Conserver l'historique alertes",
+    "days7": "7 jours",
+    "days30": "30 jours",
+    "days90": "90 jours",
+    "days180": "180 jours",
+    "days365": "1 an",
+    "unlimited": "Illimité",
+    "unlimitedWarning": "⚠️ Sans limite de rétention, la base de données peut grossir indéfiniment et dégrader les performances. Nous recommandons au minimum 90 jours.",
+    "retentionSave": "Sauvegarder",
+    "retentionSaved": "Sauvegardé !",
+    "actionsTitle": "Actions manuelles",
+    "purgeDescription": "Applique immédiatement la politique de rétention et compresse le fichier DB (VACUUM).",
+    "purgeNow": "Purger maintenant",
+    "purging": "Purge en cours…",
+    "purgeResult": "{{logs}} logs, {{anomalies}} anomalies, {{alerts}} alertes supprimés — DB : {{size}}"
   }
 }

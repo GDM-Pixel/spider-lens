@@ -23,13 +23,14 @@ if (!process.env.ADMIN_PASS || process.env.ADMIN_PASS === 'spider-lens-change-me
   }
 }
 
-import { getDb } from './db/database.js'
+import { getDb, startRetentionCron } from './db/database.js'
 import authRoutes from './routes/auth.js'
 import statsRoutes from './routes/stats.js'
 import alertRoutes from './routes/alerts.js'
 import sitesRoutes from './routes/sites.js'
 import networkRoutes from './routes/network.js'
 import blocklistRoutes from './routes/blocklist.js'
+import adminRoutes from './routes/admin.js'
 import { startCron } from './services/cron.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -61,6 +62,7 @@ app.use('/api/alerts', alertRoutes)
 app.use('/api/sites', sitesRoutes)
 app.use('/api/network', networkRoutes)
 app.use('/api/blocklist', blocklistRoutes)
+app.use('/api/admin', adminRoutes)
 
 // ── Sanity check ─────────────────────────────────────────
 app.get('/api/health', (req, res) => res.json({ status: 'ok', version: '0.7.0' }))
@@ -92,6 +94,7 @@ function ensureAdminUser() {
 // ── Démarrage ─────────────────────────────────────────────
 ensureAdminUser()
 startCron()
+startRetentionCron()
 
 app.listen(PORT, () => {
   console.log(`\n🕷️  Spider-Lens v0.7.0 — http://localhost:${PORT}`)

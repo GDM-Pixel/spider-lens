@@ -23,6 +23,15 @@ export default function Settings() {
   const [pwdForm, setPwdForm] = useState({ currentPassword: '', newPassword: '', confirm: '' })
   const [pwdMsg, setPwdMsg] = useState(null)
 
+  // DB management
+  const [dbStats, setDbStats] = useState(null)
+  const [dbStatsLoading, setDbStatsLoading] = useState(false)
+  const [retention, setRetention] = useState({ logs_days: 90, anomalies_days: 90, alerts_days: 90 })
+  const [retentionSaved, setRetentionSaved] = useState(false)
+  const [retentionSaving, setRetentionSaving] = useState(false)
+  const [purging, setPurging] = useState(false)
+  const [purgeResult, setPurgeResult] = useState(null)
+
   // Sites management
   const { sites, reloadSites } = useSite()
   const [siteForm, setSiteForm] = useState(EMPTY_SITE_FORM)
@@ -32,7 +41,55 @@ export default function Settings() {
 
   useEffect(() => {
     api.get('/alerts/config').then(r => setConfig(r.data)).finally(() => setLoading(false))
+    loadDbStats()
   }, [])
+
+  async function loadDbStats() {
+    setDbStatsLoading(true)
+    try {
+      const r = await api.get('/admin/db-stats')
+      setDbStats(r.data)
+      setRetention({
+        logs_days:      r.data.retention.logs_days      ?? '',
+        anomalies_days: r.data.retention.anomalies_days ?? '',
+        alerts_days:    r.data.retention.alerts_days    ?? '',
+      })
+    } catch (e) {
+      console.error('db-stats error', e)
+    } finally {
+      setDbStatsLoading(false)
+    }
+  }
+
+  async function handleSaveRetention() {
+    setRetentionSaving(true)
+    try {
+      const toVal = (v) => v === '' || v === 'null' ? null : parseInt(v, 10)
+      await api.put('/admin/retention', {
+        logs_days:      toVal(retention.logs_days),
+        anomalies_days: toVal(retention.anomalies_days),
+        alerts_days:    toVal(retention.alerts_days),
+      })
+      setRetentionSaved(true)
+      setTimeout(() => setRetentionSaved(false), 3000)
+    } finally {
+      setRetentionSaving(false)
+    }
+  }
+
+  async function handlePurge() {
+    setPurging(true)
+    setPurgeResult(null)
+    try {
+      const r = await api.post('/admin/purge')
+      setPurgeResult(r.data)
+      await loadDbStats()
+    } catch (e) {
+      setPurgeResult({ error: e.message })
+    } finally {
+      setPurging(false)
+    }
+  }
 
   async function handleSave(e) {
     e.preventDefault()
@@ -488,6 +545,155 @@ export default function Settings() {
         {saved ? t('settings.buttonSaved') : t('settings.buttonSave')}
       </button>
 
+      {/* Gestion de la base de données */}
+      <div className="bg-prussian-500 rounded-xl border border-prussian-400 p-6 flex flex-col gap-6">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-prussian-400 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-prussian-400 flex items-center justify-center">
+              <Icon icon="ph:database" className="text-moonstone-400 text-base" />
+            </div>
+            <h3 className="text-white font-bold text-sm">{t('dbAdmin.sectionTitle')}</h3>
+          </div>
+          <button
+            type="button"
+            onClick={loadDbStats}
+            disabled={dbStatsLoading}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-prussian-400 hover:bg-prussian-300 border border-prussian-300 rounded-lg text-xs text-lightgrey transition-colors disabled:opacity-60"
+          >
+            <Icon icon={dbStatsLoading ? 'ph:circle-notch' : 'ph:arrow-clockwise'} className={`text-sm ${dbStatsLoading ? 'animate-spin' : ''}`} />
+            {t('dbAdmin.refresh')}
+          </button>
+        </div>
+
+        {/* Bloc 1 — Stats */}
+        {dbStats ? (
+          <div className="flex flex-col gap-3">
+            <p className="text-xs font-semibold text-errorgrey uppercase tracking-wide">{t('dbAdmin.statsTitle')}</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="bg-prussian-700 rounded-lg p-3 flex flex-col gap-1">
+                <span className="text-xs text-errorgrey flex items-center gap-1.5"><Icon icon="ph:hard-drives" className="text-sm" />{t('dbAdmin.fileSize')}</span>
+                <span className="text-white font-bold text-sm">{formatBytes(dbStats.file_size)}</span>
+              </div>
+              <div className="bg-prussian-700 rounded-lg p-3 flex flex-col gap-1">
+                <span className="text-xs text-errorgrey flex items-center gap-1.5"><Icon icon="ph:rows" className="text-sm" />{t('dbAdmin.logEntries')}</span>
+                <span className="text-white font-bold text-sm">{dbStats.rows.log_entries.toLocaleString('fr-FR')}</span>
+              </div>
+              <div className="bg-prussian-700 rounded-lg p-3 flex flex-col gap-1">
+                <span className="text-xs text-errorgrey flex items-center gap-1.5"><Icon icon="ph:warning-diamond" className="text-sm" />{t('dbAdmin.anomalies')}</span>
+                <span className="text-white font-bold text-sm">{dbStats.rows.anomalies.toLocaleString('fr-FR')}</span>
+              </div>
+              <div className="bg-prussian-700 rounded-lg p-3 flex flex-col gap-1">
+                <span className="text-xs text-errorgrey flex items-center gap-1.5"><Icon icon="ph:bell-ringing" className="text-sm" />{t('dbAdmin.alertHistory')}</span>
+                <span className="text-white font-bold text-sm">{dbStats.rows.alert_history.toLocaleString('fr-FR')}</span>
+              </div>
+            </div>
+            {dbStats.log_range.oldest && (
+              <p className="text-xs text-errorgrey">
+                {t('dbAdmin.logRange')} : <span className="text-lightgrey">{new Date(dbStats.log_range.oldest).toLocaleDateString('fr-FR')}</span>
+                {' → '}
+                <span className="text-lightgrey">{new Date(dbStats.log_range.newest).toLocaleDateString('fr-FR')}</span>
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="h-20 flex items-center justify-center">
+            <div className="w-5 h-5 border-2 border-moonstone-400 border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+
+        {/* Bloc 2 — Politique de rétention */}
+        <div className="flex flex-col gap-3 pt-4 border-t border-prussian-400">
+          <p className="text-xs font-semibold text-errorgrey uppercase tracking-wide">{t('dbAdmin.retentionTitle')}</p>
+
+          {/* Avertissement illimité */}
+          {(retention.logs_days === '' || retention.anomalies_days === '' || retention.alerts_days === '') && (
+            <div className="flex items-start gap-2.5 bg-amber-900/30 border border-amber-500/40 rounded-lg p-3">
+              <Icon icon="ph:warning" className="text-amber-400 text-base mt-0.5 shrink-0" />
+              <p className="text-xs text-amber-300">{t('dbAdmin.unlimitedWarning')}</p>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <RetentionSelect
+              label={t('dbAdmin.retentionLogs')}
+              icon="ph:rows"
+              value={retention.logs_days}
+              onChange={v => setRetention(r => ({ ...r, logs_days: v }))}
+              t={t}
+            />
+            <RetentionSelect
+              label={t('dbAdmin.retentionAnomalies')}
+              icon="ph:warning-diamond"
+              value={retention.anomalies_days}
+              onChange={v => setRetention(r => ({ ...r, anomalies_days: v }))}
+              t={t}
+            />
+            <RetentionSelect
+              label={t('dbAdmin.retentionAlerts')}
+              icon="ph:bell-ringing"
+              value={retention.alerts_days}
+              onChange={v => setRetention(r => ({ ...r, alerts_days: v }))}
+              t={t}
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={handleSaveRetention}
+            disabled={retentionSaving}
+            className="btn-blue px-5 py-2 text-sm w-fit flex items-center gap-2 disabled:opacity-60"
+          >
+            {retentionSaving ? (
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Icon icon="ph:floppy-disk" className="text-base" />
+            )}
+            {retentionSaved ? t('dbAdmin.retentionSaved') : t('dbAdmin.retentionSave')}
+          </button>
+        </div>
+
+        {/* Bloc 3 — Actions manuelles */}
+        <div className="flex flex-col gap-3 pt-4 border-t border-prussian-400">
+          <p className="text-xs font-semibold text-errorgrey uppercase tracking-wide">{t('dbAdmin.actionsTitle')}</p>
+          <p className="text-xs text-errorgrey">{t('dbAdmin.purgeDescription')}</p>
+          <div className="flex items-center gap-3 flex-wrap">
+            <button
+              type="button"
+              onClick={handlePurge}
+              disabled={purging}
+              className="flex items-center gap-2 px-4 py-2 bg-dustyred-700 hover:bg-dustyred-600 border border-dustyred-500 rounded-lg text-sm text-white font-semibold transition-colors disabled:opacity-60"
+            >
+              {purging ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Icon icon="ph:trash" className="text-base" />
+              )}
+              {purging ? t('dbAdmin.purging') : t('dbAdmin.purgeNow')}
+            </button>
+            {purgeResult && !purgeResult.error && (
+              <div className="text-xs text-emerald-400 flex items-center gap-1.5">
+                <Icon icon="ph:check-circle" className="text-sm" />
+                <span>
+                  {t('dbAdmin.purgeResult', {
+                    logs: purgeResult.deleted.logs,
+                    anomalies: purgeResult.deleted.anomalies,
+                    alerts: purgeResult.deleted.alerts,
+                    size: formatBytes(purgeResult.file_size),
+                  })}
+                </span>
+              </div>
+            )}
+            {purgeResult?.error && (
+              <span className="text-xs text-dustyred-400 flex items-center gap-1.5">
+                <Icon icon="ph:x-circle" className="text-sm" />
+                {purgeResult.error}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Changement de mot de passe */}
       <form onSubmit={handleChangePassword} className="bg-prussian-500 rounded-xl border border-prussian-400 p-6 flex flex-col gap-4">
         <div className="flex items-center gap-3 border-b border-prussian-400 pb-4">
@@ -512,6 +718,42 @@ export default function Settings() {
           {t('settings.buttonChangePassword')}
         </button>
       </form>
+    </div>
+  )
+}
+
+function formatBytes(bytes) {
+  if (!bytes) return '0 B'
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`
+}
+
+const RETENTION_OPTIONS = [
+  { value: '7',   labelKey: 'dbAdmin.days7' },
+  { value: '30',  labelKey: 'dbAdmin.days30' },
+  { value: '90',  labelKey: 'dbAdmin.days90' },
+  { value: '180', labelKey: 'dbAdmin.days180' },
+  { value: '365', labelKey: 'dbAdmin.days365' },
+  { value: '',    labelKey: 'dbAdmin.unlimited' },
+]
+
+function RetentionSelect({ label, icon, value, onChange, t }) {
+  return (
+    <div>
+      <label className="text-lightgrey text-xs font-semibold flex items-center gap-1.5 mb-1.5">
+        <Icon icon={icon} className="text-sm" />{label}
+      </label>
+      <select
+        value={value === null ? '' : value}
+        onChange={e => onChange(e.target.value)}
+        className="w-full bg-prussian-600 border border-prussian-400 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-moonstone-500 transition-colors"
+      >
+        {RETENTION_OPTIONS.map(o => (
+          <option key={o.value} value={o.value}>{t(o.labelKey)}</option>
+        ))}
+      </select>
     </div>
   )
 }

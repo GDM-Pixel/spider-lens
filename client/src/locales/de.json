@@ -412,5 +412,33 @@
     "passwordMismatch": "Passwörter stimmen nicht überein",
     "passwordSuccess": "Passwort erfolgreich geändert",
     "confirmDeleteSite": "Diese Website löschen? Zugehörige Log-Daten werden beibehalten."
+  },
+  "dbAdmin": {
+    "sectionTitle": "Datenbankverwaltung",
+    "refresh": "Aktualisieren",
+    "statsTitle": "Datenbankstatus",
+    "fileSize": "Dateigröße",
+    "logEntries": "Log-Einträge",
+    "anomalies": "Anomalien",
+    "alertHistory": "Alarmverlauf",
+    "logRange": "Log-Zeitraum",
+    "retentionTitle": "Aufbewahrungsrichtlinie",
+    "retentionLogs": "Logs aufbewahren für",
+    "retentionAnomalies": "Anomalien aufbewahren für",
+    "retentionAlerts": "Alarmverlauf aufbewahren für",
+    "days7": "7 Tage",
+    "days30": "30 Tage",
+    "days90": "90 Tage",
+    "days180": "180 Tage",
+    "days365": "1 Jahr",
+    "unlimited": "Unbegrenzt",
+    "unlimitedWarning": "⚠️ Ohne Aufbewahrungslimit kann die Datenbank unbegrenzt wachsen und die Leistung beeinträchtigen. Wir empfehlen mindestens 90 Tage.",
+    "retentionSave": "Speichern",
+    "retentionSaved": "Gespeichert!",
+    "actionsTitle": "Manuelle Aktionen",
+    "purgeDescription": "Wendet die Aufbewahrungsrichtlinie sofort an und komprimiert die DB-Datei (VACUUM).",
+    "purgeNow": "Jetzt bereinigen",
+    "purging": "Bereinigung läuft…",
+    "purgeResult": "{{logs}} Logs, {{anomalies}} Anomalien, {{alerts}} Alarme gelöscht — DB: {{size}}"
   }
 }

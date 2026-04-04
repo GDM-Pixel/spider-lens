@@ -412,5 +412,33 @@
     "passwordMismatch": "Passwords do not match",
     "passwordSuccess": "Password changed successfully",
     "confirmDeleteSite": "Delete this site? Associated log data will be kept."
+  },
+  "dbAdmin": {
+    "sectionTitle": "Database Management",
+    "refresh": "Refresh",
+    "statsTitle": "Database Status",
+    "fileSize": "File size",
+    "logEntries": "Log entries",
+    "anomalies": "Anomalies",
+    "alertHistory": "Alert history",
+    "logRange": "Log range",
+    "retentionTitle": "Retention Policy",
+    "retentionLogs": "Keep logs for",
+    "retentionAnomalies": "Keep anomalies for",
+    "retentionAlerts": "Keep alert history for",
+    "days7": "7 days",
+    "days30": "30 days",
+    "days90": "90 days",
+    "days180": "180 days",
+    "days365": "1 year",
+    "unlimited": "Unlimited",
+    "unlimitedWarning": "⚠️ Without a retention limit, the database can grow indefinitely and degrade performance. We recommend at least 90 days.",
+    "retentionSave": "Save",
+    "retentionSaved": "Saved!",
+    "actionsTitle": "Manual Actions",
+    "purgeDescription": "Immediately applies the retention policy and compresses the DB file (VACUUM).",
+    "purgeNow": "Purge now",
+    "purging": "Purging…",
+    "purgeResult": "{{logs}} logs, {{anomalies}} anomalies, {{alerts}} alerts deleted — DB: {{size}}"
   }
 }
