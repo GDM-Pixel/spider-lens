@@ -15,6 +15,7 @@ const NAV_ITEMS = [
   { labelKey: 'nav.network',        icon: 'ph:network',               path: '/network' },
   { labelKey: 'nav.anomalies',      icon: 'ph:warning-diamond',       path: '/anomalies' },
   { labelKey: 'nav.blocklist',      icon: 'ph:prohibit',              path: '/blocklist' },
+  { labelKey: 'nav.crawler',        icon: 'ph:magnifying-glass-plus', path: '/crawler' },
   { labelKey: 'nav.settings',       icon: 'ph:gear-six',              path: '/settings' },
 ]
 

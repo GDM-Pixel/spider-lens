@@ -10,6 +10,7 @@ class Cron {
         add_action('spider_lens_detect_anomalies',  [self::class, 'detect_anomalies']);
         add_action('spider_lens_weekly_report',     [self::class, 'send_weekly_report']);
         add_action('spider_lens_purge_old_hits',    [self::class, 'purge_old_hits']);
+        add_action('spider_lens_crawl_batch',       [Crawler::class, 'process_batch']);
 
         // Enregistrer l'intervalle "every_minute" si inexistant
         add_filter('cron_schedules', [self::class, 'add_schedules']);
@@ -47,6 +48,7 @@ class Cron {
             $ts = wp_next_scheduled($hook);
             if ($ts) wp_unschedule_event($ts, $hook);
         }
+        wp_clear_scheduled_hook('spider_lens_crawl_batch');
     }
 
     // ── Purge ─────────────────────────────────────────────

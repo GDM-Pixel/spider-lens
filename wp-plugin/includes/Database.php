@@ -5,7 +5,7 @@ defined('ABSPATH') || exit;
 
 class Database {
 
-    const DB_VERSION = '1.0';
+    const DB_VERSION = '1.1';
     const DB_VERSION_OPTION = 'spider_lens_db_version';
 
     public static function install(): void {
@@ -62,9 +62,51 @@ class Database {
             UNIQUE KEY uq_ip (ip)
         ) $charset;";
 
+        // Table sitemaps du crawler
+        $sql_sitemaps = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}spiderlens_sitemaps (
+            id         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            url        TEXT            NOT NULL,
+            created_at DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id)
+        ) $charset;";
+
+        // Table historique des crawls
+        $sql_crawl_runs = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}spiderlens_crawl_runs (
+            id            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            status        VARCHAR(20)     NOT NULL DEFAULT 'idle',
+            pages_found   INT             NOT NULL DEFAULT 0,
+            pages_crawled INT             NOT NULL DEFAULT 0,
+            started_at    DATETIME        DEFAULT NULL,
+            finished_at   DATETIME        DEFAULT NULL,
+            error         TEXT            DEFAULT NULL,
+            PRIMARY KEY (id),
+            KEY idx_status (status)
+        ) $charset;";
+
+        // Table pages crawlées (dernier crawl uniquement)
+        $sql_crawl_pages = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}spiderlens_crawl_pages (
+            id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            url         TEXT            NOT NULL,
+            status_code INT             DEFAULT NULL,
+            title       TEXT            DEFAULT NULL,
+            h1          TEXT            DEFAULT NULL,
+            word_count  INT             NOT NULL DEFAULT 0,
+            canonical   TEXT            DEFAULT NULL,
+            meta_robots VARCHAR(100)    DEFAULT NULL,
+            depth       INT             NOT NULL DEFAULT 0,
+            source      VARCHAR(20)     NOT NULL DEFAULT 'sitemap',
+            crawled_at  DATETIME        DEFAULT NULL,
+            error       TEXT            DEFAULT NULL,
+            PRIMARY KEY (id),
+            KEY idx_url (url(255))
+        ) $charset;";
+
         dbDelta($sql_hits);
         dbDelta($sql_anomalies);
         dbDelta($sql_blocklist);
+        dbDelta($sql_sitemaps);
+        dbDelta($sql_crawl_runs);
+        dbDelta($sql_crawl_pages);
 
         update_option(self::DB_VERSION_OPTION, self::DB_VERSION);
     }
@@ -81,12 +123,18 @@ class Database {
         $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}spiderlens_hits");
         $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}spiderlens_anomalies");
         $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}spiderlens_blocklist");
+        $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}spiderlens_sitemaps");
+        $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}spiderlens_crawl_runs");
+        $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}spiderlens_crawl_pages");
         delete_option(self::DB_VERSION_OPTION);
         delete_option('spider_lens_settings');
+        delete_option('spider_lens_crawl_queue');
+        delete_option('spider_lens_crawl_seen');
         wp_clear_scheduled_hook('spider_lens_flush_buffer');
         wp_clear_scheduled_hook('spider_lens_detect_anomalies');
         wp_clear_scheduled_hook('spider_lens_weekly_report');
         wp_clear_scheduled_hook('spider_lens_purge_old_hits');
+        wp_clear_scheduled_hook('spider_lens_crawl_batch');
     }
 
     /**

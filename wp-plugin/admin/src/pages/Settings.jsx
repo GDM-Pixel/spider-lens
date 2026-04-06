@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Icon } from '@iconify/react'
 import { useTranslation } from 'react-i18next'
+import dayjs from 'dayjs'
 import api from '../api/client'
 import BeginnerBanner from '../components/ui/BeginnerBanner'
 
@@ -26,6 +27,16 @@ export default function Settings() {
   const [testingWebhook, setTestingWebhook] = useState(false)
   const [flushing, setFlushing] = useState(false)
 
+  // Crawler state
+  const [sitemaps, setSitemaps]         = useState([])
+  const [newSitemap, setNewSitemap]     = useState('')
+  const [addingSitemap, setAddingSitemap] = useState(false)
+  const [crawlStatus, setCrawlStatus]   = useState(null)
+  const [startingCrawl, setStartingCrawl] = useState(false)
+  const [cancellingCrawl, setCancellingCrawl] = useState(false)
+  const crawlPollRef = useRef(null)
+  const isRunning = crawlStatus?.status === 'running'
+
   useEffect(() => {
     api
       .get('/settings')
@@ -35,6 +46,74 @@ export default function Settings() {
       .catch(err => console.error('Erreur chargement settings:', err))
       .finally(() => setLoading(false))
   }, [])
+
+  // Charger sitemaps + statut crawl
+  useEffect(() => {
+    api.get('/crawler/sitemaps').then(r => setSitemaps(r.data || [])).catch(() => {})
+    api.get('/crawler/status').then(r => setCrawlStatus(r.data)).catch(() => {})
+  }, [])
+
+  // Polling si crawl en cours
+  useEffect(() => {
+    if (isRunning) {
+      crawlPollRef.current = setInterval(() => {
+        api.get('/crawler/status').then(r => {
+          setCrawlStatus(r.data)
+          if (r.data.status !== 'running') clearInterval(crawlPollRef.current)
+        }).catch(() => {})
+      }, 3000)
+    } else {
+      clearInterval(crawlPollRef.current)
+    }
+    return () => clearInterval(crawlPollRef.current)
+  }, [isRunning])
+
+  const handleAddSitemap = async () => {
+    if (!newSitemap.trim()) return
+    setAddingSitemap(true)
+    try {
+      const r = await api.post('/crawler/sitemaps', { url: newSitemap.trim() })
+      setSitemaps(prev => [...prev, r.data])
+      setNewSitemap('')
+    } catch (err) {
+      console.error('Erreur ajout sitemap:', err)
+    } finally {
+      setAddingSitemap(false)
+    }
+  }
+
+  const handleDeleteSitemap = async (id) => {
+    try {
+      await api.delete(`/crawler/sitemaps/${id}`)
+      setSitemaps(prev => prev.filter(s => s.id !== id))
+    } catch (err) {
+      console.error('Erreur suppression sitemap:', err)
+    }
+  }
+
+  const handleStartCrawl = async () => {
+    setStartingCrawl(true)
+    try {
+      await api.post('/crawler/start')
+      setCrawlStatus({ status: 'running', pagesFound: 0, pagesCrawled: 0 })
+    } catch (err) {
+      console.error('Erreur démarrage crawl:', err)
+    } finally {
+      setStartingCrawl(false)
+    }
+  }
+
+  const handleCancelCrawl = async () => {
+    setCancellingCrawl(true)
+    try {
+      await api.post('/crawler/cancel')
+      setCrawlStatus(prev => ({ ...prev, status: 'cancelled' }))
+    } catch (err) {
+      console.error('Erreur annulation crawl:', err)
+    } finally {
+      setCancellingCrawl(false)
+    }
+  }
 
   const handleChange = (key, value) => {
     setSettings(prev => ({
@@ -323,6 +402,96 @@ export default function Settings() {
               {testingWebhook ? 'Test...' : 'Tester'}
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* Section Crawler SEO */}
+      <div className="bg-prussian-500 rounded-xl border border-prussian-400 p-5">
+        <h3 className="text-white font-bold text-sm mb-4 flex items-center gap-2">
+          <Icon icon="ph:magnifying-glass-plus" className="text-lg" />
+          {t('settings.sectionCrawler')}
+        </h3>
+        <p className="text-errorgrey text-xs mb-4">{t('settings.sectionCrawlerDesc')}</p>
+
+        {/* Sitemaps */}
+        <div className="flex flex-col gap-3 mb-4">
+          <p className="text-errorgrey text-xs uppercase font-semibold tracking-wide">{t('settings.sitemaps')}</p>
+          {sitemaps.length === 0 ? (
+            <p className="text-lightgrey text-xs italic">{t('settings.noSitemapsYet')}</p>
+          ) : (
+            <ul className="flex flex-col gap-1.5">
+              {sitemaps.map(s => (
+                <li key={s.id} className="flex items-center gap-2 bg-prussian-700 rounded-lg px-3 py-2">
+                  <Icon icon="ph:link" className="text-moonstone-400 text-sm shrink-0" />
+                  <span className="text-white text-xs font-mono flex-1 truncate" title={s.url}>{s.url}</span>
+                  <button
+                    onClick={() => handleDeleteSitemap(s.id)}
+                    className="text-errorgrey hover:text-dustyred-400 transition-colors"
+                    title="Supprimer"
+                  >
+                    <Icon icon="ph:trash" className="text-sm" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="flex gap-2 mt-1">
+            <input
+              type="url"
+              value={newSitemap}
+              onChange={e => setNewSitemap(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleAddSitemap()}
+              placeholder={t('settings.sitemapPlaceholder')}
+              className="flex-1 bg-prussian-700 border border-prussian-500 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-moonstone-400"
+            />
+            <button
+              onClick={handleAddSitemap}
+              disabled={addingSitemap || !newSitemap.trim()}
+              className="px-4 py-2 bg-moonstone-400 text-prussian-700 font-bold rounded-lg hover:bg-moonstone-300 transition-colors text-sm disabled:opacity-50"
+            >
+              {t('settings.addSitemap')}
+            </button>
+          </div>
+        </div>
+
+        {/* Contrôles crawl */}
+        <div className="pt-3 border-t border-prussian-400 flex flex-wrap items-center gap-3">
+          {isRunning ? (
+            <>
+              <div className="flex items-center gap-2 flex-1">
+                <div className="w-2.5 h-2.5 rounded-full bg-moonstone-400 animate-pulse" />
+                <span className="text-white font-semibold text-sm">{t('settings.crawlRunning')}</span>
+                <span className="text-errorgrey text-xs">
+                  {crawlStatus?.pagesCrawled ?? 0} / {crawlStatus?.pagesFound ?? 0} {t('settings.crawlPages')}
+                </span>
+              </div>
+              <button
+                onClick={handleCancelCrawl}
+                disabled={cancellingCrawl}
+                className="flex items-center gap-2 px-4 py-2 bg-dustyred-400 text-white font-bold rounded-lg hover:bg-dustyred-300 transition-colors text-sm disabled:opacity-50"
+              >
+                <Icon icon="ph:x" className="text-sm" />
+                {t('settings.cancelCrawl')}
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="flex-1 text-errorgrey text-xs">
+                {crawlStatus?.status === 'completed' && crawlStatus?.finishedAt
+                  ? `${t('settings.lastCrawl')} : ${dayjs(crawlStatus.finishedAt).format('DD/MM/YYYY HH:mm')} — ${crawlStatus.pagesCrawled} pages`
+                  : t('settings.noCrawlYet')
+                }
+              </div>
+              <button
+                onClick={handleStartCrawl}
+                disabled={startingCrawl || sitemaps.length === 0}
+                className="flex items-center gap-2 px-4 py-2 bg-moonstone-400 text-prussian-700 font-bold rounded-lg hover:bg-moonstone-300 transition-colors text-sm disabled:opacity-50"
+              >
+                <Icon icon="ph:play" className="text-sm" />
+                {startingCrawl ? '...' : t('settings.launchCrawl')}
+              </button>
+            </>
+          )}
         </div>
       </div>
 

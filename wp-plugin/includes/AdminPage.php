@@ -33,6 +33,7 @@ class AdminPage {
             'network'    => __('Réseau', 'spider-lens'),
             'anomalies'  => __('Anomalies', 'spider-lens'),
             'blocklist'  => __('Blocklist', 'spider-lens'),
+            'crawler'    => __('Crawler', 'spider-lens'),
             'settings'   => __('Paramètres', 'spider-lens'),
         ];
 

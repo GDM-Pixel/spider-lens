@@ -58,6 +58,17 @@ class RestApi {
         register_rest_route($ns, '/stats/ttfb/export',       ['methods' => 'GET', 'callback' => [self::class, 'export_ttfb'],       'permission_callback' => [self::class, 'check_permission']]);
         register_rest_route($ns, '/network/ips/export',      ['methods' => 'GET', 'callback' => [self::class, 'export_ips'],        'permission_callback' => [self::class, 'check_permission']]);
         register_rest_route($ns, '/network/user-agents/export', ['methods' => 'GET', 'callback' => [self::class, 'export_user_agents'], 'permission_callback' => [self::class, 'check_permission']]);
+
+        // Crawler SEO on-page
+        register_rest_route($ns, '/crawler/sitemaps',                      ['methods' => 'GET',    'callback' => [self::class, 'get_sitemaps'],     'permission_callback' => [self::class, 'check_permission']]);
+        register_rest_route($ns, '/crawler/sitemaps',                      ['methods' => 'POST',   'callback' => [self::class, 'add_sitemap'],      'permission_callback' => [self::class, 'check_permission']]);
+        register_rest_route($ns, '/crawler/sitemaps/(?P<id>\d+)',          ['methods' => 'DELETE', 'callback' => [self::class, 'delete_sitemap'],   'permission_callback' => [self::class, 'check_permission']]);
+        register_rest_route($ns, '/crawler/start',                         ['methods' => 'POST',   'callback' => [self::class, 'start_crawl'],      'permission_callback' => [self::class, 'check_permission']]);
+        register_rest_route($ns, '/crawler/cancel',                        ['methods' => 'POST',   'callback' => [self::class, 'cancel_crawl'],     'permission_callback' => [self::class, 'check_permission']]);
+        register_rest_route($ns, '/crawler/status',                        ['methods' => 'GET',    'callback' => [self::class, 'get_crawl_status'], 'permission_callback' => [self::class, 'check_permission']]);
+        register_rest_route($ns, '/crawler/runs',                          ['methods' => 'GET',    'callback' => [self::class, 'get_crawl_runs'],   'permission_callback' => [self::class, 'check_permission']]);
+        register_rest_route($ns, '/crawler/pages',                         ['methods' => 'GET',    'callback' => [self::class, 'get_crawl_pages'],  'permission_callback' => [self::class, 'check_permission']]);
+        register_rest_route($ns, '/crawler/summary',                       ['methods' => 'GET',    'callback' => [self::class, 'get_crawl_summary'], 'permission_callback' => [self::class, 'check_permission']]);
     }
 
     public static function check_permission(): bool {
@@ -778,5 +789,90 @@ class RestApi {
         }
 
         return rest_ensure_response(['success' => false, 'message' => "Webhook returned HTTP $code"]);
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // Crawler SEO on-page
+    // ══════════════════════════════════════════════════════════════
+
+    public static function get_sitemaps(\WP_REST_Request $req): \WP_REST_Response {
+        global $wpdb;
+        $rows = $wpdb->get_results(
+            "SELECT id, url, created_at FROM {$wpdb->prefix}spiderlens_sitemaps ORDER BY id ASC",
+            ARRAY_A
+        );
+        return rest_ensure_response($rows ?: []);
+    }
+
+    public static function add_sitemap(\WP_REST_Request $req): \WP_REST_Response|\WP_Error {
+        global $wpdb;
+        $url = sanitize_url(trim($req->get_param('url') ?? ''));
+
+        if (empty($url) || !filter_var($url, FILTER_VALIDATE_URL)) {
+            return new \WP_Error('invalid_url', 'URL invalide.', ['status' => 400]);
+        }
+
+        $wpdb->insert(
+            "{$wpdb->prefix}spiderlens_sitemaps",
+            ['url' => $url, 'created_at' => current_time('mysql')]
+        );
+
+        if ($wpdb->last_error) {
+            return new \WP_Error('db_error', 'Erreur lors de l\'ajout.', ['status' => 500]);
+        }
+
+        return rest_ensure_response([
+            'id'         => (int) $wpdb->insert_id,
+            'url'        => $url,
+            'created_at' => current_time('mysql'),
+        ]);
+    }
+
+    public static function delete_sitemap(\WP_REST_Request $req): \WP_REST_Response|\WP_Error {
+        global $wpdb;
+        $id = (int) $req->get_param('id');
+        $deleted = $wpdb->delete("{$wpdb->prefix}spiderlens_sitemaps", ['id' => $id]);
+
+        if (!$deleted) {
+            return new \WP_Error('not_found', 'Sitemap introuvable.', ['status' => 404]);
+        }
+
+        return rest_ensure_response(['success' => true]);
+    }
+
+    public static function start_crawl(\WP_REST_Request $req): \WP_REST_Response|\WP_Error {
+        $result = Crawler::start_crawl();
+
+        if (is_wp_error($result)) {
+            return new \WP_Error($result->get_error_code(), $result->get_error_message(), ['status' => 409]);
+        }
+
+        return rest_ensure_response(['runId' => $result, 'status' => 'running']);
+    }
+
+    public static function cancel_crawl(\WP_REST_Request $req): \WP_REST_Response {
+        Crawler::cancel_crawl();
+        return rest_ensure_response(['success' => true]);
+    }
+
+    public static function get_crawl_status(\WP_REST_Request $req): \WP_REST_Response {
+        return rest_ensure_response(Crawler::get_status());
+    }
+
+    public static function get_crawl_runs(\WP_REST_Request $req): \WP_REST_Response {
+        return rest_ensure_response(Crawler::get_runs());
+    }
+
+    public static function get_crawl_pages(\WP_REST_Request $req): \WP_REST_Response {
+        $filter = sanitize_text_field($req->get_param('filter') ?? '');
+        $limit  = max(1, min(200, (int) ($req->get_param('limit') ?? 50)));
+        $page   = max(1, (int) ($req->get_param('page') ?? 1));
+        $offset = ($page - 1) * $limit;
+
+        return rest_ensure_response(Crawler::get_pages($filter, $limit, $offset));
+    }
+
+    public static function get_crawl_summary(\WP_REST_Request $req): \WP_REST_Response {
+        return rest_ensure_response(Crawler::get_summary());
     }
 }
