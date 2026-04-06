@@ -7,6 +7,7 @@ import { usePersistentRange } from '../hooks/usePersistentRange'
 import BeginnerBanner from '../components/ui/BeginnerBanner'
 import api from '../api/client'
 import dayjs from 'dayjs'
+import { usePageContext } from '../hooks/usePageContext'
 
 const BOT_COLORS = ['#00c6e0', '#d62246', '#8b5cf6', '#f59e0b', '#10b981', '#6366f1', '#ec4899', '#06b6d4']
 
@@ -14,6 +15,14 @@ export default function Bots() {
   const { t } = useTranslation()
   const [range, setRange] = usePersistentRange('bots')
   const [data, setData] = useState([])
+
+  usePageContext(() =>
+    api.get('/stats/bots', { params: range }).then(r => ({
+      page:  'Bots',
+      range,
+      bots:  r.data?.slice(0, 20),
+    }))
+  )
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {

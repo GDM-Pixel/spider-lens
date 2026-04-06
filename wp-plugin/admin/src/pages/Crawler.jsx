@@ -5,6 +5,7 @@ import dayjs from 'dayjs'
 import clsx from 'clsx'
 import api from '../api/client'
 import BeginnerBanner from '../components/ui/BeginnerBanner'
+import { usePageContext } from '../hooks/usePageContext'
 
 const PAGE_SIZE = 50
 
@@ -56,6 +57,17 @@ function KPICard({ label, value, icon, color = 'moonstone', info }) {
 
 export default function Crawler() {
   const { t } = useTranslation()
+
+  usePageContext(() =>
+    Promise.all([
+      api.get('/crawler/summary'),
+      api.get('/crawler/status'),
+    ]).then(([sum, status]) => ({
+      page:    'Crawler SEO',
+      summary: sum.data,
+      status:  status.data,
+    }))
+  )
 
   const [summary, setSummary]             = useState(null)
   const [pages, setPages]                 = useState([])

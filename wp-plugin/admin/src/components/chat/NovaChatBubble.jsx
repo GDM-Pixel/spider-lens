@@ -118,7 +118,7 @@ export default function NovaChatBubble() {
     setInput('')
     setSending(true)
 
-    const pageContext = getPageContext()
+    const pageContext = await getPageContext()
     addMessage('user', text)
     addMessage('assistant', '', { streaming: true })
 

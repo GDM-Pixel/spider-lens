@@ -7,11 +7,24 @@ import BeginnerBanner from '../components/ui/BeginnerBanner'
 import api from '../api/client'
 import dayjs from 'dayjs'
 import clsx from 'clsx'
+import { usePageContext } from '../hooks/usePageContext'
 
 export default function TopPages() {
   const { t } = useTranslation()
   const [range, setRange] = usePersistentRange('top-pages')
   const [activeTab, setActiveTab] = useState('top-pages')
+
+  usePageContext(() =>
+    Promise.all([
+      api.get('/stats/top-pages', { params: { ...range, limit: 20 } }),
+      api.get('/stats/top-404',   { params: { ...range, limit: 10 } }),
+    ]).then(([pages, top404]) => ({
+      page:     'Top Pages',
+      range,
+      topPages: pages.data?.slice(0, 20),
+      top404:   top404.data?.slice(0, 10),
+    }))
+  )
   const [data, setData] = useState([])
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(false)

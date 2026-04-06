@@ -8,11 +8,21 @@ import { usePersistentRange } from '../hooks/usePersistentRange'
 import BeginnerBanner from '../components/ui/BeginnerBanner'
 import api from '../api/client'
 import dayjs from 'dayjs'
+import { usePageContext } from '../hooks/usePageContext'
 
 export default function TTFB() {
   const { t } = useTranslation()
   const [range, setRange] = usePersistentRange('ttfb')
   const [data, setData] = useState([])
+
+  usePageContext(() =>
+    api.get('/stats/ttfb', { params: range }).then(r => {
+      const rows = r.data || []
+      const avg  = rows.length ? (rows.reduce((s, d) => s + parseFloat(d.avg_ttfb || 0), 0) / rows.length).toFixed(0) : null
+      const slow = rows.filter(d => parseFloat(d.avg_ttfb) > 800).slice(0, 5)
+      return { page: 'TTFB', range, avgTtfb: avg, slowPages: slow, totalRows: rows.length }
+    })
+  )
   const [stats, setStats] = useState({})
   const [loading, setLoading] = useState(false)
   const [exporting, setExporting] = useState(false)

@@ -3,6 +3,8 @@ import { Icon } from '@iconify/react'
 import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
 import BeginnerBanner from '../components/ui/BeginnerBanner'
+import api from '../api/client'
+import { usePageContext } from '../hooks/usePageContext'
 
 const LIMIT = 50
 
@@ -10,6 +12,14 @@ export default function Blocklist() {
   const { t } = useTranslation()
   const [data, setData] = useState([])
   const [search, setSearch] = useState('')
+
+  usePageContext(() =>
+    api.get('/blocklist', { params: { limit: 50 } }).then(r => ({
+      page:      'Blocklist',
+      blocklist: r.data?.slice(0, 50),
+      total:     r.data?.length,
+    }))
+  )
   const [offset, setOffset] = useState(0)
   const [loading, setLoading] = useState(false)
 

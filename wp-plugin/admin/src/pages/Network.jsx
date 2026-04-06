@@ -7,6 +7,7 @@ import BeginnerBanner from '../components/ui/BeginnerBanner'
 import api from '../api/client'
 import dayjs from 'dayjs'
 import clsx from 'clsx'
+import { usePageContext } from '../hooks/usePageContext'
 
 const LIMIT = 50
 
@@ -14,6 +15,14 @@ export default function Network() {
   const { t } = useTranslation()
   const [range, setRange] = usePersistentRange('network')
   const [activeTab, setActiveTab] = useState('ips')
+
+  usePageContext(() =>
+    api.get('/network/ips', { params: { ...range, limit: 20 } }).then(r => ({
+      page:  'Network',
+      range,
+      topIps: r.data?.slice(0, 20),
+    }))
+  )
 
   return (
     <div className="flex flex-col gap-6">

@@ -10,6 +10,7 @@ import { usePersistentRange } from '../hooks/usePersistentRange'
 import BeginnerBanner from '../components/ui/BeginnerBanner'
 import api from '../api/client'
 import dayjs from 'dayjs'
+import { usePageContext } from '../hooks/usePageContext'
 
 const BOT_COLORS = ['#00c6e0', '#d62246', '#8b5cf6', '#f59e0b', '#10b981', '#6366f1']
 
@@ -17,6 +18,20 @@ export default function Dashboard() {
   const { t } = useTranslation()
   const [range, setRange]                 = usePersistentRange('dashboard')
   const [overview, setOverview]           = useState(null)
+
+  usePageContext(() =>
+    Promise.all([
+      api.get('/stats/overview',   { params: range }),
+      api.get('/stats/http-codes', { params: range }),
+      api.get('/stats/bots',       { params: range }),
+    ]).then(([ov, http, bots]) => ({
+      page:        'Dashboard',
+      range,
+      overview:    ov.data,
+      httpCodes:   http.data?.slice(0, 10),
+      topBots:     bots.data?.slice(0, 5),
+    }))
+  )
   const [httpData, setHttpData]           = useState([])
   const [botsData, setBotsData]           = useState([])
   const [recentAnomalies, setAnomalies]   = useState([])

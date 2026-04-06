@@ -11,11 +11,24 @@ import { useSort } from '../hooks/useSort'
 import api from '../api/client'
 import dayjs from 'dayjs'
 import clsx from 'clsx'
+import { usePageContext } from '../hooks/usePageContext'
 
 export default function HttpCodes() {
   const { t } = useTranslation()
   const [range, setRange] = usePersistentRange('http-codes')
   const [overview, setOverview] = useState(null)
+
+  usePageContext(() =>
+    Promise.all([
+      api.get('/stats/http-codes', { params: range }),
+      api.get('/stats/overview',   { params: range }),
+    ]).then(([http, ov]) => ({
+      page:      'HTTP Codes',
+      range,
+      overview:  ov.data,
+      httpCodes: http.data?.slice(0, 20),
+    }))
+  )
   const [httpData, setHttpData] = useState([])
   const [loading, setLoading] = useState(true)
   const [exporting, setExporting] = useState(false)

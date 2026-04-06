@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
 import clsx from 'clsx'
 import BeginnerBanner from '../components/ui/BeginnerBanner'
+import api from '../api/client'
+import { usePageContext } from '../hooks/usePageContext'
 
 const LIMIT = 50
 
@@ -11,6 +13,13 @@ export default function Anomalies() {
   const { t } = useTranslation()
   const [typeFilter, setTypeFilter] = useState('all')
   const [data, setData] = useState([])
+
+  usePageContext(() =>
+    api.get('/anomalies/recent').then(r => ({
+      page:       'Anomalies',
+      anomalies:  r.data?.slice(0, 20),
+    }))
+  )
   const [offset, setOffset] = useState(0)
   const [loading, setLoading] = useState(false)
 

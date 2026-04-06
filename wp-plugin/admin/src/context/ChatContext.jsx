@@ -39,9 +39,13 @@ export function ChatProvider({ children }) {
 
   const clearMessages = () => setMessages([])
 
-  const setPageContext  = (ctx) => { pageContextRef.current = ctx }
-  const clearPageContext = ()   => { pageContextRef.current = null }
-  const getPageContext  = ()    => pageContextRef.current
+  // pageContextRef stocke un fetcher async () => data (lazy — appelé uniquement au sendMessage)
+  const setPageContext   = (fetcher) => { pageContextRef.current = fetcher }
+  const clearPageContext = ()        => { pageContextRef.current = null }
+  const getPageContext   = async ()  => {
+    if (!pageContextRef.current) return null
+    try { return await pageContextRef.current() } catch { return null }
+  }
 
   return (
     <ChatContext.Provider value={{

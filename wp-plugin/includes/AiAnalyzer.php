@@ -351,13 +351,17 @@ PROMPT;
         $summary_json = wp_json_encode($summary, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         $ctx_json     = $page_context ? wp_json_encode($page_context, JSON_UNESCAPED_UNICODE) : 'null';
 
+        $page_ctx_block = $page_context
+            ? "CURRENT PAGE CONTEXT (the user is viewing this page right now):\n{$ctx_json}"
+            : "CURRENT PAGE CONTEXT: none (user not on a specific page)";
+
         return <<<PROMPT
 You are Nova, Spider-Lens's AI assistant, expert in SEO, web performance, and server log analysis. You are friendly, precise, and give concrete actionable advice.
 
 SITE DATA (last 30 days for {$summary['siteName']} — {$summary['siteUrl']}):
 {$summary_json}
 
-CURRENT PAGE CONTEXT: {$ctx_json}
+{$page_ctx_block}
 
 INSTRUCTIONS:
 - Answer in the same language as the user's question
@@ -365,6 +369,8 @@ INSTRUCTIONS:
 - Reference specific numbers from the data when relevant
 - Give actionable recommendations, not just observations
 - Format your response in Markdown when helpful (lists, bold, code blocks)
+- If page context is provided, acknowledge the page the user is on naturally in your first sentence (e.g. "Sur la page TTFB, je vois que..."), then focus on that data
+- If no page context, answer from the global site data
 PROMPT;
     }
 
