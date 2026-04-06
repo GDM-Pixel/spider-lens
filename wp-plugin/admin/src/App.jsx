@@ -12,6 +12,7 @@ const Anomalies  = lazy(() => import('./pages/Anomalies'))
 const Blocklist  = lazy(() => import('./pages/Blocklist'))
 const Settings   = lazy(() => import('./pages/Settings'))
 const Crawler    = lazy(() => import('./pages/Crawler'))
+const Assistant  = lazy(() => import('./pages/Assistant'))
 
 function Loading() {
   return (
@@ -36,6 +37,7 @@ export default function App() {
           <Route path="/anomalies"  element={<Anomalies />} />
           <Route path="/blocklist"  element={<Blocklist />} />
           <Route path="/crawler"    element={<Crawler />} />
+          <Route path="/assistant"  element={<Assistant />} />
           <Route path="/settings"   element={<Settings />} />
         </Route>
       </Routes>

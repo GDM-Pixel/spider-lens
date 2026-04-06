@@ -34,6 +34,7 @@ class AdminPage {
             'anomalies'  => __('Anomalies', 'spider-lens'),
             'blocklist'  => __('Blocklist', 'spider-lens'),
             'crawler'    => __('Crawler', 'spider-lens'),
+            'assistant'  => __('Analyse IA', 'spider-lens'),
             'settings'   => __('Paramètres', 'spider-lens'),
         ];
 

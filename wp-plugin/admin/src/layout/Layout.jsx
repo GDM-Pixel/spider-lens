@@ -5,6 +5,7 @@ import clsx from 'clsx'
 import { useTranslation } from 'react-i18next'
 import { useBeginnerMode } from '../hooks/useBeginnerMode'
 import LanguageSwitcher from '../components/ui/LanguageSwitcher'
+import NovaChatBubble from '../components/chat/NovaChatBubble'
 
 const NAV_ITEMS = [
   { labelKey: 'nav.dashboard',      icon: 'ph:chart-pie-slice',       path: '/dashboard' },
@@ -16,6 +17,7 @@ const NAV_ITEMS = [
   { labelKey: 'nav.anomalies',      icon: 'ph:warning-diamond',       path: '/anomalies' },
   { labelKey: 'nav.blocklist',      icon: 'ph:prohibit',              path: '/blocklist' },
   { labelKey: 'nav.crawler',        icon: 'ph:magnifying-glass-plus', path: '/crawler' },
+  { labelKey: 'nav.analyzeAI',      icon: 'ph:sparkle',               path: '/assistant' },
   { labelKey: 'nav.settings',       icon: 'ph:gear-six',              path: '/settings' },
 ]
 
@@ -109,6 +111,9 @@ export default function Layout() {
           <Outlet />
         </main>
       </div>
+
+      {/* Nova chat bubble — global */}
+      <NovaChatBubble />
     </div>
   )
 }

@@ -69,6 +69,10 @@ class RestApi {
         register_rest_route($ns, '/crawler/runs',                          ['methods' => 'GET',    'callback' => [self::class, 'get_crawl_runs'],   'permission_callback' => [self::class, 'check_permission']]);
         register_rest_route($ns, '/crawler/pages',                         ['methods' => 'GET',    'callback' => [self::class, 'get_crawl_pages'],  'permission_callback' => [self::class, 'check_permission']]);
         register_rest_route($ns, '/crawler/summary',                       ['methods' => 'GET',    'callback' => [self::class, 'get_crawl_summary'], 'permission_callback' => [self::class, 'check_permission']]);
+
+        // Assistant IA
+        register_rest_route($ns, '/assistant/analyze', ['methods' => 'POST', 'callback' => [self::class, 'ai_analyze'], 'permission_callback' => [self::class, 'check_permission']]);
+        register_rest_route($ns, '/assistant/chat',    ['methods' => 'POST', 'callback' => [self::class, 'ai_chat'],    'permission_callback' => [self::class, 'check_permission']]);
     }
 
     public static function check_permission(): bool {
@@ -521,6 +525,9 @@ class RestApi {
         $settings = get_option('spider_lens_settings', []);
         // Ne jamais exposer les mots de passe en clair
         if (isset($settings['smtp_pass'])) $settings['smtp_pass'] = '';
+        // Indiquer si la clé Gemini est configurée sans l'exposer
+        $settings['gemini_api_key_set'] = !empty($settings['gemini_api_key']);
+        if (isset($settings['gemini_api_key'])) $settings['gemini_api_key'] = '';
         return rest_ensure_response($settings);
     }
 
@@ -530,6 +537,7 @@ class RestApi {
             'webhook_url', 'webhook_enabled',
             'smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass', 'smtp_secure',
             'alert_email', 'weekly_report_enabled',
+            'gemini_api_key', 'gemini_model',
         ];
 
         $current = get_option('spider_lens_settings', []);
@@ -874,5 +882,37 @@ class RestApi {
 
     public static function get_crawl_summary(\WP_REST_Request $req): \WP_REST_Response {
         return rest_ensure_response(Crawler::get_summary());
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // Assistant IA
+    // ══════════════════════════════════════════════════════════════
+
+    public static function ai_analyze(\WP_REST_Request $req): \WP_REST_Response|\WP_Error {
+        $language = sanitize_text_field($req->get_param('language') ?? 'fr');
+        $result   = AiAnalyzer::analyze_structured($language);
+
+        if (is_wp_error($result)) {
+            return $result;
+        }
+
+        return rest_ensure_response($result);
+    }
+
+    public static function ai_chat(\WP_REST_Request $req): \WP_REST_Response|\WP_Error {
+        $messages     = $req->get_param('messages') ?? [];
+        $page_context = $req->get_param('pageContext') ?? null;
+
+        if (!is_array($messages) || empty($messages)) {
+            return new \WP_Error('invalid_messages', 'Messages requis.', ['status' => 400]);
+        }
+
+        $result = AiAnalyzer::chat($messages, $page_context);
+
+        if (is_wp_error($result)) {
+            return $result;
+        }
+
+        return rest_ensure_response(['reply' => $result]);
     }
 }

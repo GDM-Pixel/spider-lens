@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { HashRouter } from 'react-router-dom'
 import App from './App'
 import BeginnerModeProvider from './context/BeginnerModeProvider'
+import { ChatProvider } from './context/ChatContext'
 import './i18n'
 import './index.css'
 
@@ -12,9 +13,11 @@ if (container) {
   createRoot(container).render(
     <React.StrictMode>
       <BeginnerModeProvider>
-        <HashRouter>
-          <App />
-        </HashRouter>
+        <ChatProvider>
+          <HashRouter>
+            <App />
+          </HashRouter>
+        </ChatProvider>
       </BeginnerModeProvider>
     </React.StrictMode>
   )

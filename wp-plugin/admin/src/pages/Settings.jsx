@@ -20,6 +20,9 @@ export default function Settings() {
     smtp_user: '',
     smtp_pass: '',
     smtp_secure: true,
+    gemini_api_key: '',
+    gemini_model: 'gemini-2.0-flash',
+    gemini_api_key_set: false,
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -401,6 +404,50 @@ export default function Settings() {
             >
               {testingWebhook ? 'Test...' : 'Tester'}
             </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Section Gemini IA */}
+      <div className="bg-prussian-500 rounded-xl border border-prussian-400 p-5">
+        <h3 className="text-white font-bold text-sm mb-4 flex items-center gap-2">
+          <Icon icon="ph:sparkle" className="text-lg" />
+          Analyse IA (Gemini)
+        </h3>
+        <div className="flex flex-col gap-4">
+          <div>
+            <label className="block text-errorgrey text-xs uppercase font-semibold tracking-wide mb-2">
+              Clé API Gemini
+            </label>
+            <input
+              type="password"
+              value={settings.gemini_api_key}
+              onChange={e => handleChange('gemini_api_key', e.target.value)}
+              placeholder={settings.gemini_api_key_set ? '••••••••••••••••••••••••' : 'AIza...'}
+              className="w-full bg-prussian-700 border border-prussian-500 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-moonstone-400"
+            />
+            {settings.gemini_api_key_set && !settings.gemini_api_key && (
+              <p className="text-green-400 text-xs mt-1 flex items-center gap-1">
+                <Icon icon="ph:check-circle" className="text-sm" /> Clé API configurée
+              </p>
+            )}
+            <p className="text-lightgrey text-xs mt-1">
+              Obtenez votre clé sur <span className="text-moonstone-400">aistudio.google.com</span>
+            </p>
+          </div>
+          <div>
+            <label className="block text-errorgrey text-xs uppercase font-semibold tracking-wide mb-2">
+              Modèle Gemini
+            </label>
+            <select
+              value={settings.gemini_model}
+              onChange={e => handleChange('gemini_model', e.target.value)}
+              className="w-full bg-prussian-700 border border-prussian-500 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-moonstone-400"
+            >
+              <option value="gemini-2.0-flash">gemini-2.0-flash (recommandé)</option>
+              <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+              <option value="gemini-1.5-pro">gemini-1.5-pro (plus puissant)</option>
+            </select>
           </div>
         </div>
       </div>
