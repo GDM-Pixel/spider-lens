@@ -44,3 +44,7 @@ CLAUDE.md
 # WP Plugin — build frontend
 wp-plugin/admin/dist/
 wp-plugin/admin/node_modules/
+
+# MCP server
+mcp/node_modules/
+mcp/dist/

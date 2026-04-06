@@ -273,6 +273,40 @@ Without this key, the **AI Analysis** page and Nova chat display a friendly conf
 
 ---
 
+## 🔌 MCP Server (Claude Code integration)
+
+Spider-Lens ships with an MCP server that exposes all data as tools for Claude Code (or any MCP-compatible client).
+
+```bash
+cd mcp && npm install && npm run build
+```
+
+Then add to your `~/.claude/settings.json`:
+
+```json
+{
+  "mcpServers": {
+    "spider-lens": {
+      "command": "node",
+      "args": ["/path/to/spider-lens/mcp/dist/index.js"],
+      "env": {
+        "SPIDER_LENS_URL": "https://spider-lens.your-domain.com",
+        "SPIDER_LENS_USER": "admin",
+        "SPIDER_LENS_PASS": "your-password"
+      }
+    }
+  }
+}
+```
+
+Available tools: `list_sites`, `get_seo_overview`, `get_404_errors`, `get_bot_stats`, `get_ttfb_stats`, `get_crawler_data`, `run_seo_analysis`.
+
+Example: *"Run a full SEO analysis for gdm-pixel.com and tell me what to fix"*
+
+See [`mcp/README.md`](mcp/README.md) for full documentation.
+
+---
+
 ## 📊 Supported log formats
 
 Spider-Lens parses the **Apache/Nginx Combined Log Format**, with an optional `$request_time` field at the end for TTFB data.
