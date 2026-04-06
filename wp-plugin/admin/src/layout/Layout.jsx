@@ -2,22 +2,27 @@ import React, { useState } from 'react'
 import { Outlet, useLocation, NavLink } from 'react-router-dom'
 import { Icon } from '@iconify/react'
 import clsx from 'clsx'
+import { useTranslation } from 'react-i18next'
+import { useBeginnerMode } from '../hooks/useBeginnerMode'
+import LanguageSwitcher from '../components/ui/LanguageSwitcher'
 
 const NAV_ITEMS = [
-  { label: 'Dashboard',       icon: 'ph:chart-pie-slice',       path: '/dashboard' },
-  { label: 'Codes HTTP',      icon: 'ph:chart-line',            path: '/http-codes' },
-  { label: 'Top Pages',       icon: 'ph:list-magnifying-glass', path: '/top-pages' },
-  { label: 'Bots & Crawlers', icon: 'ph:robot',                 path: '/bots' },
-  { label: 'Performances',    icon: 'ph:gauge',                 path: '/ttfb' },
-  { label: 'Réseau',          icon: 'ph:network',               path: '/network' },
-  { label: 'Anomalies',       icon: 'ph:warning-diamond',       path: '/anomalies' },
-  { label: 'Blocklist',       icon: 'ph:prohibit',              path: '/blocklist' },
-  { label: 'Paramètres',      icon: 'ph:gear-six',              path: '/settings' },
+  { labelKey: 'nav.dashboard',      icon: 'ph:chart-pie-slice',       path: '/dashboard' },
+  { labelKey: 'nav.httpCodes',      icon: 'ph:chart-line',            path: '/http-codes' },
+  { labelKey: 'nav.topPages',       icon: 'ph:list-magnifying-glass', path: '/top-pages' },
+  { labelKey: 'nav.bots',           icon: 'ph:robot',                 path: '/bots' },
+  { labelKey: 'nav.ttfb',           icon: 'ph:gauge',                 path: '/ttfb' },
+  { labelKey: 'nav.network',        icon: 'ph:network',               path: '/network' },
+  { labelKey: 'nav.anomalies',      icon: 'ph:warning-diamond',       path: '/anomalies' },
+  { labelKey: 'nav.blocklist',      icon: 'ph:prohibit',              path: '/blocklist' },
+  { labelKey: 'nav.settings',       icon: 'ph:gear-six',              path: '/settings' },
 ]
 
 export default function Layout() {
   const [collapsed, setCollapsed] = useState(false)
   const location = useLocation()
+  const { t } = useTranslation()
+  const { beginner, toggle: toggleBeginner } = useBeginnerMode()
 
   return (
     <div className="flex h-screen overflow-hidden bg-prussian-700 font-sans">
@@ -34,7 +39,7 @@ export default function Layout() {
           {!collapsed && (
             <div className="min-w-0 flex-1">
               <p className="text-white font-bold text-sm leading-tight truncate">Spider-Lens</p>
-              <p className="text-errorgrey text-xs">v0.7.0</p>
+              <p className="text-errorgrey text-xs">{window.spiderLens?.version || 'dev'}</p>
             </div>
           )}
           <button
@@ -64,21 +69,37 @@ export default function Layout() {
                     icon={item.icon}
                     className={clsx('text-lg shrink-0', isActive ? 'text-moonstone-400' : 'text-errorgrey group-hover:text-moonstone-400')}
                   />
-                  {!collapsed && <span className="truncate">{item.label}</span>}
+                  {!collapsed && <span className="truncate">{t(item.labelKey)}</span>}
                 </>
               )}
             </NavLink>
           ))}
         </nav>
 
-        {/* Site info */}
-        {!collapsed && window.spiderLens?.siteName && (
-          <div className="border-t border-prussian-500 p-3">
+        {/* Toggle débutant / LanguageSwitcher / Site info */}
+        <div className="border-t border-prussian-500 p-3 flex flex-col gap-2">
+          {!collapsed && (
+            <button
+              onClick={toggleBeginner}
+              className={clsx(
+                'flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs font-semibold transition-colors w-full',
+                beginner
+                  ? 'bg-moonstone-400/15 text-moonstone-400 border border-moonstone-700'
+                  : 'text-errorgrey hover:text-white hover:bg-prussian-500'
+              )}
+              title={t('header.beginnerActive')}
+            >
+              <Icon icon={beginner ? 'ph:student-fill' : 'ph:student'} className="text-base shrink-0" />
+              <span>{beginner ? t('header.beginner') : t('header.expert')}</span>
+            </button>
+          )}
+          {!collapsed && <LanguageSwitcher />}
+          {!collapsed && window.spiderLens?.siteName && (
             <p className="text-errorgrey text-xs truncate" title={window.spiderLens.siteUrl}>
               {window.spiderLens.siteName}
             </p>
-          </div>
-        )}
+          )}
+        </div>
       </aside>
 
       {/* Main */}

@@ -116,6 +116,7 @@ class AdminPage {
             'version'   => SPIDER_LENS_VERSION,
             'siteUrl'   => get_site_url(),
             'siteName'  => get_bloginfo('name'),
+            'locale'    => get_user_locale(),
         ]);
     }
 }

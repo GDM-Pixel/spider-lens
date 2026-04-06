@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { Icon } from '@iconify/react'
+import { useTranslation } from 'react-i18next'
 import DateRangePicker from '../components/ui/DateRangePicker'
 import { usePersistentRange } from '../hooks/usePersistentRange'
+import BeginnerBanner from '../components/ui/BeginnerBanner'
 import api from '../api/client'
 import dayjs from 'dayjs'
 import clsx from 'clsx'
@@ -9,15 +11,25 @@ import clsx from 'clsx'
 const LIMIT = 50
 
 export default function Network() {
+  const { t } = useTranslation()
   const [range, setRange] = usePersistentRange('network')
   const [activeTab, setActiveTab] = useState('ips')
 
   return (
     <div className="flex flex-col gap-6">
+      <BeginnerBanner
+        icon="ph:network"
+        title={t('network.welcomeTitle')}
+        tips={[
+          t('network.tip1'),
+          t('network.tip2'),
+          t('network.tip3'),
+        ]}
+      />
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-white font-bold text-xl">Réseau</h2>
-          <p className="text-errorgrey text-sm">Adresses IP et User-Agents</p>
+          <h2 className="text-white font-bold text-xl">{t('network.welcomeTitle')}</h2>
+          <p className="text-errorgrey text-sm">{t('network.tip1')}</p>
         </div>
         <DateRangePicker from={range.from} to={range.to} onChange={setRange} />
       </div>
@@ -25,8 +37,8 @@ export default function Network() {
       {/* Tabs */}
       <div className="flex border-b border-prussian-400">
         {[
-          { id: 'ips', label: 'Adresses IP' },
-          { id: 'user-agents', label: 'User-Agents' },
+          { id: 'ips', labelKey: 'network.tabIps' },
+          { id: 'user-agents', labelKey: 'network.tabUa' },
         ].map(tab => (
           <button
             key={tab.id}
@@ -38,18 +50,18 @@ export default function Network() {
                 : 'text-errorgrey border-transparent hover:text-lightgrey'
             )}
           >
-            {tab.label}
+            {t(tab.labelKey)}
           </button>
         ))}
       </div>
 
-      {activeTab === 'ips' && <IPsTab range={range} />}
-      {activeTab === 'user-agents' && <UserAgentsTab range={range} />}
+      {activeTab === 'ips' && <IPsTab range={range} t={t} />}
+      {activeTab === 'user-agents' && <UserAgentsTab range={range} t={t} />}
     </div>
   )
 }
 
-function IPsTab({ range }) {
+function IPsTab({ range, t }) {
   const [data, setData] = useState([])
   const [blocklist, setBlocklist] = useState(new Set())
   const [search, setSearch] = useState('')
@@ -108,9 +120,25 @@ function IPsTab({ range }) {
 
   const isBlocked = ip => blocklist.has(ip)
 
+  const handleExport = async () => {
+    try {
+      const params = new URLSearchParams({ from: range.from, to: range.to })
+      const url = `${window.spiderLens.apiBase}/network/ips/export?${params}`
+      const res = await fetch(url, { headers: { 'X-WP-Nonce': window.spiderLens.nonce }, credentials: 'same-origin' })
+      if (res.ok) {
+        const blob = await res.blob()
+        const a = document.createElement('a')
+        a.href = URL.createObjectURL(blob)
+        a.download = `ips-${range.from}-${range.to}.csv`
+        a.click()
+        URL.revokeObjectURL(a.href)
+      }
+    } catch (err) { console.error('Export error:', err) }
+  }
+
   return (
     <div className="flex flex-col gap-4">
-      {/* Filtres */}
+      {/* Filtres + Export */}
       <div className="flex flex-wrap gap-4 items-center justify-between">
         <div className="flex gap-2 flex-wrap">
           {['all', 'true', 'false'].map(val => (
@@ -124,24 +152,31 @@ function IPsTab({ range }) {
                   : 'bg-prussian-500 border border-prussian-400 text-errorgrey hover:border-moonstone-400'
               )}
             >
-              {val === 'all' ? 'Tous' : val === 'true' ? 'Bots' : 'Humains'}
+              {val === 'all' ? t('common.all') : val === 'true' ? t('common.bots') : t('common.humans')}
             </button>
           ))}
         </div>
-        <div className="flex-1 min-w-[200px]">
-          <div className="relative">
+        <div className="flex flex-1 min-w-[200px] gap-2">
+          <div className="relative flex-1">
             <Icon
               icon="ph:magnifying-glass"
               className="absolute left-3 top-1/2 -translate-y-1/2 text-errorgrey text-base"
             />
             <input
               type="text"
-              placeholder="Filtrer par IP..."
+              placeholder={t('network.headerIp')}
               value={search}
               onChange={e => { setSearch(e.target.value); setOffset(0) }}
               className="w-full bg-prussian-500 border border-prussian-400 rounded-lg pl-9 pr-3 py-2 text-white text-sm focus:outline-none focus:border-moonstone-400"
             />
           </div>
+          <button
+            onClick={handleExport}
+            className="flex items-center gap-2 px-4 py-2 bg-moonstone-400 text-prussian-700 font-bold rounded-lg hover:bg-moonstone-300 transition-colors text-sm shrink-0"
+          >
+            <Icon icon="ph:download" className="text-base" />
+            {t('common.csv')}
+          </button>
         </div>
       </div>
 
@@ -158,25 +193,25 @@ function IPsTab({ range }) {
                 <tr className="border-b border-prussian-400">
                   <th className="px-4 py-3 text-left text-errorgrey text-xs uppercase font-semibold tracking-wide w-8" />
                   <th className="px-4 py-3 text-left text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                    IP
+                    {t('network.headerIp')}
                   </th>
                   <th className="px-4 py-3 text-right text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                    Visites
+                    {t('common.hits')}
                   </th>
                   <th className="px-4 py-3 text-right text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                    Bots
+                    {t('common.bots')}
                   </th>
                   <th className="px-4 py-3 text-right text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                    Humains
+                    {t('common.humans')}
                   </th>
                   <th className="px-4 py-3 text-left text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                    Nom du bot
+                    {t('common.by')}
                   </th>
                   <th className="px-4 py-3 text-right text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                    Dernière visite
+                    {t('common.lastSeen')}
                   </th>
                   <th className="px-4 py-3 text-center text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                    Action
+                    {t('network.blockModalTitle')}
                   </th>
                 </tr>
               </thead>
@@ -218,14 +253,14 @@ function IPsTab({ range }) {
                         {isBlocked(ip.ip) ? (
                           <span className="inline-flex items-center gap-1 px-2 py-1 bg-dustyred-400/20 text-dustyred-300 text-xs font-semibold rounded">
                             <Icon icon="ph:lock" className="text-xs" />
-                            Bloquée
+                            {t('network.badgeBlocked')}
                           </span>
                         ) : (
                           <button
                             onClick={() => setBlockModal({ ip: ip.ip, reason: '' })}
                             className="text-moonstone-400 hover:text-moonstone-300 text-sm font-semibold"
                           >
-                            Bloquer
+                            {t('network.blockModalCancel')}
                           </button>
                         )}
                       </td>
@@ -237,10 +272,10 @@ function IPsTab({ range }) {
                             <table className="w-full text-xs">
                               <thead>
                                 <tr className="border-b border-prussian-400">
-                                  <th className="px-3 py-2 text-left text-errorgrey font-semibold">URL</th>
-                                  <th className="px-3 py-2 text-right text-errorgrey font-semibold">Code</th>
-                                  <th className="px-3 py-2 text-right text-errorgrey font-semibold">Visites</th>
-                                  <th className="px-3 py-2 text-right text-errorgrey font-semibold">Dernière visite</th>
+                                  <th className="px-3 py-2 text-left text-errorgrey font-semibold">{t('common.url')}</th>
+                                  <th className="px-3 py-2 text-right text-errorgrey font-semibold">{t('common.status')}</th>
+                                  <th className="px-3 py-2 text-right text-errorgrey font-semibold">{t('common.hits')}</th>
+                                  <th className="px-3 py-2 text-right text-errorgrey font-semibold">{t('common.lastSeen')}</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -294,25 +329,25 @@ function IPsTab({ range }) {
           </div>
         </>
       ) : (
-        <EmptyState message="Aucune adresse IP sur cette période" />
+        <EmptyState message={t('network.emptyIps')} />
       )}
 
       {/* Modal blocage */}
       {blockModal.ip && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-prussian-600 rounded-xl border border-prussian-400 p-6 max-w-sm w-full">
-            <h3 className="text-white font-bold text-lg mb-4">Bloquer l'IP</h3>
+            <h3 className="text-white font-bold text-lg mb-4">{t('network.blockModalTitle')}</h3>
             <p className="text-errorgrey text-sm mb-4">
               Bloquer <span className="font-mono font-bold">{blockModal.ip}</span> ?
             </p>
             <div className="mb-4">
               <label className="block text-errorgrey text-xs uppercase font-semibold tracking-wide mb-2">
-                Raison (optionnel)
+                {t('network.blockModalReasonLabel')}
               </label>
               <textarea
                 value={blockModal.reason}
                 onChange={e => setBlockModal({ ...blockModal, reason: e.target.value })}
-                placeholder="Ex: Activité suspecte..."
+                placeholder={t('network.blockModalReasonPlaceholder')}
                 className="w-full bg-prussian-700 border border-prussian-500 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-moonstone-400"
                 rows="3"
               />
@@ -322,13 +357,13 @@ function IPsTab({ range }) {
                 onClick={() => setBlockModal({ ip: null, reason: '' })}
                 className="flex-1 px-4 py-2 bg-prussian-500 border border-prussian-400 text-white rounded-lg font-semibold hover:border-moonstone-400 transition-colors"
               >
-                Annuler
+                {t('common.cancel')}
               </button>
               <button
                 onClick={handleBlock}
                 className="flex-1 px-4 py-2 bg-dustyred-700 text-white rounded-lg font-semibold hover:bg-dustyred-600 transition-colors"
               >
-                Bloquer
+                {t('network.blockModalTitle')}
               </button>
             </div>
           </div>
@@ -338,12 +373,28 @@ function IPsTab({ range }) {
   )
 }
 
-function UserAgentsTab({ range }) {
+function UserAgentsTab({ range, t }) {
   const [data, setData] = useState([])
   const [search, setSearch] = useState('')
   const [botFilter, setBotFilter] = useState('all')
   const [offset, setOffset] = useState(0)
   const [loading, setLoading] = useState(false)
+
+  const handleExport = async () => {
+    try {
+      const params = new URLSearchParams({ from: range.from, to: range.to })
+      const url = `${window.spiderLens.apiBase}/network/user-agents/export?${params}`
+      const res = await fetch(url, { headers: { 'X-WP-Nonce': window.spiderLens.nonce }, credentials: 'same-origin' })
+      if (res.ok) {
+        const blob = await res.blob()
+        const a = document.createElement('a')
+        a.href = URL.createObjectURL(blob)
+        a.download = `user-agents-${range.from}-${range.to}.csv`
+        a.click()
+        URL.revokeObjectURL(a.href)
+      }
+    } catch (err) { console.error('Export error:', err) }
+  }
 
   useEffect(() => {
     setLoading(true)
@@ -378,24 +429,31 @@ function UserAgentsTab({ range }) {
                   : 'bg-prussian-500 border border-prussian-400 text-errorgrey hover:border-moonstone-400'
               )}
             >
-              {val === 'all' ? 'Tous' : val === 'true' ? 'Bots' : 'Humains'}
+              {val === 'all' ? t('common.all') : val === 'true' ? t('common.bots') : t('common.humans')}
             </button>
           ))}
         </div>
-        <div className="flex-1 min-w-[200px]">
-          <div className="relative">
+        <div className="flex flex-1 min-w-[200px] gap-2">
+          <div className="relative flex-1">
             <Icon
               icon="ph:magnifying-glass"
               className="absolute left-3 top-1/2 -translate-y-1/2 text-errorgrey text-base"
             />
             <input
               type="text"
-              placeholder="Filtrer par User-Agent..."
+              placeholder={t('network.headerUa')}
               value={search}
               onChange={e => { setSearch(e.target.value); setOffset(0) }}
               className="w-full bg-prussian-500 border border-prussian-400 rounded-lg pl-9 pr-3 py-2 text-white text-sm focus:outline-none focus:border-moonstone-400"
             />
           </div>
+          <button
+            onClick={handleExport}
+            className="flex items-center gap-2 px-4 py-2 bg-moonstone-400 text-prussian-700 font-bold rounded-lg hover:bg-moonstone-300 transition-colors text-sm shrink-0"
+          >
+            <Icon icon="ph:download" className="text-base" />
+            {t('common.csv')}
+          </button>
         </div>
       </div>
 
@@ -411,19 +469,19 @@ function UserAgentsTab({ range }) {
               <thead>
                 <tr className="border-b border-prussian-400">
                   <th className="px-4 py-3 text-left text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                    User-Agent
+                    {t('network.headerUa')}
                   </th>
                   <th className="px-4 py-3 text-left text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                    Type
+                    {t('network.typeBot')}
                   </th>
                   <th className="px-4 py-3 text-left text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                    Nom du bot
+                    {t('common.by')}
                   </th>
                   <th className="px-4 py-3 text-right text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                    Visites
+                    {t('common.hits')}
                   </th>
                   <th className="px-4 py-3 text-right text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                    Dernière visite
+                    {t('common.lastSeen')}
                   </th>
                 </tr>
               </thead>
@@ -443,7 +501,7 @@ function UserAgentsTab({ range }) {
                           ? 'bg-purple-400/20 text-purple-300'
                           : 'bg-green-400/20 text-green-300'
                       )}>
-                        {ua.is_bot === '1' || ua.is_bot === 1 ? 'Bot' : 'Humain'}
+                        {ua.is_bot === '1' || ua.is_bot === 1 ? t('network.typeBot') : t('network.typeHuman')}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-lightgrey text-xs">
@@ -483,7 +541,7 @@ function UserAgentsTab({ range }) {
           </div>
         </>
       ) : (
-        <EmptyState message="Aucun User-Agent sur cette période" />
+        <EmptyState message={t('network.emptyUa')} />
       )}
     </div>
   )

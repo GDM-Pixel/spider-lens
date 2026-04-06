@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from 'react'
 import { Icon } from '@iconify/react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Legend } from 'recharts'
 import KPICard from '../components/ui/KPICard'
 import DateRangePicker from '../components/ui/DateRangePicker'
 import InfoBubble from '../components/ui/InfoBubble'
 import { usePersistentRange } from '../hooks/usePersistentRange'
+import BeginnerBanner from '../components/ui/BeginnerBanner'
 import api from '../api/client'
 import dayjs from 'dayjs'
 
 const BOT_COLORS = ['#00c6e0', '#d62246', '#8b5cf6', '#f59e0b', '#10b981', '#6366f1']
 
 export default function Dashboard() {
+  const { t } = useTranslation()
   const [range, setRange]                 = usePersistentRange('dashboard')
   const [overview, setOverview]           = useState(null)
   const [httpData, setHttpData]           = useState([])
@@ -42,10 +45,19 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col gap-6">
+      <BeginnerBanner
+        icon="ph:house"
+        title={t('dashboard.welcomeTitle')}
+        tips={[
+          t('dashboard.tip1'),
+          t('dashboard.tip2'),
+          t('dashboard.tip3'),
+        ]}
+      />
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-white font-bold text-xl">Vue globale</h2>
-          <p className="text-errorgrey text-sm">Aperçu de votre trafic WordPress sur la période</p>
+          <h2 className="text-white font-bold text-xl">{t('dashboard.overview')}</h2>
+          <p className="text-errorgrey text-sm">{t('dashboard.overviewSubtitle')}</p>
         </div>
         <DateRangePicker from={range.from} to={range.to} onChange={setRange} />
       </div>
@@ -58,20 +70,20 @@ export default function Dashboard() {
         <>
           {/* KPIs */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <KPICard label="Requêtes totales"   value={parseInt(overview?.total || 0).toLocaleString('fr-FR')}  icon="ph:globe-hemisphere-west" color="moonstone" info="Nombre total de requêtes WordPress capturées." />
-            <KPICard label="Visiteurs humains"  value={parseInt(overview?.humans || 0).toLocaleString('fr-FR')} icon="ph:users"                 color="green"     info="Requêtes hors bots détectés." />
-            <KPICard label="Requêtes bots"      value={parseInt(overview?.bots || 0).toLocaleString('fr-FR')}   icon="ph:robot"                 color="purple"    info="Robots d'indexation et crawlers." />
-            <KPICard label="Taux d'erreur"      value={`${overview?.errorRate || 0}%`}                          icon="ph:warning-octagon"       color={parseFloat(overview?.errorRate) > 5 ? 'dustyred' : 'green'} />
-            <KPICard label="Succès (2xx)"        value={parseInt(overview?.s2xx || 0).toLocaleString('fr-FR')}  icon="ph:check-circle"          color="green" />
-            <KPICard label="Redirections (3xx)"  value={parseInt(overview?.s3xx || 0).toLocaleString('fr-FR')}  icon="ph:arrows-clockwise"      color="amber" />
-            <KPICard label="Erreurs client (4xx)" value={parseInt(overview?.s4xx || 0).toLocaleString('fr-FR')} icon="ph:x-circle"              color="dustyred" />
-            <KPICard label="URLs en 404 uniques" value={parseInt(overview?.unique404 || 0).toLocaleString('fr-FR')} icon="ph:magnifying-glass-minus" color="dustyred" info="URLs distinctes ayant retourné un 404." />
+            <KPICard label={t('dashboard.totalRequests')}   value={parseInt(overview?.total || 0).toLocaleString('fr-FR')}  icon="ph:globe-hemisphere-west" color="moonstone" info={t('dashboard.totalRequestsInfo')} />
+            <KPICard label={t('dashboard.humanVisitors')}  value={parseInt(overview?.humans || 0).toLocaleString('fr-FR')} icon="ph:users"                 color="green"     info={t('dashboard.humanVisitorsInfo')} />
+            <KPICard label={t('dashboard.botRequests')}      value={parseInt(overview?.bots || 0).toLocaleString('fr-FR')}   icon="ph:robot"                 color="purple"    info={t('dashboard.botRequestsInfo')} />
+            <KPICard label={t('dashboard.errorRate')}      value={`${overview?.errorRate || 0}%`}                          icon="ph:warning-octagon"       color={parseFloat(overview?.errorRate) > 5 ? 'dustyred' : 'green'} info={t('dashboard.errorRateInfo')} />
+            <KPICard label={t('dashboard.success2xx')}        value={parseInt(overview?.s2xx || 0).toLocaleString('fr-FR')}  icon="ph:check-circle"          color="green" />
+            <KPICard label={t('dashboard.redirects3xx')}  value={parseInt(overview?.s3xx || 0).toLocaleString('fr-FR')}  icon="ph:arrows-clockwise"      color="amber" />
+            <KPICard label={t('dashboard.clientErrors4xx')} value={parseInt(overview?.s4xx || 0).toLocaleString('fr-FR')} icon="ph:x-circle"              color="dustyred" />
+            <KPICard label={t('dashboard.unique404')} value={parseInt(overview?.unique404 || 0).toLocaleString('fr-FR')} icon="ph:magnifying-glass-minus" color="dustyred" info={t('dashboard.unique404Info')} />
           </div>
 
           {/* Graphes */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 bg-prussian-500 rounded-xl border border-prussian-400 p-5">
-              <h3 className="text-white font-bold text-sm mb-4">Évolution des codes HTTP</h3>
+              <h3 className="text-white font-bold text-sm mb-4">{t('dashboard.httpEvolution')}</h3>
               {httpData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={220}>
                   <LineChart data={httpData}>
@@ -86,11 +98,11 @@ export default function Dashboard() {
                     <Line type="monotone" dataKey="s5xx" name="5xx" stroke="#9f1934" strokeWidth={2} dot={false} />
                   </LineChart>
                 </ResponsiveContainer>
-              ) : <EmptyState message="Aucune donnée sur cette période" />}
+              ) : <EmptyState message={t('common.noData')} />}
             </div>
 
             <div className="bg-prussian-500 rounded-xl border border-prussian-400 p-5">
-              <h3 className="text-white font-bold text-sm mb-4">Répartition des bots</h3>
+              <h3 className="text-white font-bold text-sm mb-4">{t('dashboard.botsDistributionTitle')}</h3>
               {botPieData.length > 0 ? (
                 <>
                   <ResponsiveContainer width="100%" height={160}>
@@ -113,17 +125,17 @@ export default function Dashboard() {
                     ))}
                   </ul>
                 </>
-              ) : <EmptyState message="Aucun bot détecté" />}
+              ) : <EmptyState message={t('common.noResults')} />}
             </div>
           </div>
 
           {/* Tendances 12 semaines */}
           {weeklyTrends.length > 1 && (
             <div className="flex flex-col gap-4">
-              <h3 className="text-white font-bold text-sm">Tendances — 12 semaines</h3>
+              <h3 className="text-white font-bold text-sm">{t('dashboard.trends')}</h3>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div className="lg:col-span-2 bg-prussian-500 rounded-xl border border-prussian-400 p-5">
-                  <h4 className="text-errorgrey text-xs font-semibold uppercase tracking-wide mb-3">Trafic hebdomadaire</h4>
+                  <h4 className="text-errorgrey text-xs font-semibold uppercase tracking-wide mb-3">{t('dashboard.trendsTraffic')}</h4>
                   <ResponsiveContainer width="100%" height={180}>
                     <AreaChart data={weeklyTrends}>
                       <defs>
@@ -141,14 +153,14 @@ export default function Dashboard() {
                       <YAxis tick={{ fill: '#898989', fontSize: 10 }} />
                       <Tooltip contentStyle={{ background: '#262e40', border: '1px solid #273043', borderRadius: 8, color: '#fff' }} />
                       <Legend wrapperStyle={{ fontSize: 11, color: '#d1d1d1' }} />
-                      <Area type="monotone" dataKey="humans" name="Humains" stroke="#00c6e0" fill="url(#gH)" strokeWidth={2} dot={false} />
-                      <Area type="monotone" dataKey="bots"   name="Bots"    stroke="#8b5cf6" fill="url(#gB)" strokeWidth={2} dot={false} />
+                      <Area type="monotone" dataKey="humans" name={t('common.humans')} stroke="#00c6e0" fill="url(#gH)" strokeWidth={2} dot={false} />
+                      <Area type="monotone" dataKey="bots"   name={t('common.bots')}    stroke="#8b5cf6" fill="url(#gB)" strokeWidth={2} dot={false} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
                 <div className="flex flex-col gap-4">
                   <div className="bg-prussian-500 rounded-xl border border-prussian-400 p-4 flex-1">
-                    <h4 className="text-errorgrey text-xs font-semibold uppercase tracking-wide mb-2">Googlebot</h4>
+                    <h4 className="text-errorgrey text-xs font-semibold uppercase tracking-wide mb-2">{t('dashboard.trendsGooglebot')}</h4>
                     <ResponsiveContainer width="100%" height={70}>
                       <LineChart data={weeklyTrends}>
                         <XAxis dataKey="week_label" tick={false} axisLine={false} tickLine={false} />
@@ -159,7 +171,7 @@ export default function Dashboard() {
                     </ResponsiveContainer>
                   </div>
                   <div className="bg-prussian-500 rounded-xl border border-prussian-400 p-4 flex-1">
-                    <h4 className="text-errorgrey text-xs font-semibold uppercase tracking-wide mb-2">TTFB moyen (ms)</h4>
+                    <h4 className="text-errorgrey text-xs font-semibold uppercase tracking-wide mb-2">{t('dashboard.trendsTTFB')}</h4>
                     <ResponsiveContainer width="100%" height={70}>
                       <LineChart data={weeklyTrends}>
                         <XAxis dataKey="week_label" tick={false} axisLine={false} tickLine={false} />
@@ -180,14 +192,14 @@ export default function Dashboard() {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <Icon icon="ph:warning-diamond" className="text-orange-400 text-lg" />
-                  <h3 className="text-white font-bold text-sm">Anomalies récentes (48h)</h3>
+                  <h3 className="text-white font-bold text-sm">{t('dashboard.recentAnomalies')}</h3>
                 </div>
-                <Link to="/anomalies" className="text-moonstone-400 hover:text-moonstone-300 text-xs font-semibold">Voir tout →</Link>
+                <Link to="/anomalies" className="text-moonstone-400 hover:text-moonstone-300 text-xs font-semibold">{t('dashboard.viewAll')} →</Link>
               </div>
               <div className="flex flex-col gap-2">
                 {recentAnomalies.map(a => {
                   const isCritical = a.severity === 'critical'
-                  const LABELS = { traffic_spike: 'Spike de trafic', error_rate_spike: "Taux d'erreurs élevé" }
+                  const LABELS = { traffic_spike: t('dashboard.anomalyTrafficSpike'), error_rate_spike: t('dashboard.anomalyErrorRate') }
                   const ICONS  = { traffic_spike: 'ph:trend-up', error_rate_spike: 'ph:warning-circle' }
                   return (
                     <div key={a.id} className={`flex items-center gap-3 rounded-lg px-3 py-2 ${isCritical ? 'bg-dustyred-400/10 border border-dustyred-700/50' : 'bg-prussian-600'}`}>

@@ -1,17 +1,73 @@
 import React, { useEffect, useState } from 'react'
 import { Icon } from '@iconify/react'
+import { useTranslation } from 'react-i18next'
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Legend, Tooltip, ResponsiveContainer } from 'recharts'
 import KPICard from '../components/ui/KPICard'
+import SortableHeader from '../components/ui/SortableHeader'
+import BeginnerBanner from '../components/ui/BeginnerBanner'
 import DateRangePicker from '../components/ui/DateRangePicker'
 import { usePersistentRange } from '../hooks/usePersistentRange'
+import { useSort } from '../hooks/useSort'
 import api from '../api/client'
 import dayjs from 'dayjs'
+import clsx from 'clsx'
 
 export default function HttpCodes() {
+  const { t } = useTranslation()
   const [range, setRange] = usePersistentRange('http-codes')
   const [overview, setOverview] = useState(null)
   const [httpData, setHttpData] = useState([])
   const [loading, setLoading] = useState(true)
+  const [exporting, setExporting] = useState(false)
+  const [statusFilter, setStatusFilter] = useState('')
+  const [botFilter, setBotFilter] = useState('')
+  const [search, setSearch] = useState('')
+  const [detailOffset, setDetailOffset] = useState(0)
+  const [detail, setDetail] = useState({ rows: [], total: 0 })
+  const [detailLoading, setDetailLoading] = useState(false)
+  const { sort, toggleSort } = useSort('hits', 'desc')
+  const DETAIL_LIMIT = 50
+
+  const handleExportCsv = async () => {
+    setExporting(true)
+    try {
+      const params = new URLSearchParams({ from: range.from, to: range.to })
+      const url = `${window.spiderLens.apiBase}/stats/http-codes/export?${params}`
+      const res = await fetch(url, { headers: { 'X-WP-Nonce': window.spiderLens.nonce }, credentials: 'same-origin' })
+      if (res.ok) {
+        const blob = await res.blob()
+        const a = document.createElement('a')
+        a.href = URL.createObjectURL(blob)
+        a.download = `http-codes-${range.from}-${range.to}.csv`
+        a.click()
+        URL.revokeObjectURL(a.href)
+      }
+    } catch (err) { console.error('Export error:', err) }
+    finally { setExporting(false) }
+  }
+
+  useEffect(() => {
+    setDetailOffset(0)
+  }, [range, statusFilter, botFilter, search, sort])
+
+  useEffect(() => {
+    setDetailLoading(true)
+    api.get('/stats/url-detail', {
+      params: {
+        ...range,
+        status: statusFilter || undefined,
+        bot: botFilter || undefined,
+        search: search || undefined,
+        sort: sort.by,
+        dir: sort.dir,
+        limit: DETAIL_LIMIT,
+        offset: detailOffset,
+      },
+    })
+      .then(res => setDetail(res.data || { rows: [], total: 0 }))
+      .catch(err => console.error('Erreur drill-down:', err))
+      .finally(() => setDetailLoading(false))
+  }, [range, statusFilter, botFilter, search, sort, detailOffset])
 
   useEffect(() => {
     setLoading(true)
@@ -29,12 +85,32 @@ export default function HttpCodes() {
 
   return (
     <div className="flex flex-col gap-6">
+      <BeginnerBanner
+        icon="ph:chart-line"
+        title={t('httpCodes.welcomeTitle')}
+        tips={[
+          t('httpCodes.tip1'),
+          t('httpCodes.tip2'),
+          t('httpCodes.tip3'),
+          t('httpCodes.tip4'),
+        ]}
+      />
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-white font-bold text-xl">Codes HTTP</h2>
-          <p className="text-errorgrey text-sm">Distribution des codes de réponse HTTP</p>
+          <h2 className="text-white font-bold text-xl">{t('httpCodes.chartTitle')}</h2>
+          <p className="text-errorgrey text-sm">{t('httpCodes.chartInfo')}</p>
         </div>
-        <DateRangePicker from={range.from} to={range.to} onChange={setRange} />
+        <div className="flex items-center gap-3">
+          <DateRangePicker from={range.from} to={range.to} onChange={setRange} />
+          <button
+            onClick={handleExportCsv}
+            disabled={exporting}
+            className="flex items-center gap-2 px-4 py-2 bg-moonstone-400 text-prussian-700 font-bold rounded-lg hover:bg-moonstone-300 transition-colors text-sm disabled:opacity-50"
+          >
+            <Icon icon="ph:download" className="text-base" />
+            {exporting ? t('common.exporting') : t('common.csv')}
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -46,38 +122,152 @@ export default function HttpCodes() {
           {/* KPIs */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <KPICard
-              label="Succès (2xx)"
+              label={t('httpCodes.kpi2xx')}
               value={parseInt(overview?.s2xx || 0).toLocaleString('fr-FR')}
               icon="ph:check-circle"
               color="green"
-              info="Requêtes traitées avec succès"
+              info={t('httpCodes.kpi2xxInfo')}
             />
             <KPICard
-              label="Redirections (3xx)"
+              label={t('httpCodes.kpi3xx')}
               value={parseInt(overview?.s3xx || 0).toLocaleString('fr-FR')}
               icon="ph:arrows-clockwise"
               color="amber"
-              info="Redirections HTTP"
+              info={t('httpCodes.kpi3xxInfo')}
             />
             <KPICard
-              label="Erreurs client (4xx)"
+              label={t('httpCodes.kpi4xx')}
               value={parseInt(overview?.s4xx || 0).toLocaleString('fr-FR')}
               icon="ph:x-circle"
               color="dustyred"
-              info="Requêtes mal formées ou ressource non trouvée"
+              info={t('httpCodes.kpi4xxInfo')}
             />
             <KPICard
-              label="Erreurs serveur (5xx)"
+              label={t('httpCodes.kpi5xx')}
               value={parseInt(overview?.s5xx || 0).toLocaleString('fr-FR')}
               icon="ph:warning-octagon"
               color="dustyred"
-              info="Erreurs serveur"
+              info={t('httpCodes.kpi5xxInfo')}
             />
+          </div>
+
+          {/* Drill-down URL detail */}
+          <div className="bg-prussian-500 rounded-xl border border-prussian-400 p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <h3 className="text-white font-bold text-sm">{t('httpCodes.chartTitle')}</h3>
+              <div className="flex flex-wrap gap-2 items-center">
+                {/* Filtre status */}
+                <div className="flex gap-1 flex-wrap">
+                  {[
+                    { val: '', label: t('common.all') },
+                    { val: '2xx', label: '2xx' },
+                    { val: '3xx', label: '3xx' },
+                    { val: '404', label: '404' },
+                    { val: '4xx', label: '4xx' },
+                    { val: '5xx', label: '5xx' },
+                  ].map(f => (
+                    <button
+                      key={f.val}
+                      onClick={() => setStatusFilter(f.val)}
+                      className={clsx(
+                        'px-2 py-1 rounded text-xs font-semibold transition-colors',
+                        statusFilter === f.val
+                          ? 'bg-moonstone-400 text-prussian-700'
+                          : 'bg-prussian-600 text-errorgrey hover:text-white'
+                      )}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
+                {/* Filtre bot */}
+                <select
+                  value={botFilter}
+                  onChange={e => setBotFilter(e.target.value)}
+                  className="bg-prussian-600 border border-prussian-500 text-errorgrey text-xs rounded px-2 py-1"
+                >
+                  <option value="">{t('common.all')}</option>
+                  <option value="0">{t('common.humans')}</option>
+                  <option value="1">{t('common.bots')}</option>
+                </select>
+                {/* Recherche URL */}
+                <input
+                  type="text"
+                  placeholder={t('httpCodes.searchPlaceholder')}
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="bg-prussian-600 border border-prussian-500 text-white text-xs rounded px-2 py-1 w-40 focus:outline-none focus:border-moonstone-400"
+                />
+              </div>
+            </div>
+
+            {detailLoading ? (
+              <div className="flex items-center justify-center h-32">
+                <div className="w-6 h-6 border-2 border-moonstone-400 border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : detail.rows.length > 0 ? (
+              <>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-prussian-400">
+                        <SortableHeader col="url" sort={sort} onSort={toggleSort} align="left">{t('common.url')}</SortableHeader>
+                        <SortableHeader col="status_code" sort={sort} onSort={toggleSort}>{t('common.status')}</SortableHeader>
+                        <SortableHeader col="hits" sort={sort} onSort={toggleSort}>{t('common.hits')}</SortableHeader>
+                        <SortableHeader col="human_hits" sort={sort} onSort={toggleSort}>{t('common.humans')}</SortableHeader>
+                        <SortableHeader col="bot_hits" sort={sort} onSort={toggleSort}>{t('common.bots')}</SortableHeader>
+                        <SortableHeader col="last_seen" sort={sort} onSort={toggleSort}>{t('common.lastSeen')}</SortableHeader>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {detail.rows.map((row, i) => (
+                        <tr key={i} className="border-b border-prussian-600 hover:bg-prussian-400/30 transition-colors">
+                          <td className="px-3 py-2 text-moonstone-400 text-xs truncate max-w-sm">{row.url}</td>
+                          <td className="px-3 py-2 text-right">
+                            <span className={clsx('text-xs font-bold px-1.5 py-0.5 rounded', {
+                              'text-green-400': row.status_code >= 200 && row.status_code < 300,
+                              'text-amber-400': row.status_code >= 300 && row.status_code < 400,
+                              'text-dustyred-400': row.status_code >= 400,
+                            })}>
+                              {row.status_code}
+                            </span>
+                          </td>
+                          <td className="px-3 py-2 text-right text-white font-semibold text-xs">{parseInt(row.hits).toLocaleString('fr-FR')}</td>
+                          <td className="px-3 py-2 text-right text-lightgrey text-xs">{parseInt(row.human_hits).toLocaleString('fr-FR')}</td>
+                          <td className="px-3 py-2 text-right text-lightgrey text-xs">{parseInt(row.bot_hits).toLocaleString('fr-FR')}</td>
+                          <td className="px-3 py-2 text-right text-errorgrey text-xs">{row.last_seen ? dayjs(row.last_seen).format('DD/MM/YY') : '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {/* Pagination */}
+                {detail.total > DETAIL_LIMIT && (
+                  <div className="flex items-center justify-between mt-3">
+                    <span className="text-errorgrey text-xs">{detail.total} {t('common.results')}</span>
+                    <div className="flex gap-2">
+                      <button
+                        disabled={detailOffset === 0}
+                        onClick={() => setDetailOffset(o => Math.max(0, o - DETAIL_LIMIT))}
+                        className="px-3 py-1 text-xs bg-prussian-600 text-errorgrey rounded disabled:opacity-40 hover:text-white"
+                      >{t('common.previous')}</button>
+                      <button
+                        disabled={detailOffset + DETAIL_LIMIT >= detail.total}
+                        onClick={() => setDetailOffset(o => o + DETAIL_LIMIT)}
+                        className="px-3 py-1 text-xs bg-prussian-600 text-errorgrey rounded disabled:opacity-40 hover:text-white"
+                      >{t('common.next')}</button>
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="text-errorgrey text-sm text-center py-8">{t('common.noResults')}</p>
+            )}
           </div>
 
           {/* Graphique */}
           <div className="bg-prussian-500 rounded-xl border border-prussian-400 p-5">
-            <h3 className="text-white font-bold text-sm mb-4">Évolution quotidienne</h3>
+            <h3 className="text-white font-bold text-sm mb-4">{t('httpCodes.chartTitle')}</h3>
             {httpData.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
                 <AreaChart data={httpData}>
@@ -118,7 +308,7 @@ export default function HttpCodes() {
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <EmptyState message="Aucune donnée sur cette période" />
+              <EmptyState message={t('common.noData')} />
             )}
           </div>
         </>

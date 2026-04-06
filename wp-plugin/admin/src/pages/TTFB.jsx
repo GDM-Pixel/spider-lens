@@ -1,17 +1,39 @@
 import React, { useEffect, useState } from 'react'
 import { Icon } from '@iconify/react'
+import { useTranslation } from 'react-i18next'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import KPICard from '../components/ui/KPICard'
 import DateRangePicker from '../components/ui/DateRangePicker'
 import { usePersistentRange } from '../hooks/usePersistentRange'
+import BeginnerBanner from '../components/ui/BeginnerBanner'
 import api from '../api/client'
 import dayjs from 'dayjs'
 
 export default function TTFB() {
+  const { t } = useTranslation()
   const [range, setRange] = usePersistentRange('ttfb')
   const [data, setData] = useState([])
   const [stats, setStats] = useState({})
   const [loading, setLoading] = useState(false)
+  const [exporting, setExporting] = useState(false)
+
+  const handleExport = async () => {
+    setExporting(true)
+    try {
+      const params = new URLSearchParams({ from: range.from, to: range.to })
+      const url = `${window.spiderLens.apiBase}/stats/ttfb/export?${params}`
+      const res = await fetch(url, { headers: { 'X-WP-Nonce': window.spiderLens.nonce }, credentials: 'same-origin' })
+      if (res.ok) {
+        const blob = await res.blob()
+        const a = document.createElement('a')
+        a.href = URL.createObjectURL(blob)
+        a.download = `ttfb-${range.from}-${range.to}.csv`
+        a.click()
+        URL.revokeObjectURL(a.href)
+      }
+    } catch (err) { console.error('Export error:', err) }
+    finally { setExporting(false) }
+  }
 
   useEffect(() => {
     setLoading(true)
@@ -44,12 +66,31 @@ export default function TTFB() {
 
   return (
     <div className="flex flex-col gap-6">
+      <BeginnerBanner
+        icon="ph:gauge"
+        title={t('ttfb.welcomeTitle')}
+        tips={[
+          t('ttfb.tip1'),
+          t('ttfb.tip2'),
+          t('ttfb.tip3'),
+        ]}
+      />
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-white font-bold text-xl">TTFB (Time To First Byte)</h2>
-          <p className="text-errorgrey text-sm">Temps de réponse du serveur</p>
+          <h2 className="text-white font-bold text-xl">{t('ttfb.welcomeTitle')}</h2>
+          <p className="text-errorgrey text-sm">{t('ttfb.chartEvolutionInfo')}</p>
         </div>
-        <DateRangePicker from={range.from} to={range.to} onChange={setRange} />
+        <div className="flex items-center gap-3">
+          <DateRangePicker from={range.from} to={range.to} onChange={setRange} />
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            className="flex items-center gap-2 px-4 py-2 bg-moonstone-400 text-prussian-700 font-bold rounded-lg hover:bg-moonstone-300 transition-colors text-sm disabled:opacity-50"
+          >
+            <Icon icon="ph:download" className="text-base" />
+            {exporting ? t('common.exporting') : t('common.csv')}
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -61,31 +102,31 @@ export default function TTFB() {
           {/* KPIs */}
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
             <KPICard
-              label="TTFB moyen"
+              label={t('ttfb.kpiAvgTTFB')}
               value={`${stats.avg ?? 0} ms`}
               icon="ph:timer"
               color={stats.avg < 200 ? 'green' : stats.avg < 800 ? 'amber' : 'dustyred'}
-              info="Temps moyen avant la première donnée du serveur"
+              info={t('ttfb.kpiAvgTTFBInfo')}
             />
             <KPICard
-              label="TTFB minimum"
+              label={t('ttfb.kpiSlowPercent')}
               value={`${stats.min ?? 0} ms`}
               icon="ph:arrow-down"
               color="green"
-              info="Meilleur temps de réponse"
+              info={t('ttfb.kpiSlowPercentInfo')}
             />
             <KPICard
-              label="TTFB maximum"
+              label={t('ttfb.kpiFastPages')}
               value={`${stats.max ?? 0} ms`}
               icon="ph:arrow-up"
               color={stats.max < 800 ? 'amber' : 'dustyred'}
-              info="Pire temps de réponse"
+              info={t('ttfb.kpiFastPagesInfo')}
             />
           </div>
 
           {/* Graphique */}
           <div className="bg-prussian-500 rounded-xl border border-prussian-400 p-5">
-            <h3 className="text-white font-bold text-sm mb-4">Évolution quotidienne (ms)</h3>
+            <h3 className="text-white font-bold text-sm mb-4">{t('ttfb.chartEvolutionTitle')}</h3>
             {data.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
                 <AreaChart data={data}>
@@ -105,12 +146,12 @@ export default function TTFB() {
                   <Tooltip
                     contentStyle={{ background: '#262e40', border: '1px solid #273043', borderRadius: 8, color: '#fff' }}
                     labelFormatter={v => dayjs(v).format('DD/MM/YYYY')}
-                    formatter={v => [`${v} ms`, 'TTFB moyen']}
+                    formatter={v => [`${v} ms`, t('ttfb.chartEvolutionTitle')]}
                   />
                   <Area
                     type="monotone"
                     dataKey="avg_ttfb"
-                    name="TTFB moyen"
+                    name={t('ttfb.chartEvolutionTitle')}
                     stroke={getColor(stats.avg)}
                     fill="url(#gTtfb)"
                     strokeWidth={2}
@@ -119,33 +160,33 @@ export default function TTFB() {
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <EmptyState message="Aucune donnée sur cette période" />
+              <EmptyState message={t('common.noData')} />
             )}
           </div>
 
           {/* Légende des couleurs */}
           <div className="bg-prussian-500 rounded-xl border border-prussian-400 p-5">
-            <h4 className="text-white font-bold text-sm mb-3">Interprétation</h4>
+            <h4 className="text-white font-bold text-sm mb-3">{t('ttfb.thresholdLabel')}</h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="flex items-start gap-3">
                 <div className="w-3 h-3 rounded-full mt-1 bg-green-400 shrink-0" />
                 <div>
-                  <p className="text-white font-semibold text-sm">Excellent (&lt; 200 ms)</p>
-                  <p className="text-errorgrey text-xs">Réponse très rapide du serveur</p>
+                  <p className="text-white font-semibold text-sm">{t('ttfb.fast')}</p>
+                  <p className="text-errorgrey text-xs">{t('ttfb.kpiAvgTTFBInfo')}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <div className="w-3 h-3 rounded-full mt-1 bg-orange-400 shrink-0" />
                 <div>
-                  <p className="text-white font-semibold text-sm">Correct (200-800 ms)</p>
-                  <p className="text-errorgrey text-xs">Temps acceptable</p>
+                  <p className="text-white font-semibold text-sm">{t('ttfb.ok')}</p>
+                  <p className="text-errorgrey text-xs">{t('ttfb.kpiSlowPagesInfo')}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <div className="w-3 h-3 rounded-full mt-1 bg-dustyred-400 shrink-0" />
                 <div>
-                  <p className="text-white font-semibold text-sm">À optimiser (&gt; 800 ms)</p>
-                  <p className="text-errorgrey text-xs">Amélioration recommandée</p>
+                  <p className="text-white font-semibold text-sm">{t('ttfb.slow')}</p>
+                  <p className="text-errorgrey text-xs">{t('ttfb.chartEvolutionContent')}</p>
                 </div>
               </div>
             </div>

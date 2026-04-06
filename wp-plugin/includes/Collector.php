@@ -35,6 +35,11 @@ class Collector {
         if (wp_doing_cron()) return;
         if (defined('REST_REQUEST') && REST_REQUEST && !self::is_plugin_rest()) return;
 
+        // Appliquer les options d'exclusion
+        $settings = get_option('spider_lens_settings', []);
+        if (!empty($settings['exclude_logged_in']) && $settings['exclude_logged_in'] === '1' && is_user_logged_in()) return;
+        if (!empty($settings['exclude_admin']) && $settings['exclude_admin'] === '1' && current_user_can('manage_options')) return;
+
         $url = isset($_SERVER['REQUEST_URI']) ? esc_url_raw(wp_unslash($_SERVER['REQUEST_URI'])) : '/';
 
         if (BotDetector::should_skip_url($url)) {

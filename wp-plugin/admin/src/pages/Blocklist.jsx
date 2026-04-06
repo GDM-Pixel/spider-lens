@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { Icon } from '@iconify/react'
+import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
+import BeginnerBanner from '../components/ui/BeginnerBanner'
 
 const LIMIT = 50
 
 export default function Blocklist() {
+  const { t } = useTranslation()
   const [data, setData] = useState([])
   const [search, setSearch] = useState('')
   const [offset, setOffset] = useState(0)
@@ -77,9 +80,18 @@ export default function Blocklist() {
 
   return (
     <div className="flex flex-col gap-6">
+      <BeginnerBanner
+        icon="ph:prohibit"
+        title={t('blocklist.welcomeTitle')}
+        tips={[
+          t('blocklist.tip1'),
+          t('blocklist.tip2'),
+          t('blocklist.tip3'),
+        ]}
+      />
       <div>
-        <h2 className="text-white font-bold text-xl">Liste de blocage</h2>
-        <p className="text-errorgrey text-sm">IPs bloquées et exports serveur</p>
+        <h2 className="text-white font-bold text-xl">{t('blocklist.title')}</h2>
+        <p className="text-errorgrey text-sm">{t('blocklist.subtitle')}</p>
       </div>
 
       {/* Recherche + Exports */}
@@ -92,7 +104,7 @@ export default function Blocklist() {
             />
             <input
               type="text"
-              placeholder="Filtrer par IP..."
+              placeholder={t('blocklist.searchPlaceholder')}
               value={search}
               onChange={e => { setSearch(e.target.value); setOffset(0) }}
               className="w-full bg-prussian-500 border border-prussian-400 rounded-lg pl-9 pr-3 py-2 text-white text-sm focus:outline-none focus:border-moonstone-400"
@@ -105,14 +117,14 @@ export default function Blocklist() {
             className="flex items-center gap-2 px-4 py-2 bg-moonstone-400 text-prussian-700 font-bold rounded-lg hover:bg-moonstone-300 transition-colors text-sm"
           >
             <Icon icon="ph:download" className="text-base" />
-            Export Nginx
+            {t('blocklist.exportNginx')}
           </button>
           <button
             onClick={() => handleExport('apache')}
             className="flex items-center gap-2 px-4 py-2 bg-moonstone-400 text-prussian-700 font-bold rounded-lg hover:bg-moonstone-300 transition-colors text-sm"
           >
             <Icon icon="ph:download" className="text-base" />
-            Export Apache
+            {t('blocklist.exportApache')}
           </button>
         </div>
       </div>
@@ -129,19 +141,19 @@ export default function Blocklist() {
               <thead>
                 <tr className="border-b border-prussian-400">
                   <th className="px-4 py-3 text-left text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                    IP
+                    {t('network.headerIp')}
                   </th>
                   <th className="px-4 py-3 text-left text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                    Raison
+                    {t('blocklist.headerReason')}
                   </th>
                   <th className="px-4 py-3 text-left text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                    Bloquée le
+                    {t('blocklist.headerBlockedAt')}
                   </th>
                   <th className="px-4 py-3 text-left text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                    Par
+                    {t('common.by')}
                   </th>
                   <th className="px-4 py-3 text-center text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                    Action
+                    {t('blocklist.unblockTitle')}
                   </th>
                 </tr>
               </thead>
@@ -168,7 +180,7 @@ export default function Blocklist() {
                         onClick={() => handleUnblock(item.ip)}
                         className="text-moonstone-400 hover:text-moonstone-300 font-semibold text-sm"
                       >
-                        Débloquer
+                        {t('blocklist.unblockTitle')}
                       </button>
                     </td>
                   </tr>
@@ -199,7 +211,7 @@ export default function Blocklist() {
           </div>
         </>
       ) : (
-        <EmptyState message={search ? 'Aucune IP correspond à votre recherche' : 'La liste de blocage est vide'} />
+        <EmptyState message={search ? t('blocklist.emptySearch') : t('blocklist.emptyNoBlocks')} />
       )}
     </div>
   )

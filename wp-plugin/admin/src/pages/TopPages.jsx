@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react'
 import { Icon } from '@iconify/react'
+import { useTranslation } from 'react-i18next'
 import DateRangePicker from '../components/ui/DateRangePicker'
 import { usePersistentRange } from '../hooks/usePersistentRange'
+import BeginnerBanner from '../components/ui/BeginnerBanner'
 import api from '../api/client'
 import dayjs from 'dayjs'
 import clsx from 'clsx'
 
 export default function TopPages() {
+  const { t } = useTranslation()
   const [range, setRange] = usePersistentRange('top-pages')
   const [activeTab, setActiveTab] = useState('top-pages')
   const [data, setData] = useState([])
@@ -55,10 +58,19 @@ export default function TopPages() {
 
   return (
     <div className="flex flex-col gap-6">
+      <BeginnerBanner
+        icon="ph:list-magnifying-glass"
+        title={t('topPages.welcomeTitle')}
+        tips={[
+          t('topPages.tip1'),
+          t('topPages.tip2'),
+          t('topPages.tip3'),
+        ]}
+      />
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-white font-bold text-xl">Pages</h2>
-          <p className="text-errorgrey text-sm">URLs les plus visitées et erreurs 404</p>
+          <h2 className="text-white font-bold text-xl">{t('topPages.titleTop')}</h2>
+          <p className="text-errorgrey text-sm">{t('topPages.info404Title')}</p>
         </div>
         <DateRangePicker from={range.from} to={range.to} onChange={setRange} />
       </div>
@@ -66,8 +78,8 @@ export default function TopPages() {
       {/* Tabs */}
       <div className="flex border-b border-prussian-400">
         {[
-          { id: 'top-pages', label: 'Top Pages (200)' },
-          { id: 'top-404', label: 'Top 404' },
+          { id: 'top-pages', labelKey: 'topPages.tabTop' },
+          { id: 'top-404', labelKey: 'topPages.tab404' },
         ].map(tab => (
           <button
             key={tab.id}
@@ -79,7 +91,7 @@ export default function TopPages() {
                 : 'text-errorgrey border-transparent hover:text-lightgrey'
             )}
           >
-            {tab.label}
+            {t(tab.labelKey)}
           </button>
         ))}
       </div>
@@ -94,7 +106,7 @@ export default function TopPages() {
             />
             <input
               type="text"
-              placeholder="Filtrer par URL..."
+              placeholder={t('topPages.searchPlaceholder')}
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="w-full bg-prussian-500 border border-prussian-400 rounded-lg pl-9 pr-3 py-2 text-white text-sm focus:outline-none focus:border-moonstone-400"
@@ -106,7 +118,7 @@ export default function TopPages() {
           className="flex items-center gap-2 px-4 py-2 bg-moonstone-400 text-prussian-700 font-bold rounded-lg hover:bg-moonstone-300 transition-colors text-sm"
         >
           <Icon icon="ph:download" className="text-base" />
-          Export CSV
+          {t('common.csv')}
         </button>
       </div>
 
@@ -121,19 +133,19 @@ export default function TopPages() {
             <thead>
               <tr className="border-b border-prussian-400">
                 <th className="px-4 py-3 text-left text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                  URL
+                  {t('common.url')}
                 </th>
                 <th className="px-4 py-3 text-right text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                  Visites
+                  {t('topPages.headerHits')}
                 </th>
                 <th className="px-4 py-3 text-right text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                  Humains
+                  {t('common.humans')}
                 </th>
                 <th className="px-4 py-3 text-right text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                  Bots
+                  {t('common.bots')}
                 </th>
                 <th className="px-4 py-3 text-right text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                  Dernière visite
+                  {t('common.lastSeen')}
                 </th>
               </tr>
             </thead>
@@ -171,7 +183,7 @@ export default function TopPages() {
           </table>
         </div>
       ) : (
-        <EmptyState message={search ? 'Aucune page correspond à votre recherche' : 'Aucune donnée sur cette période'} />
+        <EmptyState message={search ? t('topPages.emptyTop') : t('common.noData')} />
       )}
     </div>
   )

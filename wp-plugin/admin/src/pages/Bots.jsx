@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import { Icon } from '@iconify/react'
+import { useTranslation } from 'react-i18next'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import DateRangePicker from '../components/ui/DateRangePicker'
 import { usePersistentRange } from '../hooks/usePersistentRange'
+import BeginnerBanner from '../components/ui/BeginnerBanner'
 import api from '../api/client'
 import dayjs from 'dayjs'
 
 const BOT_COLORS = ['#00c6e0', '#d62246', '#8b5cf6', '#f59e0b', '#10b981', '#6366f1', '#ec4899', '#06b6d4']
 
 export default function Bots() {
+  const { t } = useTranslation()
   const [range, setRange] = usePersistentRange('bots')
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(false)
@@ -56,10 +59,19 @@ export default function Bots() {
 
   return (
     <div className="flex flex-col gap-6">
+      <BeginnerBanner
+        icon="ph:robot"
+        title={t('bots.welcomeTitle')}
+        tips={[
+          t('bots.tip1'),
+          t('bots.tip2'),
+          t('bots.tip3'),
+        ]}
+      />
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-white font-bold text-xl">Bots</h2>
-          <p className="text-errorgrey text-sm">Robots et crawlers qui visitent votre site</p>
+          <h2 className="text-white font-bold text-xl">{t('bots.welcomeTitle')}</h2>
+          <p className="text-errorgrey text-sm">{t('bots.kpiBotRequestsInfo')}</p>
         </div>
         <DateRangePicker from={range.from} to={range.to} onChange={setRange} />
       </div>
@@ -73,7 +85,7 @@ export default function Bots() {
           {/* Graphique + Export */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 bg-prussian-500 rounded-xl border border-prussian-400 p-5">
-              <h3 className="text-white font-bold text-sm mb-4">Répartition des bots</h3>
+              <h3 className="text-white font-bold text-sm mb-4">{t('bots.chartDistributionTitle')}</h3>
               {pieData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
@@ -93,7 +105,7 @@ export default function Bots() {
                   </PieChart>
                 </ResponsiveContainer>
               ) : (
-                <EmptyState message="Aucun bot détecté" />
+                <EmptyState message={t('bots.emptyBots')} />
               )}
             </div>
 
@@ -103,7 +115,7 @@ export default function Bots() {
                 className="flex items-center gap-2 px-4 py-2 bg-moonstone-400 text-prussian-700 font-bold rounded-lg hover:bg-moonstone-300 transition-colors text-sm w-full justify-center"
               >
                 <Icon icon="ph:download" className="text-base" />
-                Export CSV
+                {t('common.csv')}
               </button>
             </div>
           </div>
@@ -111,19 +123,19 @@ export default function Bots() {
           {/* Tableau des bots */}
           {botData.length > 0 ? (
             <div className="bg-prussian-500 rounded-xl border border-prussian-400 p-5">
-              <h3 className="text-white font-bold text-sm mb-4">Détail des bots</h3>
+              <h3 className="text-white font-bold text-sm mb-4">{t('bots.chartDistributionTitle')}</h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-prussian-400">
                       <th className="px-4 py-3 text-left text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                        Nom du bot
+                        {t('common.by')}
                       </th>
                       <th className="px-4 py-3 text-right text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                        Visites
+                        {t('common.hits')}
                       </th>
                       <th className="px-4 py-3 text-right text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                        Dernière visite
+                        {t('common.lastSeen')}
                       </th>
                     </tr>
                   </thead>
@@ -149,7 +161,7 @@ export default function Bots() {
               </div>
             </div>
           ) : (
-            <EmptyState message="Aucun bot détecté sur cette période" />
+            <EmptyState message={t('bots.emptyBots')} />
           )}
         </>
       )}

@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react'
 import { Icon } from '@iconify/react'
+import { useTranslation } from 'react-i18next'
 import api from '../api/client'
+import BeginnerBanner from '../components/ui/BeginnerBanner'
 
 export default function Settings() {
+  const { t } = useTranslation()
   const [settings, setSettings] = useState({
     retention_days: 30,
+    exclude_logged_in: false,
+    exclude_admin: false,
     webhook_url: '',
     webhook_enabled: false,
     alert_email: '',
@@ -97,9 +102,18 @@ export default function Settings() {
 
   return (
     <div className="flex flex-col gap-6">
+      <BeginnerBanner
+        icon="ph:gear-six"
+        title={t('settings.title')}
+        tips={[
+          t('settings.tip1'),
+          t('settings.tip2'),
+          t('settings.tip3'),
+        ]}
+      />
       <div>
-        <h2 className="text-white font-bold text-xl">Paramètres</h2>
-        <p className="text-errorgrey text-sm">Configuration générale et notifications</p>
+        <h2 className="text-white font-bold text-xl">{t('settings.title')}</h2>
+        <p className="text-errorgrey text-sm">{t('settings.subtitle')}</p>
       </div>
 
       {/* Message de statut */}
@@ -122,12 +136,12 @@ export default function Settings() {
       <div className="bg-prussian-500 rounded-xl border border-prussian-400 p-5">
         <h3 className="text-white font-bold text-sm mb-4 flex items-center gap-2">
           <Icon icon="ph:calendar" className="text-lg" />
-          Rétention des données
+          {t('settings.alertThreshold')}
         </h3>
         <div className="flex flex-col gap-4">
           <div>
             <label className="block text-errorgrey text-xs uppercase font-semibold tracking-wide mb-2">
-              Durée de conservation (jours)
+              {t('settings.alertThreshold')}
             </label>
             <div className="flex items-center gap-4">
               <input
@@ -144,6 +158,27 @@ export default function Settings() {
               </span>
             </div>
             <p className="text-lightgrey text-xs mt-2">Les données seront automatiquement supprimées après cette durée</p>
+          </div>
+          <div className="flex flex-col gap-3 pt-2 border-t border-prussian-400">
+            <p className="text-errorgrey text-xs uppercase font-semibold tracking-wide">Exclusions</p>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={settings.exclude_logged_in === '1' || settings.exclude_logged_in === true}
+                onChange={e => handleChange('exclude_logged_in', e.target.checked ? '1' : '0')}
+                className="w-4 h-4 rounded accent-moonstone-400"
+              />
+              <span className="text-white font-semibold text-sm">Exclure les utilisateurs connectés</span>
+            </label>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={settings.exclude_admin === '1' || settings.exclude_admin === true}
+                onChange={e => handleChange('exclude_admin', e.target.checked ? '1' : '0')}
+                className="w-4 h-4 rounded accent-moonstone-400"
+              />
+              <span className="text-white font-semibold text-sm">Exclure les administrateurs</span>
+            </label>
           </div>
         </div>
       </div>
@@ -299,7 +334,7 @@ export default function Settings() {
           className="flex items-center gap-2 px-6 py-2 bg-moonstone-400 text-prussian-700 font-bold rounded-lg hover:bg-moonstone-300 transition-colors disabled:opacity-50"
         >
           <Icon icon="ph:floppy-disk" className="text-lg" />
-          {saving ? 'Sauvegarde...' : 'Enregistrer'}
+          {saving ? t('common.saving') : t('common.save')}
         </button>
         <button
           onClick={handleFlush}

@@ -44,6 +44,20 @@ class RestApi {
 
         // Flush buffer manuel
         register_rest_route($ns, '/flush',                ['methods' => 'POST', 'callback' => [self::class, 'flush_now'],         'permission_callback' => [self::class, 'check_permission']]);
+
+        // Test webhook
+        register_rest_route($ns, '/settings/test-webhook', ['methods' => 'POST', 'callback' => [self::class, 'test_webhook'],    'permission_callback' => [self::class, 'check_permission']]);
+
+        // Exports CSV
+        register_rest_route($ns, '/stats/http-codes/export',  ['methods' => 'GET', 'callback' => [self::class, 'export_http_codes'], 'permission_callback' => [self::class, 'check_permission']]);
+        register_rest_route($ns, '/stats/url-detail',         ['methods' => 'GET', 'callback' => [self::class, 'get_url_detail'],    'permission_callback' => [self::class, 'check_permission']]);
+        register_rest_route($ns, '/stats/url-detail/export',  ['methods' => 'GET', 'callback' => [self::class, 'export_url_detail'], 'permission_callback' => [self::class, 'check_permission']]);
+        register_rest_route($ns, '/stats/bots/export',       ['methods' => 'GET', 'callback' => [self::class, 'export_bots'],       'permission_callback' => [self::class, 'check_permission']]);
+        register_rest_route($ns, '/stats/top-pages/export',  ['methods' => 'GET', 'callback' => [self::class, 'export_top_pages'],  'permission_callback' => [self::class, 'check_permission']]);
+        register_rest_route($ns, '/stats/top-404/export',    ['methods' => 'GET', 'callback' => [self::class, 'export_top_404'],    'permission_callback' => [self::class, 'check_permission']]);
+        register_rest_route($ns, '/stats/ttfb/export',       ['methods' => 'GET', 'callback' => [self::class, 'export_ttfb'],       'permission_callback' => [self::class, 'check_permission']]);
+        register_rest_route($ns, '/network/ips/export',      ['methods' => 'GET', 'callback' => [self::class, 'export_ips'],        'permission_callback' => [self::class, 'check_permission']]);
+        register_rest_route($ns, '/network/user-agents/export', ['methods' => 'GET', 'callback' => [self::class, 'export_user_agents'], 'permission_callback' => [self::class, 'check_permission']]);
     }
 
     public static function check_permission(): bool {
@@ -525,5 +539,244 @@ class RestApi {
     public static function flush_now(): \WP_REST_Response {
         Collector::flush_buffer();
         return rest_ensure_response(['success' => true]);
+    }
+
+    // ── Exports CSV ──────────────────────────────────────────
+
+    private static function send_csv(string $filename, array $headers, array $rows): void {
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        $out = fopen('php://output', 'w');
+        fputcsv($out, $headers);
+        foreach ($rows as $row) {
+            fputcsv($out, $row);
+        }
+        fclose($out);
+        exit;
+    }
+
+    public static function get_url_detail(\WP_REST_Request $req): \WP_REST_Response {
+        global $wpdb;
+        ['from' => $from, 'to' => $to] = self::get_range($req);
+        $t      = self::table('hits');
+        $limit  = min((int)($req->get_param('limit') ?: 50), 500);
+        $offset = (int)($req->get_param('offset') ?: 0);
+        $search = sanitize_text_field($req->get_param('search') ?: '');
+        $bot    = $req->get_param('bot');
+        $status = sanitize_text_field($req->get_param('status') ?: '');
+        $sort   = in_array($req->get_param('sort'), ['hits', 'url', 'status_code', 'last_seen', 'bot_hits', 'human_hits'], true)
+                    ? $req->get_param('sort') : 'hits';
+        $dir    = $req->get_param('dir') === 'asc' ? 'ASC' : 'DESC';
+
+        $where  = 'WHERE timestamp BETWEEN %s AND %s';
+        $params = [$from, $to];
+
+        if ($status !== '') {
+            if (strlen($status) === 3 && substr($status, -2) === 'xx') {
+                $family = (int)substr($status, 0, 1);
+                $where .= ' AND status_code BETWEEN ' . ($family * 100) . ' AND ' . ($family * 100 + 99);
+            } elseif (is_numeric($status)) {
+                $where   .= ' AND status_code = %d';
+                $params[] = (int)$status;
+            }
+        }
+        if ($bot !== null && $bot !== '') {
+            $where .= ' AND is_bot = ' . ($bot === '1' ? '1' : '0');
+        }
+        if ($search) {
+            $where   .= ' AND url LIKE %s';
+            $params[] = '%' . $wpdb->esc_like($search) . '%';
+        }
+
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT url, status_code,
+                COUNT(*) AS hits,
+                SUM(CASE WHEN is_bot=0 THEN 1 ELSE 0 END) AS human_hits,
+                SUM(CASE WHEN is_bot=1 THEN 1 ELSE 0 END) AS bot_hits,
+                MAX(timestamp) AS last_seen
+            FROM `$t` $where
+            GROUP BY url, status_code
+            ORDER BY $sort $dir
+            LIMIT %d OFFSET %d",
+            array_merge($params, [$limit, $offset])
+        ), ARRAY_A);
+
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $total = (int)$wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(DISTINCT CONCAT(url, '|', status_code)) FROM `$t` $where",
+            $params
+        ));
+
+        return rest_ensure_response(['rows' => $rows, 'total' => $total]);
+    }
+
+    public static function export_url_detail(\WP_REST_Request $req): void {
+        global $wpdb;
+        ['from' => $from, 'to' => $to] = self::get_range($req);
+        $t      = self::table('hits');
+        $status = sanitize_text_field($req->get_param('status') ?: '');
+        $bot    = $req->get_param('bot');
+
+        $where  = 'WHERE timestamp BETWEEN %s AND %s';
+        $params = [$from, $to];
+
+        if ($status !== '') {
+            if (strlen($status) === 3 && substr($status, -2) === 'xx') {
+                $family = (int)substr($status, 0, 1);
+                $where .= ' AND status_code BETWEEN ' . ($family * 100) . ' AND ' . ($family * 100 + 99);
+            } elseif (is_numeric($status)) {
+                $where   .= ' AND status_code = %d';
+                $params[] = (int)$status;
+            }
+        }
+        if ($bot !== null && $bot !== '') {
+            $where .= ' AND is_bot = ' . ($bot === '1' ? '1' : '0');
+        }
+
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT url, status_code, COUNT(*) AS hits,
+                SUM(CASE WHEN is_bot=0 THEN 1 ELSE 0 END) AS human_hits,
+                SUM(CASE WHEN is_bot=1 THEN 1 ELSE 0 END) AS bot_hits,
+                MAX(timestamp) AS last_seen
+            FROM `$t` $where
+            GROUP BY url, status_code ORDER BY hits DESC LIMIT 5000",
+            $params
+        ), ARRAY_A);
+
+        self::send_csv("spider-lens-url-detail-{$from}-{$to}.csv",
+            ['URL', 'Status', 'Hits', 'Human Hits', 'Bot Hits', 'Last Seen'],
+            array_map(fn($r) => [$r['url'], $r['status_code'], $r['hits'], $r['human_hits'], $r['bot_hits'], $r['last_seen']], $rows)
+        );
+    }
+
+    public static function export_http_codes(\WP_REST_Request $req): void {
+        global $wpdb;
+        ['from' => $from, 'to' => $to] = self::get_range($req);
+        $t = self::table('hits');
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT DATE(timestamp) AS day,
+                SUM(CASE WHEN status_code BETWEEN 200 AND 299 THEN 1 ELSE 0 END) AS s2xx,
+                SUM(CASE WHEN status_code BETWEEN 300 AND 399 THEN 1 ELSE 0 END) AS s3xx,
+                SUM(CASE WHEN status_code BETWEEN 400 AND 499 THEN 1 ELSE 0 END) AS s4xx,
+                SUM(CASE WHEN status_code BETWEEN 500 AND 599 THEN 1 ELSE 0 END) AS s5xx
+            FROM `$t` WHERE timestamp BETWEEN %s AND %s
+            GROUP BY DATE(timestamp) ORDER BY day ASC",
+            $from, $to
+        ), ARRAY_A);
+        self::send_csv("spider-lens-http-codes-{$from}-{$to}.csv", ['Day', '2xx', '3xx', '4xx', '5xx'], array_map(fn($r) => [$r['day'], $r['s2xx'], $r['s3xx'], $r['s4xx'], $r['s5xx']], $rows));
+    }
+
+    public static function export_bots(\WP_REST_Request $req): void {
+        global $wpdb;
+        ['from' => $from, 'to' => $to] = self::get_range($req);
+        $t = self::table('hits');
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT bot_name AS name, COUNT(*) AS hits, MAX(timestamp) AS last_seen
+            FROM `$t` WHERE timestamp BETWEEN %s AND %s AND is_bot = 1 AND bot_name IS NOT NULL
+            GROUP BY bot_name ORDER BY hits DESC",
+            $from, $to
+        ), ARRAY_A);
+        self::send_csv("spider-lens-bots-{$from}-{$to}.csv", ['Bot', 'Hits', 'Last Seen'], array_map(fn($r) => [$r['name'], $r['hits'], $r['last_seen']], $rows));
+    }
+
+    public static function export_top_pages(\WP_REST_Request $req): void {
+        global $wpdb;
+        ['from' => $from, 'to' => $to] = self::get_range($req);
+        $t = self::table('hits');
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT url, COUNT(*) AS hits, SUM(CASE WHEN is_bot=0 THEN 1 ELSE 0 END) AS human_hits, SUM(CASE WHEN is_bot=1 THEN 1 ELSE 0 END) AS bot_hits, MAX(timestamp) AS last_seen
+            FROM `$t` WHERE timestamp BETWEEN %s AND %s AND status_code = 200
+            GROUP BY url ORDER BY hits DESC LIMIT 500",
+            $from, $to
+        ), ARRAY_A);
+        self::send_csv("spider-lens-top-pages-{$from}-{$to}.csv", ['URL', 'Hits', 'Humans', 'Bots', 'Last Seen'], array_map(fn($r) => [$r['url'], $r['hits'], $r['human_hits'], $r['bot_hits'], $r['last_seen']], $rows));
+    }
+
+    public static function export_top_404(\WP_REST_Request $req): void {
+        global $wpdb;
+        ['from' => $from, 'to' => $to] = self::get_range($req);
+        $t = self::table('hits');
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT url, COUNT(*) AS hits, SUM(CASE WHEN is_bot=0 THEN 1 ELSE 0 END) AS human_hits, SUM(CASE WHEN is_bot=1 THEN 1 ELSE 0 END) AS bot_hits, MAX(timestamp) AS last_seen
+            FROM `$t` WHERE timestamp BETWEEN %s AND %s AND status_code = 404
+            GROUP BY url ORDER BY hits DESC LIMIT 500",
+            $from, $to
+        ), ARRAY_A);
+        self::send_csv("spider-lens-404-{$from}-{$to}.csv", ['URL', 'Hits', 'Humans', 'Bots', 'Last Seen'], array_map(fn($r) => [$r['url'], $r['hits'], $r['human_hits'], $r['bot_hits'], $r['last_seen']], $rows));
+    }
+
+    public static function export_ttfb(\WP_REST_Request $req): void {
+        global $wpdb;
+        ['from' => $from, 'to' => $to] = self::get_range($req);
+        $t = self::table('hits');
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT DATE(timestamp) AS day, ROUND(AVG(response_time)) AS avg_ms, MIN(response_time) AS min_ms, MAX(response_time) AS max_ms, COUNT(*) AS total
+            FROM `$t` WHERE timestamp BETWEEN %s AND %s AND response_time IS NOT NULL AND is_bot = 0
+            GROUP BY DATE(timestamp) ORDER BY day ASC",
+            $from, $to
+        ), ARRAY_A);
+        self::send_csv("spider-lens-ttfb-{$from}-{$to}.csv", ['Day', 'Avg (ms)', 'Min (ms)', 'Max (ms)', 'Requests'], array_map(fn($r) => [$r['day'], $r['avg_ms'], $r['min_ms'], $r['max_ms'], $r['total']], $rows));
+    }
+
+    public static function export_ips(\WP_REST_Request $req): void {
+        global $wpdb;
+        ['from' => $from, 'to' => $to] = self::get_range($req);
+        $t = self::table('hits');
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT ip, COUNT(*) AS hits, SUM(CASE WHEN is_bot=1 THEN 1 ELSE 0 END) AS bot_hits, SUM(CASE WHEN is_bot=0 THEN 1 ELSE 0 END) AS human_hits, MAX(timestamp) AS last_seen
+            FROM `$t` WHERE timestamp BETWEEN %s AND %s
+            GROUP BY ip ORDER BY hits DESC LIMIT 500",
+            $from, $to
+        ), ARRAY_A);
+        self::send_csv("spider-lens-ips-{$from}-{$to}.csv", ['IP', 'Hits', 'Bot Hits', 'Human Hits', 'Last Seen'], array_map(fn($r) => [$r['ip'], $r['hits'], $r['bot_hits'], $r['human_hits'], $r['last_seen']], $rows));
+    }
+
+    public static function export_user_agents(\WP_REST_Request $req): void {
+        global $wpdb;
+        ['from' => $from, 'to' => $to] = self::get_range($req);
+        $t = self::table('hits');
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT user_agent, is_bot, MAX(bot_name) AS bot_name, COUNT(*) AS hits, MAX(timestamp) AS last_seen
+            FROM `$t` WHERE timestamp BETWEEN %s AND %s AND user_agent IS NOT NULL
+            GROUP BY user_agent, is_bot ORDER BY hits DESC LIMIT 500",
+            $from, $to
+        ), ARRAY_A);
+        self::send_csv("spider-lens-user-agents-{$from}-{$to}.csv", ['User Agent', 'Is Bot', 'Bot Name', 'Hits', 'Last Seen'], array_map(fn($r) => [$r['user_agent'], $r['is_bot'] ? 'Yes' : 'No', $r['bot_name'] ?? '', $r['hits'], $r['last_seen']], $rows));
+    }
+
+    public static function test_webhook(\WP_REST_Request $req): \WP_REST_Response {
+        $settings = get_option('spider_lens_settings', []);
+        $url = sanitize_text_field($req->get_param('webhook_url') ?: ($settings['webhook_url'] ?? ''));
+
+        if (empty($url)) {
+            return rest_ensure_response(['success' => false, 'message' => 'No webhook URL configured.']);
+        }
+
+        $payload = json_encode([
+            'embeds' => [[
+                'title'       => '✅ Spider-Lens — Test Webhook',
+                'description' => 'This is a test notification from your Spider-Lens WordPress plugin.',
+                'color'       => 3066993,
+            ]],
+        ]);
+
+        $response = wp_remote_post($url, [
+            'headers' => ['Content-Type' => 'application/json'],
+            'body'    => $payload,
+            'timeout' => 10,
+        ]);
+
+        if (is_wp_error($response)) {
+            return rest_ensure_response(['success' => false, 'message' => $response->get_error_message()]);
+        }
+
+        $code = wp_remote_retrieve_response_code($response);
+        if ($code >= 200 && $code < 300) {
+            return rest_ensure_response(['success' => true]);
+        }
+
+        return rest_ensure_response(['success' => false, 'message' => "Webhook returned HTTP $code"]);
     }
 }

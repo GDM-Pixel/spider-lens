@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import { Icon } from '@iconify/react'
+import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
 import clsx from 'clsx'
+import BeginnerBanner from '../components/ui/BeginnerBanner'
 
 const LIMIT = 50
 
 export default function Anomalies() {
+  const { t } = useTranslation()
   const [typeFilter, setTypeFilter] = useState('all')
   const [data, setData] = useState([])
   const [offset, setOffset] = useState(0)
@@ -35,8 +38,8 @@ export default function Anomalies() {
   }, [typeFilter, offset])
 
   const LABELS = {
-    traffic_spike: 'Spike de trafic',
-    error_rate_spike: "Taux d'erreurs élevé",
+    traffic_spike: t('anomalies.trafficSpike'),
+    error_rate_spike: t('anomalies.errorRate'),
   }
 
   const ICONS = {
@@ -51,17 +54,26 @@ export default function Anomalies() {
 
   return (
     <div className="flex flex-col gap-6">
+      <BeginnerBanner
+        icon="ph:warning-diamond"
+        title={t('anomalies.welcomeTitle')}
+        tips={[
+          t('anomalies.tip1'),
+          t('anomalies.tip2'),
+          t('anomalies.tip3'),
+        ]}
+      />
       <div>
-        <h2 className="text-white font-bold text-xl">Anomalies</h2>
-        <p className="text-errorgrey text-sm">Détection des pics de trafic et erreurs</p>
+        <h2 className="text-white font-bold text-xl">{t('anomalies.welcomeTitle')}</h2>
+        <p className="text-errorgrey text-sm">{t('anomalies.filterAll')}</p>
       </div>
 
       {/* Filtres */}
       <div className="flex gap-2 flex-wrap">
         {[
-          { id: 'all', label: 'Toutes' },
-          { id: 'traffic_spike', label: 'Pics de trafic' },
-          { id: 'error_rate_spike', label: "Taux d'erreurs" },
+          { id: 'all', labelKey: 'anomalies.filterAll' },
+          { id: 'traffic_spike', labelKey: 'anomalies.trafficSpike' },
+          { id: 'error_rate_spike', labelKey: 'anomalies.errorRate' },
         ].map(filter => (
           <button
             key={filter.id}
@@ -73,7 +85,7 @@ export default function Anomalies() {
                 : 'bg-prussian-500 border border-prussian-400 text-errorgrey hover:border-moonstone-400'
             )}
           >
-            {filter.label}
+            {t(filter.labelKey)}
           </button>
         ))}
       </div>
@@ -90,22 +102,22 @@ export default function Anomalies() {
               <thead>
                 <tr className="border-b border-prussian-400">
                   <th className="px-4 py-3 text-left text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                    Type
+                    {t('anomalies.filterAll')}
                   </th>
                   <th className="px-4 py-3 text-center text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                    Sévérité
+                    {t('anomalies.badgeCritical')}
                   </th>
                   <th className="px-4 py-3 text-right text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                    Observé
+                    {t('anomalies.observed')}
                   </th>
                   <th className="px-4 py-3 text-right text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                    Baseline
+                    {t('anomalies.baseline')}
                   </th>
                   <th className="px-4 py-3 text-left text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                    Message
+                    {t('common.hits')}
                   </th>
                   <th className="px-4 py-3 text-right text-errorgrey text-xs uppercase font-semibold tracking-wide">
-                    Détectée le
+                    {t('common.lastSeen')}
                   </th>
                 </tr>
               </thead>
@@ -147,7 +159,7 @@ export default function Anomalies() {
                                 : 'bg-green-400/20 text-green-300'
                           )}
                         >
-                          {isCritical ? 'Critique' : isWarning ? 'Avertissement' : 'Info'}
+                          {isCritical ? t('anomalies.badgeCritical') : isWarning ? t('anomalies.badgeCritical') : 'Info'}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-right text-white font-semibold font-mono">
@@ -176,22 +188,22 @@ export default function Anomalies() {
               disabled={offset === 0}
               className="px-3 py-2 bg-prussian-500 border border-prussian-400 rounded-lg text-white text-sm disabled:opacity-50 hover:border-moonstone-400 transition-colors"
             >
-              Précédent
+              {t('common.previous')}
             </button>
             <span className="text-errorgrey text-sm">
-              Page {Math.floor(offset / LIMIT) + 1}
+              {t('common.page', {page: Math.floor(offset / LIMIT) + 1, total: 1})}
             </span>
             <button
               onClick={() => setOffset(offset + LIMIT)}
               disabled={data.length < LIMIT}
               className="px-3 py-2 bg-prussian-500 border border-prussian-400 rounded-lg text-white text-sm disabled:opacity-50 hover:border-moonstone-400 transition-colors"
             >
-              Suivant
+              {t('common.next')}
             </button>
           </div>
         </>
       ) : (
-        <EmptyState message="Aucune anomalie détectée" />
+        <EmptyState message={t('anomalies.emptyTitle')} />
       )}
     </div>
   )
