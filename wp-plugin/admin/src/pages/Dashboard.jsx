@@ -6,6 +6,7 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, LineChart, Line, Are
 import KPICard from '../components/ui/KPICard'
 import DateRangePicker from '../components/ui/DateRangePicker'
 import InfoBubble from '../components/ui/InfoBubble'
+import HeatmapChart from '../components/ui/HeatmapChart'
 import { usePersistentRange } from '../hooks/usePersistentRange'
 import BeginnerBanner from '../components/ui/BeginnerBanner'
 import api from '../api/client'
@@ -36,6 +37,7 @@ export default function Dashboard() {
   const [botsData, setBotsData]           = useState([])
   const [recentAnomalies, setAnomalies]   = useState([])
   const [weeklyTrends, setWeeklyTrends]   = useState([])
+  const [timelineData, setTimelineData]   = useState([])
   const [loading, setLoading]             = useState(true)
 
   useEffect(() => {
@@ -46,12 +48,14 @@ export default function Dashboard() {
       api.get('/stats/bots',          { params: range }),
       api.get('/anomalies/recent'),
       api.get('/stats/weekly-trends', { params: { weeks: 12 } }),
-    ]).then(([ov, http, bots, anom, trends]) => {
+      api.get('/stats/timeline',      { params: range }),
+    ]).then(([ov, http, bots, anom, trends, timeline]) => {
       setOverview(ov.data)
       setHttpData(http.data)
       setBotsData(bots.data)
       setAnomalies(anom.data)
       setWeeklyTrends(trends.data)
+      setTimelineData(timeline.data)
     }).finally(() => setLoading(false))
   }, [range])
 
@@ -198,6 +202,17 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* Heatmap activité horaire */}
+          {timelineData.length > 0 && (
+            <div className="bg-prussian-500 rounded-xl border border-prussian-400 p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <Icon icon="ph:clock" className="text-moonstone-400 text-lg" />
+                <h3 className="text-white font-bold text-sm">{t('dashboard.activityHeatmap')}</h3>
+              </div>
+              <HeatmapChart data={timelineData} />
             </div>
           )}
 

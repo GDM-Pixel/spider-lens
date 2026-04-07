@@ -122,20 +122,64 @@ export default function NovaChatBubble() {
     addMessage('user', text)
     addMessage('assistant', '', { streaming: true })
 
-    try {
-      const history = messages.concat({ role: 'user', content: text }).slice(-10)
-      const r = await api.post('/assistant/chat', {
-        messages:    history.map(m => ({ role: m.role, content: m.content })),
-        pageContext,
-      })
+    const history = messages.concat({ role: 'user', content: text }).slice(-10)
+    const body = JSON.stringify({
+      messages:    history.map(m => ({ role: m.role, content: m.content })),
+      pageContext,
+    })
 
-      const reply = r.data?.reply || t('assistant.errorGeneric')
-      updateLastAssistant(reply)
+    try {
+      // Streaming SSE via /assistant/chat-stream
+      const response = await fetch(
+        `${window.spiderLens.apiBase}/assistant/chat-stream`,
+        {
+          method:  'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-WP-Nonce':   window.spiderLens.nonce,
+          },
+          body,
+        }
+      )
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data?.message || `HTTP ${response.status}`)
+      }
+
+      const reader  = response.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+      let hasChunk = false
+
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop()
+        for (const line of lines) {
+          if (!line.startsWith('data:')) continue
+          const raw = line.slice(5).trim()
+          if (raw === '[DONE]') break
+          try {
+            const parsed = JSON.parse(raw)
+            if (parsed.error) throw new Error(parsed.error)
+            if (parsed.text) {
+              updateLastAssistant(parsed.text)
+              hasChunk = true
+            }
+          } catch (e) {
+            if (e.message && !hasChunk) throw e
+          }
+        }
+      }
+
       finalizeLastAssistant()
     } catch (err) {
       removeLastMessage()
-      const msg = err.response?.data?.message || t('assistant.errorGeneric')
-      addMessage('assistant', msg)
+      addMessage('assistant', err.message || t('assistant.errorGeneric'))
     } finally {
       setSending(false)
     }

@@ -10,6 +10,7 @@ import ChartTooltip from '../components/ui/ChartTooltip'
 import DateRangePicker from '../components/ui/DateRangePicker'
 import InfoBubble from '../components/ui/InfoBubble'
 import BeginnerBanner from '../components/ui/BeginnerBanner'
+import HeatmapChart from '../components/ui/HeatmapChart'
 import { usePersistentRange } from '../hooks/usePersistentRange'
 import { useSite } from '../context/SiteContext'
 import { useChat } from '../context/ChatContext'
@@ -34,6 +35,7 @@ export default function Dashboard() {
   const [botsData, setBotsData] = useState([])
   const [recentAnomalies, setRecentAnomalies] = useState([])
   const [weeklyTrends, setWeeklyTrends] = useState([])
+  const [timelineData, setTimelineData] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -45,12 +47,14 @@ export default function Dashboard() {
       api.get('/stats/bots', { params: range }),
       api.get('/alerts/anomalies/recent', { params: anomalyParams }),
       api.get('/stats/weekly-trends', { params: { weeks: 12 } }),
-    ]).then(([ov, http, bots, anomalies, trends]) => {
+      api.get('/stats/timeline', { params: range }),
+    ]).then(([ov, http, bots, anomalies, trends, timeline]) => {
       setOverview(ov.data)
       setHttpData(http.data)
       setBotsData(bots.data)
       setRecentAnomalies(anomalies.data)
       setWeeklyTrends(trends.data)
+      setTimelineData(timeline.data)
     }).finally(() => setLoading(false))
   }, [range, activeSiteId])
 
@@ -311,6 +315,17 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* Heatmap activité horaire */}
+          {timelineData.length > 0 && (
+            <div className="bg-prussian-500 rounded-xl border border-prussian-400 p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <Icon icon="ph:clock" className="text-moonstone-400 text-lg" />
+                <h3 className="text-white font-bold text-sm">{t('dashboard.activityHeatmap')}</h3>
+              </div>
+              <HeatmapChart data={timelineData} />
             </div>
           )}
 

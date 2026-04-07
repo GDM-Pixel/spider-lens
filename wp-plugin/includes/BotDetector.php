@@ -43,6 +43,9 @@ class BotDetector {
         'OpenLinkProfiler'     => '/openlinkprofiler/i',
         'spbot'                => '/spbot/i',
         'Screaming Frog'       => '/screaming.?frog/i',
+        'Barkrowler'           => '/barkrowler/i',
+        'IbouBot'              => '/iboubot/i',
+        'HaloBot'              => '/halobot/i',
 
         // Monitoring / uptime
         'UptimeRobot'          => '/uptimerobot/i',
@@ -96,7 +99,9 @@ class BotDetector {
         }
         // Requêtes internes WP
         if (strpos($url, '/wp-cron.php') !== false) return true;
-        if (strpos($url, '/wp-json/') !== false && strpos($url, '/wp-json/spider-lens/') === false) return true;
+        if (strpos($url, '/wp-json/') !== false) return true;
+        if (strpos($url, '/wp-login.php') !== false) return true;
+        if (strpos($url, '/wp-admin/') !== false) return true;
         if (strpos($url, '/xmlrpc.php') !== false) return true;
 
         return false;

@@ -5,7 +5,7 @@ defined('ABSPATH') || exit;
 
 class Database {
 
-    const DB_VERSION = '1.1';
+    const DB_VERSION = '1.2';
     const DB_VERSION_OPTION = 'spider_lens_db_version';
 
     public static function install(): void {
@@ -29,6 +29,7 @@ class Database {
             post_id       BIGINT UNSIGNED DEFAULT NULL,
             post_type     VARCHAR(50)     DEFAULT NULL,
             is_logged_in  TINYINT(1)      NOT NULL DEFAULT 0,
+            country_code  CHAR(2)         DEFAULT NULL,
             PRIMARY KEY (id),
             KEY idx_timestamp  (timestamp),
             KEY idx_ip         (ip(20)),
@@ -135,6 +136,7 @@ class Database {
         wp_clear_scheduled_hook('spider_lens_weekly_report');
         wp_clear_scheduled_hook('spider_lens_purge_old_hits');
         wp_clear_scheduled_hook('spider_lens_crawl_batch');
+        wp_clear_scheduled_hook('spider_lens_auto_crawl');
     }
 
     /**

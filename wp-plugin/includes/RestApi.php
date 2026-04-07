@@ -22,6 +22,7 @@ class RestApi {
         register_rest_route($ns, '/stats/bots',           ['methods' => 'GET', 'callback' => [self::class, 'get_bots'],           'permission_callback' => [self::class, 'check_permission']]);
         register_rest_route($ns, '/stats/ttfb',           ['methods' => 'GET', 'callback' => [self::class, 'get_ttfb'],           'permission_callback' => [self::class, 'check_permission']]);
         register_rest_route($ns, '/stats/weekly-trends',  ['methods' => 'GET', 'callback' => [self::class, 'get_weekly_trends'],  'permission_callback' => [self::class, 'check_permission']]);
+        register_rest_route($ns, '/stats/timeline',       ['methods' => 'GET', 'callback' => [self::class, 'get_timeline'],       'permission_callback' => [self::class, 'check_permission']]);
 
         // Réseau
         register_rest_route($ns, '/network/ips',          ['methods' => 'GET', 'callback' => [self::class, 'get_ips'],            'permission_callback' => [self::class, 'check_permission']]);
@@ -71,8 +72,9 @@ class RestApi {
         register_rest_route($ns, '/crawler/summary',                       ['methods' => 'GET',    'callback' => [self::class, 'get_crawl_summary'], 'permission_callback' => [self::class, 'check_permission']]);
 
         // Assistant IA
-        register_rest_route($ns, '/assistant/analyze', ['methods' => 'POST', 'callback' => [self::class, 'ai_analyze'], 'permission_callback' => [self::class, 'check_permission']]);
-        register_rest_route($ns, '/assistant/chat',    ['methods' => 'POST', 'callback' => [self::class, 'ai_chat'],    'permission_callback' => [self::class, 'check_permission']]);
+        register_rest_route($ns, '/assistant/analyze',     ['methods' => 'POST', 'callback' => [self::class, 'ai_analyze'],     'permission_callback' => [self::class, 'check_permission']]);
+        register_rest_route($ns, '/assistant/chat',        ['methods' => 'POST', 'callback' => [self::class, 'ai_chat'],        'permission_callback' => [self::class, 'check_permission']]);
+        register_rest_route($ns, '/assistant/chat-stream', ['methods' => 'POST', 'callback' => [self::class, 'ai_chat_stream'], 'permission_callback' => [self::class, 'check_permission']]);
     }
 
     public static function check_permission(): bool {
@@ -276,6 +278,35 @@ class RestApi {
         }
 
         return rest_ensure_response($results);
+    }
+
+    public static function get_timeline(\WP_REST_Request $req): \WP_REST_Response {
+        global $wpdb;
+        ['from' => $from, 'to' => $to] = self::get_range($req);
+        $t = self::table('hits');
+
+        // MySQL DAYOFWEEK() : 1=dimanche, 2=lundi, ..., 7=samedi → on soustrait 1 → 0=dim, 1=lun, ..., 6=sam
+        // Même convention que SQLite strftime('%w') utilisé dans Node.js
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT
+                HOUR(timestamp)          AS hour,
+                DAYOFWEEK(timestamp) - 1 AS weekday,
+                COUNT(*)                 AS hits
+             FROM `$t`
+             WHERE timestamp BETWEEN %s AND %s
+             GROUP BY hour, weekday
+             ORDER BY weekday, hour",
+            $from, $to
+        ), ARRAY_A) ?: [];
+
+        // Formater les types (cohérence avec la réponse Node)
+        $data = array_map(fn($r) => [
+            'hour'    => str_pad((string)(int)$r['hour'], 2, '0', STR_PAD_LEFT),
+            'weekday' => (string)(int)$r['weekday'],
+            'hits'    => (int)$r['hits'],
+        ], $rows);
+
+        return rest_ensure_response($data);
     }
 
     public static function get_ips(\WP_REST_Request $req): \WP_REST_Response {
@@ -914,5 +945,24 @@ class RestApi {
         }
 
         return rest_ensure_response(['reply' => $result]);
+    }
+
+    /**
+     * Chat streaming SSE — envoie les chunks Gemini au fil de l'eau.
+     * Court-circuite le système de réponse WP REST pour émettre du text/event-stream.
+     */
+    public static function ai_chat_stream(\WP_REST_Request $req): void {
+        $messages     = $req->get_param('messages') ?? [];
+        $page_context = $req->get_param('pageContext') ?? null;
+
+        if (!is_array($messages) || empty($messages)) {
+            header('Content-Type: text/event-stream');
+            echo "data: " . wp_json_encode(['error' => 'Messages requis.']) . "\n\n";
+            flush();
+            exit;
+        }
+
+        AiAnalyzer::chat_stream($messages, $page_context);
+        exit;
     }
 }

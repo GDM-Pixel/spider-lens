@@ -29,22 +29,22 @@ class Collector {
      * Appelé sur shutdown (après que WP a envoyé la réponse).
      */
     public static function capture(): void {
-        // Ignorer tout le trafic backend WP (admin, ajax, cron, REST hors notre namespace)
+        // Filtre URL immédiat — avant tout bootstrap WP (le plus fiable)
+        $uri = isset($_SERVER['REQUEST_URI']) ? wp_unslash($_SERVER['REQUEST_URI']) : '/';
+        if (BotDetector::should_skip_url($uri)) return;
+
+        // Ignorer tout le trafic backend WP (admin, ajax, cron, REST, wp-login, xmlrpc)
         if (is_admin()) return;
         if (wp_doing_ajax()) return;
         if (wp_doing_cron()) return;
-        if (defined('REST_REQUEST') && REST_REQUEST && !self::is_plugin_rest()) return;
+        if (defined('REST_REQUEST') && REST_REQUEST) return;
 
         // Appliquer les options d'exclusion
         $settings = get_option('spider_lens_settings', []);
         if (!empty($settings['exclude_logged_in']) && $settings['exclude_logged_in'] === '1' && is_user_logged_in()) return;
         if (!empty($settings['exclude_admin']) && $settings['exclude_admin'] === '1' && current_user_can('manage_options')) return;
 
-        $url = isset($_SERVER['REQUEST_URI']) ? esc_url_raw(wp_unslash($_SERVER['REQUEST_URI'])) : '/';
-
-        if (BotDetector::should_skip_url($url)) {
-            return;
-        }
+        $url = esc_url_raw($uri);
 
         $user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT'])) : '';
         $ip         = self::get_client_ip();
@@ -70,6 +70,15 @@ class Collector {
             }
         }
 
+        // GeoIP : Cloudflare fournit le code pays via header (zero overhead)
+        $country_code = null;
+        if (!empty($_SERVER['HTTP_CF_IPCOUNTRY'])) {
+            $cc = strtoupper(sanitize_text_field(wp_unslash($_SERVER['HTTP_CF_IPCOUNTRY'])));
+            if (strlen($cc) === 2 && $cc !== 'XX' && $cc !== 'T1') {
+                $country_code = $cc;
+            }
+        }
+
         $hit = [
             'timestamp'     => current_time('mysql'),
             'ip'            => $ip,
@@ -84,6 +93,7 @@ class Collector {
             'post_id'       => $post_id,
             'post_type'     => $post_type,
             'is_logged_in'  => is_user_logged_in() ? 1 : 0,
+            'country_code'  => $country_code,
         ];
 
         self::push_to_buffer($hit);
@@ -134,7 +144,7 @@ class Collector {
         $values       = [];
 
         foreach ($hits as $h) {
-            $placeholders[] = '(%s, %s, %s, %s, %d, %s, %s, %s, %d, %s, %s, %s, %d)';
+            $placeholders[] = '(%s, %s, %s, %s, %d, %s, %s, %s, %d, %s, %s, %s, %d, %s)';
             $values[] = $h['timestamp'];
             $values[] = $h['ip'];
             $h['url'] = mb_substr($h['url'], 0, 2048);
@@ -149,10 +159,11 @@ class Collector {
             $values[] = $h['post_id'] !== null ? (string)$h['post_id'] : null;
             $values[] = $h['post_type'];
             $values[] = $h['is_logged_in'];
+            $values[] = $h['country_code'] ?? null;
         }
 
         $sql = "INSERT INTO `$table`
-            (timestamp, ip, url, method, status_code, user_agent, referer, response_time, is_bot, bot_name, post_id, post_type, is_logged_in)
+            (timestamp, ip, url, method, status_code, user_agent, referer, response_time, is_bot, bot_name, post_id, post_type, is_logged_in, country_code)
             VALUES " . implode(', ', $placeholders);
 
         // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
@@ -186,11 +197,4 @@ class Collector {
         return '0.0.0.0';
     }
 
-    private static function is_plugin_rest(): bool {
-        if (!isset($_SERVER['REQUEST_URI'])) return false;
-        return strpos(
-            sanitize_text_field(wp_unslash($_SERVER['REQUEST_URI'])),
-            '/wp-json/spider-lens/'
-        ) !== false;
-    }
 }

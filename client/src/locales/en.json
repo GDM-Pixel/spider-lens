@@ -152,6 +152,7 @@
     "trendsBots": "Bots",
     "trendsGooglebot": "Googlebot / week",
     "trendsTTFB": "Avg TTFB (ms)",
+    "activityHeatmap": "Hourly activity heatmap",
     "recentAnomalies": "Recent anomalies (48h)",
     "viewAll": "View all →",
     "anomalyTrafficSpike": "Traffic spike",

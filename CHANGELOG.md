@@ -6,6 +6,20 @@ Format: [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [1.1.1] — 2026-04-07
+
+### Added
+- **Bot detection** : ajout de 3 crawlers SEO dans la liste de détection (WP plugin + app Node)
+  - `Barkrowler` — crawler SEO de [Babbar.tech](https://babbar.tech)
+  - `IbouBot` — crawler du moteur de recherche [Ibou.io](https://ibou.io) (Sylvain & Nicolas Peyronnet)
+  - `HaloBot` — crawler de [Haloscan.com](https://haloscan.com) — un grand merci à l'équipe Haloscan pour leur bot proprement identifié dans le User-Agent !
+
+### Fixed
+- **Collector WP** : les requêtes `/wp-json/*`, `/wp-admin/*` et `/wp-login.php` ne remontent plus dans les stats Top-Pages
+- **BotDetector WP** : double filtre URL avant et après bootstrap WP pour garantir l'exclusion des URLs internes dans tous les contextes serveur
+
+---
+
 ## [1.1.0] — 2026-04-04
 
 ### Added

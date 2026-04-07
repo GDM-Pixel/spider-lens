@@ -21,8 +21,11 @@ export default function Settings() {
     smtp_pass: '',
     smtp_secure: true,
     gemini_api_key: '',
-    gemini_model: 'gemini-2.0-flash',
+    gemini_model: 'gemini-2.5-flash',
     gemini_api_key_set: false,
+    auto_crawl_enabled: false,
+    alert_googlebot_enabled: false,
+    alert_googlebot_days: 7,
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -408,6 +411,41 @@ export default function Settings() {
         </div>
       </div>
 
+      {/* Section Alertes avancées */}
+      <div className="bg-prussian-500 rounded-xl border border-prussian-400 p-5">
+        <h3 className="text-white font-bold text-sm mb-4 flex items-center gap-2">
+          <Icon icon="ph:detective" className="text-lg" />
+          Détection d'anomalies
+        </h3>
+        <div className="flex flex-col gap-4">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={settings.alert_googlebot_enabled === '1' || settings.alert_googlebot_enabled === true}
+              onChange={e => handleChange('alert_googlebot_enabled', e.target.checked ? '1' : '0')}
+              className="w-4 h-4 rounded accent-moonstone-400"
+            />
+            <span className="text-white font-semibold text-sm">Alerte si Googlebot est absent</span>
+          </label>
+          {(settings.alert_googlebot_enabled === '1' || settings.alert_googlebot_enabled === true) && (
+            <div className="ml-7 flex items-center gap-3">
+              <label className="text-errorgrey text-xs">Seuil d'absence (jours) :</label>
+              <input
+                type="number"
+                min="1"
+                max="30"
+                value={settings.alert_googlebot_days}
+                onChange={e => handleChange('alert_googlebot_days', parseInt(e.target.value) || 7)}
+                className="w-20 bg-prussian-700 border border-prussian-500 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:border-moonstone-400"
+              />
+            </div>
+          )}
+          <p className="text-lightgrey text-xs ml-7">
+            Détecte aussi automatiquement les spikes de trafic, les erreurs 5xx et les bots inconnus
+          </p>
+        </div>
+      </div>
+
       {/* Section Gemini IA */}
       <div className="bg-prussian-500 rounded-xl border border-prussian-400 p-5">
         <h3 className="text-white font-bold text-sm mb-4 flex items-center gap-2">
@@ -444,9 +482,9 @@ export default function Settings() {
               onChange={e => handleChange('gemini_model', e.target.value)}
               className="w-full bg-prussian-700 border border-prussian-500 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-moonstone-400"
             >
-              <option value="gemini-2.0-flash">gemini-2.0-flash (recommandé)</option>
-              <option value="gemini-1.5-flash">gemini-1.5-flash</option>
-              <option value="gemini-1.5-pro">gemini-1.5-pro (plus puissant)</option>
+              <option value="gemini-2.5-flash">gemini-2.5-flash (recommandé)</option>
+              <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+              <option value="gemini-2.5-pro">gemini-2.5-pro (plus puissant)</option>
             </select>
           </div>
         </div>
@@ -459,6 +497,22 @@ export default function Settings() {
           {t('settings.sectionCrawler')}
         </h3>
         <p className="text-errorgrey text-xs mb-4">{t('settings.sectionCrawlerDesc')}</p>
+
+        {/* Auto-crawl */}
+        <div className="flex flex-col gap-3 mb-4 pb-4 border-b border-prussian-400">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={settings.auto_crawl_enabled === '1' || settings.auto_crawl_enabled === true}
+              onChange={e => handleChange('auto_crawl_enabled', e.target.checked ? '1' : '0')}
+              className="w-4 h-4 rounded accent-moonstone-400"
+            />
+            <span className="text-white font-semibold text-sm">Crawl automatique hebdomadaire</span>
+          </label>
+          <p className="text-lightgrey text-xs ml-7">
+            Lance un crawl automatique chaque dimanche à 3h (UTC) si des sitemaps sont configurés
+          </p>
+        </div>
 
         {/* Sitemaps */}
         <div className="flex flex-col gap-3 mb-4">
