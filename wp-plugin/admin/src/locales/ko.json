@@ -80,6 +80,7 @@
     "csv": "CSV",
     "excel": "Excel",
     "exporting": "내보내는 중...",
+    "refresh": "새로고침",
     "cancel": "취소",
     "save": "저장",
     "saving": "저장 중...",
@@ -94,7 +95,8 @@
     "url": "URL",
     "status": "상태",
     "site": "사이트",
-    "by": "작성자"
+    "by": "작성자",
+    "openInNewTab": "새 탭에서 열기"
   },
   "login": {
     "subtitle": "SEO 중심 트래픽 분석기",
@@ -581,5 +583,14 @@
     "errorGeneric": "오류가 발생했습니다. 다시 시도하세요.",
     "poweredBy": "제공자",
     "clearChat": "대화 지우기"
+  },
+  "recheck": {
+    "button": "URL 재확인",
+    "loading": "확인 중…",
+    "fixed200": "수정됨 (200 OK) — {{date}}에 확인",
+    "redirected": "리다이렉트 ({{code}}) → {{target}}",
+    "stillBroken": "여전히 오류 ({{code}})",
+    "error": "확인 오류",
+    "columnHeader": "상태"
   }
 }

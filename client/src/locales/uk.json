@@ -22,6 +22,7 @@
     "expert": "Експерт",
     "allSites": "Усі сайти",
     "openMenu": "Відкрити меню",
+    "refresh": "Оновити",
     "closeMenu": "Закрити меню",
     "pages": {
       "dashboard": {
@@ -94,7 +95,17 @@
     "url": "URL",
     "status": "Статус",
     "site": "Сайт",
-    "by": "Користувачем"
+    "by": "Користувачем",
+    "openInNewTab": "Відкрити у новій вкладці"
+  },
+  "recheck": {
+    "button": "Перевірити URL знову",
+    "loading": "Перевірка…",
+    "fixed200": "Виправлено (200 OK) — перевірено {{date}}",
+    "redirected": "Перенаправлено ({{code}}) → {{target}}",
+    "stillBroken": "Ще зламано ({{code}})",
+    "error": "Помилка перевірки",
+    "columnHeader": "Статус"
   },
   "login": {
     "subtitle": "Аналізатор трафіку, орієнтований на SEO",

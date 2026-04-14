@@ -8,11 +8,15 @@ import api from '../api/client'
 import dayjs from 'dayjs'
 import clsx from 'clsx'
 import { usePageContext } from '../hooks/usePageContext'
+import { useRefresh } from '../context/RefreshContext'
+import UrlCell from '../components/ui/UrlCell'
+import RecheckButton from '../components/ui/RecheckButton'
 
 export default function TopPages() {
   const { t } = useTranslation()
   const [range, setRange] = usePersistentRange('top-pages')
   const [activeTab, setActiveTab] = useState('top-pages')
+  const { refreshKey, consumeFresh } = useRefresh()
 
   usePageContext(() =>
     Promise.all([
@@ -28,16 +32,18 @@ export default function TopPages() {
   const [data, setData] = useState([])
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(false)
+  const siteUrl = window?.spiderLens?.siteUrl || null
 
   useEffect(() => {
     setLoading(true)
+    const fresh = consumeFresh()
     const endpoint = activeTab === 'top-pages' ? '/stats/top-pages' : '/stats/top-404'
     api
-      .get(endpoint, { params: { ...range, limit: 50 } })
+      .get(endpoint, { params: { ...range, limit: 50 }, fresh })
       .then(res => setData(res.data || []))
       .catch(err => console.error('Erreur chargement pages:', err))
       .finally(() => setLoading(false))
-  }, [range, activeTab])
+  }, [range, activeTab, refreshKey])
 
   const filteredData = data.filter(item =>
     item.url.toLowerCase().includes(search.toLowerCase())
@@ -160,6 +166,11 @@ export default function TopPages() {
                 <th className="px-4 py-3 text-right text-errorgrey text-xs uppercase font-semibold tracking-wide">
                   {t('common.lastSeen')}
                 </th>
+                {activeTab === 'top-404' && (
+                  <th className="px-4 py-3 text-right text-errorgrey text-xs uppercase font-semibold tracking-wide">
+                    {t('recheck.columnHeader')}
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -168,28 +179,29 @@ export default function TopPages() {
                   key={i}
                   className="border-b border-prussian-600 hover:bg-prussian-500 transition-colors"
                 >
-                  <td className="px-4 py-3 text-white truncate max-w-sm">
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-moonstone-400 hover:text-moonstone-300"
-                    >
-                      {item.url}
-                    </a>
+                  <td className="px-4 py-3 truncate max-w-sm">
+                    <UrlCell path={item.url} siteUrl={siteUrl} />
                   </td>
                   <td className="px-4 py-3 text-right text-white font-semibold">
                     {parseInt(item.hits).toLocaleString('fr-FR')}
                   </td>
                   <td className="px-4 py-3 text-right text-lightgrey">
-                    {parseInt(item.humans || 0).toLocaleString('fr-FR')}
+                    {parseInt(item.humans || item.human_hits || 0).toLocaleString('fr-FR')}
                   </td>
                   <td className="px-4 py-3 text-right text-lightgrey">
-                    {parseInt(item.bots || 0).toLocaleString('fr-FR')}
+                    {parseInt(item.bots || item.bot_hits || 0).toLocaleString('fr-FR')}
                   </td>
                   <td className="px-4 py-3 text-right text-errorgrey text-xs">
                     {item.last_seen ? dayjs(item.last_seen).format('DD/MM/YYYY HH:mm') : '—'}
                   </td>
+                  {activeTab === 'top-404' && (
+                    <td className="px-4 py-3">
+                      <RecheckButton
+                        url={item.url}
+                        initialRecheck={item.recheck_status ? { recheck_status: item.recheck_status, recheck_final_url: item.recheck_final_url, recheck_checked_at: item.recheck_checked_at } : null}
+                      />
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

@@ -71,6 +71,9 @@ class RestApi {
         register_rest_route($ns, '/crawler/pages',                         ['methods' => 'GET',    'callback' => [self::class, 'get_crawl_pages'],  'permission_callback' => [self::class, 'check_permission']]);
         register_rest_route($ns, '/crawler/summary',                       ['methods' => 'GET',    'callback' => [self::class, 'get_crawl_summary'], 'permission_callback' => [self::class, 'check_permission']]);
 
+        // Re-check URL 404
+        register_rest_route($ns, '/crawler/recheck-url', ['methods' => 'POST', 'callback' => [self::class, 'recheck_url'], 'permission_callback' => [self::class, 'check_permission']]);
+
         // Assistant IA
         register_rest_route($ns, '/assistant/analyze',     ['methods' => 'POST', 'callback' => [self::class, 'ai_analyze'],     'permission_callback' => [self::class, 'check_permission']]);
         register_rest_route($ns, '/assistant/chat',        ['methods' => 'POST', 'callback' => [self::class, 'ai_chat'],        'permission_callback' => [self::class, 'check_permission']]);
@@ -100,160 +103,184 @@ class RestApi {
     // ── Endpoints ────────────────────────────────────────────
 
     public static function get_overview(\WP_REST_Request $req): \WP_REST_Response {
-        ['from' => $from, 'to' => $to] = self::get_range($req);
-        $data = Database::get_overview($from, $to);
-        $total = (int)($data['total'] ?? 0);
-        $errors = (int)($data['s4xx'] ?? 0) + (int)($data['s5xx'] ?? 0);
-        $data['errorRate'] = $total > 0 ? round(($errors / $total) * 100, 1) : 0;
-        $data['avg_ttfb']  = $data['avg_ttfb'] ? round((float)$data['avg_ttfb']) : null;
+        $params = (array) $req->get_params();
+        $key    = Cache::key('overview', $params);
+        $ttl    = Cache::ttl_for_range($params['to'] ?? date('Y-m-d'));
+        $data   = Cache::remember($key, $ttl, function () use ($req) {
+            ['from' => $from, 'to' => $to] = self::get_range($req);
+            $data   = Database::get_overview($from, $to);
+            $total  = (int)($data['total'] ?? 0);
+            $errors = (int)($data['s4xx'] ?? 0) + (int)($data['s5xx'] ?? 0);
+            $data['errorRate'] = $total > 0 ? round(($errors / $total) * 100, 1) : 0;
+            $data['avg_ttfb']  = $data['avg_ttfb'] ? round((float)$data['avg_ttfb']) : null;
+            return $data;
+        });
         return rest_ensure_response($data);
     }
 
     public static function get_http_codes(\WP_REST_Request $req): \WP_REST_Response {
-        global $wpdb;
-        ['from' => $from, 'to' => $to] = self::get_range($req);
-        $t = self::table('hits');
-
-        $rows = $wpdb->get_results($wpdb->prepare(
-            "SELECT
-                DATE(timestamp) AS day,
-                SUM(CASE WHEN status_code BETWEEN 200 AND 299 THEN 1 ELSE 0 END) AS s2xx,
-                SUM(CASE WHEN status_code BETWEEN 300 AND 399 THEN 1 ELSE 0 END) AS s3xx,
-                SUM(CASE WHEN status_code BETWEEN 400 AND 499 THEN 1 ELSE 0 END) AS s4xx,
-                SUM(CASE WHEN status_code BETWEEN 500 AND 599 THEN 1 ELSE 0 END) AS s5xx
-            FROM `$t`
-            WHERE timestamp BETWEEN %s AND %s
-            GROUP BY DATE(timestamp)
-            ORDER BY day ASC",
-            $from, $to
-        ), ARRAY_A);
-
+        $params = (array) $req->get_params();
+        $key    = Cache::key('http-codes', $params);
+        $ttl    = Cache::ttl_for_range($params['to'] ?? date('Y-m-d'));
+        $rows   = Cache::remember($key, $ttl, function () use ($req) {
+            global $wpdb;
+            ['from' => $from, 'to' => $to] = self::get_range($req);
+            $t = self::table('hits');
+            return $wpdb->get_results($wpdb->prepare(
+                "SELECT
+                    DATE(timestamp) AS day,
+                    SUM(CASE WHEN status_code BETWEEN 200 AND 299 THEN 1 ELSE 0 END) AS s2xx,
+                    SUM(CASE WHEN status_code BETWEEN 300 AND 399 THEN 1 ELSE 0 END) AS s3xx,
+                    SUM(CASE WHEN status_code BETWEEN 400 AND 499 THEN 1 ELSE 0 END) AS s4xx,
+                    SUM(CASE WHEN status_code BETWEEN 500 AND 599 THEN 1 ELSE 0 END) AS s5xx
+                FROM `$t`
+                WHERE timestamp BETWEEN %s AND %s
+                GROUP BY DATE(timestamp)
+                ORDER BY day ASC",
+                $from, $to
+            ), ARRAY_A);
+        });
         return rest_ensure_response($rows);
     }
 
     public static function get_top_pages(\WP_REST_Request $req): \WP_REST_Response {
-        global $wpdb;
-        ['from' => $from, 'to' => $to] = self::get_range($req);
-        $t     = self::table('hits');
-        $limit = (int) ($req->get_param('limit') ?: 50);
-        $limit = min($limit, 500);
-
-        $rows = $wpdb->get_results($wpdb->prepare(
-            "SELECT
-                url,
-                COUNT(*) AS hits,
-                SUM(CASE WHEN is_bot = 0 THEN 1 ELSE 0 END) AS human_hits,
-                SUM(CASE WHEN is_bot = 1 THEN 1 ELSE 0 END) AS bot_hits,
-                MAX(timestamp) AS last_seen
-            FROM `$t`
-            WHERE timestamp BETWEEN %s AND %s AND status_code = 200
-            GROUP BY url
-            ORDER BY hits DESC
-            LIMIT %d",
-            $from, $to, $limit
-        ), ARRAY_A);
-
+        $params = (array) $req->get_params();
+        $key    = Cache::key('top-pages', $params);
+        $ttl    = Cache::ttl_for_range($params['to'] ?? date('Y-m-d'));
+        $rows   = Cache::remember($key, $ttl, function () use ($req) {
+            global $wpdb;
+            ['from' => $from, 'to' => $to] = self::get_range($req);
+            $t     = self::table('hits');
+            $limit = min((int)($req->get_param('limit') ?: 50), 500);
+            return $wpdb->get_results($wpdb->prepare(
+                "SELECT
+                    url,
+                    COUNT(*) AS hits,
+                    SUM(CASE WHEN is_bot = 0 THEN 1 ELSE 0 END) AS human_hits,
+                    SUM(CASE WHEN is_bot = 1 THEN 1 ELSE 0 END) AS bot_hits,
+                    MAX(timestamp) AS last_seen
+                FROM `$t`
+                WHERE timestamp BETWEEN %s AND %s AND status_code = 200
+                GROUP BY url
+                ORDER BY hits DESC
+                LIMIT %d",
+                $from, $to, $limit
+            ), ARRAY_A);
+        });
         return rest_ensure_response($rows);
     }
 
     public static function get_top_404(\WP_REST_Request $req): \WP_REST_Response {
-        global $wpdb;
-        ['from' => $from, 'to' => $to] = self::get_range($req);
-        $t     = self::table('hits');
-        $limit = (int) ($req->get_param('limit') ?: 50);
-        $limit = min($limit, 500);
-
-        $rows = $wpdb->get_results($wpdb->prepare(
-            "SELECT
-                url,
-                COUNT(*) AS hits,
-                SUM(CASE WHEN is_bot = 0 THEN 1 ELSE 0 END) AS human_hits,
-                SUM(CASE WHEN is_bot = 1 THEN 1 ELSE 0 END) AS bot_hits,
-                MAX(timestamp) AS last_seen
-            FROM `$t`
-            WHERE timestamp BETWEEN %s AND %s AND status_code = 404
-            GROUP BY url
-            ORDER BY hits DESC
-            LIMIT %d",
-            $from, $to, $limit
-        ), ARRAY_A);
-
+        $params = (array) $req->get_params();
+        $key    = Cache::key('top-404', $params);
+        $ttl    = Cache::ttl_for_range($params['to'] ?? date('Y-m-d'));
+        $rows   = Cache::remember($key, $ttl, function () use ($req) {
+            global $wpdb;
+            ['from' => $from, 'to' => $to] = self::get_range($req);
+            $t  = self::table('hits');
+            $tr = self::table('url_rechecks');
+            $limit = min((int)($req->get_param('limit') ?: 50), 500);
+            return $wpdb->get_results($wpdb->prepare(
+                "SELECT
+                    h.url,
+                    COUNT(*) AS hits,
+                    SUM(CASE WHEN h.is_bot = 0 THEN 1 ELSE 0 END) AS human_hits,
+                    SUM(CASE WHEN h.is_bot = 1 THEN 1 ELSE 0 END) AS bot_hits,
+                    MAX(h.timestamp) AS last_seen,
+                    ur.status_code AS recheck_status,
+                    ur.final_url   AS recheck_final_url,
+                    ur.checked_at  AS recheck_checked_at
+                FROM `$t` h
+                LEFT JOIN `$tr` ur ON ur.url_hash = SHA2(h.url, 256)
+                WHERE h.timestamp BETWEEN %s AND %s AND h.status_code = 404
+                GROUP BY h.url, ur.status_code, ur.final_url, ur.checked_at
+                ORDER BY hits DESC
+                LIMIT %d",
+                $from, $to, $limit
+            ), ARRAY_A);
+        });
         return rest_ensure_response($rows);
     }
 
     public static function get_bots(\WP_REST_Request $req): \WP_REST_Response {
-        global $wpdb;
-        ['from' => $from, 'to' => $to] = self::get_range($req);
-        $t = self::table('hits');
-
-        $rows = $wpdb->get_results($wpdb->prepare(
-            "SELECT
-                bot_name AS name,
-                is_bot,
-                COUNT(*) AS hits,
-                MAX(timestamp) AS last_seen
-            FROM `$t`
-            WHERE timestamp BETWEEN %s AND %s AND is_bot = 1 AND bot_name IS NOT NULL
-            GROUP BY bot_name, is_bot
-            ORDER BY hits DESC",
-            $from, $to
-        ), ARRAY_A);
-
+        $params = (array) $req->get_params();
+        $key    = Cache::key('bots', $params);
+        $ttl    = Cache::ttl_for_range($params['to'] ?? date('Y-m-d'));
+        $rows   = Cache::remember($key, $ttl, function () use ($req) {
+            global $wpdb;
+            ['from' => $from, 'to' => $to] = self::get_range($req);
+            $t = self::table('hits');
+            return $wpdb->get_results($wpdb->prepare(
+                "SELECT
+                    bot_name AS name,
+                    is_bot,
+                    COUNT(*) AS hits,
+                    MAX(timestamp) AS last_seen
+                FROM `$t`
+                WHERE timestamp BETWEEN %s AND %s AND is_bot = 1 AND bot_name IS NOT NULL
+                GROUP BY bot_name, is_bot
+                ORDER BY hits DESC",
+                $from, $to
+            ), ARRAY_A);
+        });
         return rest_ensure_response($rows);
     }
 
     public static function get_ttfb(\WP_REST_Request $req): \WP_REST_Response {
-        global $wpdb;
-        ['from' => $from, 'to' => $to] = self::get_range($req);
-        $t = self::table('hits');
-
-        $rows = $wpdb->get_results($wpdb->prepare(
-            "SELECT
-                DATE(timestamp)                   AS day,
-                AVG(response_time)                AS avg_ttfb,
-                MIN(response_time)                AS min_ttfb,
-                MAX(response_time)                AS max_ttfb,
-                COUNT(*)                          AS total
-            FROM `$t`
-            WHERE timestamp BETWEEN %s AND %s AND response_time IS NOT NULL AND is_bot = 0
-            GROUP BY DATE(timestamp)
-            ORDER BY day ASC",
-            $from, $to
-        ), ARRAY_A);
-
-        foreach ($rows as &$r) {
-            $r['avg_ttfb'] = $r['avg_ttfb'] ? round((float)$r['avg_ttfb']) : null;
-            $r['min_ttfb'] = $r['min_ttfb'] ? (int)$r['min_ttfb'] : null;
-            $r['max_ttfb'] = $r['max_ttfb'] ? (int)$r['max_ttfb'] : null;
-        }
-
+        $params = (array) $req->get_params();
+        $key    = Cache::key('ttfb', $params);
+        $ttl    = Cache::ttl_for_range($params['to'] ?? date('Y-m-d'));
+        $rows   = Cache::remember($key, $ttl, function () use ($req) {
+            global $wpdb;
+            ['from' => $from, 'to' => $to] = self::get_range($req);
+            $t    = self::table('hits');
+            $rows = $wpdb->get_results($wpdb->prepare(
+                "SELECT
+                    DATE(timestamp)  AS day,
+                    AVG(response_time) AS avg_ttfb,
+                    MIN(response_time) AS min_ttfb,
+                    MAX(response_time) AS max_ttfb,
+                    COUNT(*)           AS total
+                FROM `$t`
+                WHERE timestamp BETWEEN %s AND %s AND response_time IS NOT NULL AND is_bot = 0
+                GROUP BY DATE(timestamp)
+                ORDER BY day ASC",
+                $from, $to
+            ), ARRAY_A);
+            foreach ($rows as &$r) {
+                $r['avg_ttfb'] = $r['avg_ttfb'] ? round((float)$r['avg_ttfb']) : null;
+                $r['min_ttfb'] = $r['min_ttfb'] ? (int)$r['min_ttfb'] : null;
+                $r['max_ttfb'] = $r['max_ttfb'] ? (int)$r['max_ttfb'] : null;
+            }
+            return $rows;
+        });
         return rest_ensure_response($rows);
     }
 
     public static function get_weekly_trends(\WP_REST_Request $req): \WP_REST_Response {
-        global $wpdb;
-        $t     = self::table('hits');
-        $weeks = min((int)($req->get_param('weeks') ?: 12), 52);
+        $params = (array) $req->get_params();
+        $key    = Cache::key('weekly-trends', $params);
+        // weekly-trends couvre toujours la semaine courante → TTL court
+        $ttl    = 300;
+        $data   = Cache::remember($key, $ttl, function () use ($req) {
+            global $wpdb;
+            $t     = self::table('hits');
+            $weeks = min((int)($req->get_param('weeks') ?: 12), 52);
 
-        // Lundi de la semaine courante
-        $now       = new \DateTime();
-        $dow       = (int)$now->format('N'); // 1=lundi, 7=dimanche
-        $monday    = clone $now;
-        $monday->modify('-' . ($dow - 1) . ' days');
-        $monday->setTime(0, 0, 0);
+            // Lundi de la semaine courante
+            $now    = new \DateTime();
+            $dow    = (int)$now->format('N');
+            $monday = clone $now;
+            $monday->modify('-' . ($dow - 1) . ' days')->setTime(0, 0, 0);
+            $since  = (clone $monday)->modify('-' . ($weeks - 1) . ' weeks')->format('Y-m-d H:i:s');
+            $until  = (clone $monday)->modify('+6 days')->setTime(23, 59, 59)->format('Y-m-d H:i:s');
 
-        $results = [];
-        for ($i = $weeks - 1; $i >= 0; $i--) {
-            $wStart = clone $monday;
-            $wStart->modify("-{$i} weeks");
-            $wEnd = clone $wStart;
-            $wEnd->modify('+6 days')->setTime(23, 59, 59);
-
-            $from = $wStart->format('Y-m-d H:i:s');
-            $to   = $wEnd->format('Y-m-d H:i:s');
-
-            $row = $wpdb->get_row($wpdb->prepare(
+            // Une seule requête avec GROUP BY semaine au lieu de N requêtes en boucle
+            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            $rows = $wpdb->get_results($wpdb->prepare(
                 "SELECT
+                    DATE_FORMAT(timestamp, '%%X-%%V') AS iso_week,
+                    STR_TO_DATE(CONCAT(YEAR(timestamp), ' ', WEEK(timestamp, 3), ' 1'), '%%X %%V %%w') AS week_start,
                     COUNT(*) AS total,
                     SUM(CASE WHEN is_bot = 0 THEN 1 ELSE 0 END) AS humans,
                     SUM(CASE WHEN is_bot = 1 THEN 1 ELSE 0 END) AS bots,
@@ -261,55 +288,64 @@ class RestApi {
                     SUM(CASE WHEN status_code BETWEEN 400 AND 599 THEN 1 ELSE 0 END) AS errors,
                     AVG(CASE WHEN response_time IS NOT NULL AND is_bot = 0 THEN response_time END) AS avg_ttfb
                 FROM `$t`
-                WHERE timestamp BETWEEN %s AND %s",
-                $from, $to
+                WHERE timestamp BETWEEN %s AND %s
+                GROUP BY iso_week, week_start
+                ORDER BY iso_week ASC",
+                $since, $until
             ), ARRAY_A);
 
-            $results[] = [
-                'week'       => $wStart->format('Y-m-d'),
-                'week_label' => $wStart->format('d/m'),
-                'total'      => (int)($row['total'] ?? 0),
-                'humans'     => (int)($row['humans'] ?? 0),
-                'bots'       => (int)($row['bots'] ?? 0),
-                'googlebot'  => (int)($row['googlebot'] ?? 0),
-                'errors'     => (int)($row['errors'] ?? 0),
-                'avg_ttfb'   => $row['avg_ttfb'] ? (int)round((float)$row['avg_ttfb']) : null,
-            ];
-        }
-
-        return rest_ensure_response($results);
+            return array_map(fn($r) => [
+                'week'       => $r['week_start'] ?? '',
+                'week_label' => $r['week_start'] ? date('d/m', strtotime($r['week_start'])) : '',
+                'total'      => (int)($r['total'] ?? 0),
+                'humans'     => (int)($r['humans'] ?? 0),
+                'bots'       => (int)($r['bots'] ?? 0),
+                'googlebot'  => (int)($r['googlebot'] ?? 0),
+                'errors'     => (int)($r['errors'] ?? 0),
+                'avg_ttfb'   => $r['avg_ttfb'] ? (int)round((float)$r['avg_ttfb']) : null,
+            ], $rows);
+        });
+        return rest_ensure_response($data);
     }
 
     public static function get_timeline(\WP_REST_Request $req): \WP_REST_Response {
-        global $wpdb;
-        ['from' => $from, 'to' => $to] = self::get_range($req);
-        $t = self::table('hits');
-
-        // MySQL DAYOFWEEK() : 1=dimanche, 2=lundi, ..., 7=samedi → on soustrait 1 → 0=dim, 1=lun, ..., 6=sam
-        // Même convention que SQLite strftime('%w') utilisé dans Node.js
-        $rows = $wpdb->get_results($wpdb->prepare(
-            "SELECT
-                HOUR(timestamp)          AS hour,
-                DAYOFWEEK(timestamp) - 1 AS weekday,
-                COUNT(*)                 AS hits
-             FROM `$t`
-             WHERE timestamp BETWEEN %s AND %s
-             GROUP BY hour, weekday
-             ORDER BY weekday, hour",
-            $from, $to
-        ), ARRAY_A) ?: [];
-
-        // Formater les types (cohérence avec la réponse Node)
-        $data = array_map(fn($r) => [
-            'hour'    => str_pad((string)(int)$r['hour'], 2, '0', STR_PAD_LEFT),
-            'weekday' => (string)(int)$r['weekday'],
-            'hits'    => (int)$r['hits'],
-        ], $rows);
-
+        $params = (array) $req->get_params();
+        $key    = Cache::key('timeline', $params);
+        $ttl    = Cache::ttl_for_range($params['to'] ?? date('Y-m-d'));
+        $data   = Cache::remember($key, $ttl, function () use ($req) {
+            global $wpdb;
+            ['from' => $from, 'to' => $to] = self::get_range($req);
+            $t    = self::table('hits');
+            // MySQL DAYOFWEEK() : 1=dimanche … 7=samedi → -1 → 0=dim … 6=sam
+            $rows = $wpdb->get_results($wpdb->prepare(
+                "SELECT
+                    HOUR(timestamp)          AS hour,
+                    DAYOFWEEK(timestamp) - 1 AS weekday,
+                    COUNT(*)                 AS hits
+                 FROM `$t`
+                 WHERE timestamp BETWEEN %s AND %s
+                 GROUP BY hour, weekday
+                 ORDER BY weekday, hour",
+                $from, $to
+            ), ARRAY_A) ?: [];
+            return array_map(fn($r) => [
+                'hour'    => str_pad((string)(int)$r['hour'], 2, '0', STR_PAD_LEFT),
+                'weekday' => (string)(int)$r['weekday'],
+                'hits'    => (int)$r['hits'],
+            ], $rows);
+        });
         return rest_ensure_response($data);
     }
 
     public static function get_ips(\WP_REST_Request $req): \WP_REST_Response {
+        $req_params = (array) $req->get_params();
+        $key    = Cache::key('network-ips', $req_params);
+        $ttl    = Cache::ttl_for_range($req_params['to'] ?? date('Y-m-d'));
+        $result = Cache::remember($key, $ttl, fn() => self::compute_ips($req));
+        return rest_ensure_response($result);
+    }
+
+    private static function compute_ips(\WP_REST_Request $req): array {
         global $wpdb;
         ['from' => $from, 'to' => $to] = self::get_range($req);
         $t      = self::table('hits');
@@ -358,7 +394,7 @@ class RestApi {
             $params
         ));
 
-        return rest_ensure_response(['rows' => $rows, 'total' => $total]);
+        return ['rows' => $rows ?: [], 'total' => $total];
     }
 
     public static function get_ip_urls(\WP_REST_Request $req): \WP_REST_Response {
@@ -381,42 +417,48 @@ class RestApi {
     }
 
     public static function get_user_agents(\WP_REST_Request $req): \WP_REST_Response {
-        global $wpdb;
-        ['from' => $from, 'to' => $to] = self::get_range($req);
-        $t      = self::table('hits');
-        $limit  = min((int)($req->get_param('limit') ?: 50), 500);
-        $offset = (int)($req->get_param('offset') ?: 0);
-        $search = sanitize_text_field($req->get_param('search') ?: '');
-        $bot    = $req->get_param('bot');
+        $req_params = (array) $req->get_params();
+        $key    = Cache::key('network-ua', $req_params);
+        $ttl    = Cache::ttl_for_range($req_params['to'] ?? date('Y-m-d'));
+        $result = Cache::remember($key, $ttl, function () use ($req) {
+            global $wpdb;
+            ['from' => $from, 'to' => $to] = self::get_range($req);
+            $t      = self::table('hits');
+            $limit  = min((int)($req->get_param('limit') ?: 50), 500);
+            $offset = (int)($req->get_param('offset') ?: 0);
+            $search = sanitize_text_field($req->get_param('search') ?: '');
+            $bot    = $req->get_param('bot');
 
-        $where  = 'WHERE timestamp BETWEEN %s AND %s AND user_agent IS NOT NULL';
-        $params = [$from, $to];
+            $where  = 'WHERE timestamp BETWEEN %s AND %s AND user_agent IS NOT NULL';
+            $params = [$from, $to];
 
-        if ($bot !== null && $bot !== '') {
-            $where .= ' AND is_bot = ' . ($bot === '1' ? '1' : '0');
-        }
-        if ($search) {
-            $where   .= ' AND user_agent LIKE %s';
-            $params[] = '%' . $wpdb->esc_like($search) . '%';
-        }
+            if ($bot !== null && $bot !== '') {
+                $where .= ' AND is_bot = ' . ($bot === '1' ? '1' : '0');
+            }
+            if ($search) {
+                $where   .= ' AND user_agent LIKE %s';
+                $params[] = '%' . $wpdb->esc_like($search) . '%';
+            }
 
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        $rows = $wpdb->get_results($wpdb->prepare(
-            "SELECT user_agent, is_bot, MAX(bot_name) AS bot_name, COUNT(*) AS hits, MAX(timestamp) AS last_seen
-            FROM `$t` $where
-            GROUP BY user_agent, is_bot
-            ORDER BY hits DESC
-            LIMIT %d OFFSET %d",
-            array_merge($params, [$limit, $offset])
-        ), ARRAY_A);
+            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            $rows = $wpdb->get_results($wpdb->prepare(
+                "SELECT user_agent, is_bot, MAX(bot_name) AS bot_name, COUNT(*) AS hits, MAX(timestamp) AS last_seen
+                FROM `$t` $where
+                GROUP BY user_agent, is_bot
+                ORDER BY hits DESC
+                LIMIT %d OFFSET %d",
+                array_merge($params, [$limit, $offset])
+            ), ARRAY_A);
 
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        $total = (int)$wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(DISTINCT user_agent) FROM `$t` $where",
-            $params
-        ));
+            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            $total = (int)$wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(DISTINCT user_agent) FROM `$t` $where",
+                $params
+            ));
 
-        return rest_ensure_response(['rows' => $rows, 'total' => $total]);
+            return ['rows' => $rows ?: [], 'total' => $total];
+        });
+        return rest_ensure_response($result);
     }
 
     public static function get_anomalies(\WP_REST_Request $req): \WP_REST_Response {
@@ -606,6 +648,16 @@ class RestApi {
     }
 
     public static function get_url_detail(\WP_REST_Request $req): \WP_REST_Response {
+        $req_params = (array) $req->get_params();
+        $key = Cache::key('url-detail', $req_params);
+        $ttl = Cache::ttl_for_range($req_params['to'] ?? date('Y-m-d'));
+        $result = Cache::remember($key, $ttl, function () use ($req) {
+            return self::compute_url_detail($req);
+        });
+        return rest_ensure_response($result);
+    }
+
+    private static function compute_url_detail(\WP_REST_Request $req): array {
         global $wpdb;
         ['from' => $from, 'to' => $to] = self::get_range($req);
         $t      = self::table('hits');
@@ -638,27 +690,70 @@ class RestApi {
             $params[] = '%' . $wpdb->esc_like($search) . '%';
         }
 
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        $rows = $wpdb->get_results($wpdb->prepare(
-            "SELECT url, status_code,
-                COUNT(*) AS hits,
-                SUM(CASE WHEN is_bot=0 THEN 1 ELSE 0 END) AS human_hits,
-                SUM(CASE WHEN is_bot=1 THEN 1 ELSE 0 END) AS bot_hits,
-                MAX(timestamp) AS last_seen
-            FROM `$t` $where
-            GROUP BY url, status_code
-            ORDER BY $sort $dir
-            LIMIT %d OFFSET %d",
-            array_merge($params, [$limit, $offset])
-        ), ARRAY_A);
+        $tr = self::table('url_rechecks');
 
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        $total = (int)$wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(DISTINCT CONCAT(url, '|', status_code)) FROM `$t` $where",
-            $params
-        ));
+        // MySQL 8+ : window function COUNT(*) OVER() retourne le total des groupes en une passe.
+        // Fallback MySQL 5.7 : SQL_CALC_FOUND_ROWS + FOUND_ROWS() (déprécié 8.0.17 mais fonctionnel).
+        if (self::mysql_supports_window_functions()) {
+            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            $rows = $wpdb->get_results($wpdb->prepare(
+                "SELECT h.url, h.status_code,
+                    COUNT(*) AS hits,
+                    SUM(CASE WHEN h.is_bot=0 THEN 1 ELSE 0 END) AS human_hits,
+                    SUM(CASE WHEN h.is_bot=1 THEN 1 ELSE 0 END) AS bot_hits,
+                    MAX(h.timestamp) AS last_seen,
+                    COUNT(*) OVER() AS _total_groups,
+                    CASE WHEN h.status_code = 404 THEN ur.status_code ELSE NULL END AS recheck_status,
+                    CASE WHEN h.status_code = 404 THEN ur.final_url   ELSE NULL END AS recheck_final_url,
+                    CASE WHEN h.status_code = 404 THEN ur.checked_at  ELSE NULL END AS recheck_checked_at
+                FROM `$t` h
+                LEFT JOIN `$tr` ur ON h.status_code = 404 AND ur.url_hash = SHA2(h.url, 256)
+                $where
+                GROUP BY h.url, h.status_code
+                ORDER BY $sort $dir
+                LIMIT %d OFFSET %d",
+                array_merge($params, [$limit, $offset])
+            ), ARRAY_A);
 
-        return rest_ensure_response(['rows' => $rows, 'total' => $total]);
+            $total = !empty($rows) ? (int)$rows[0]['_total_groups'] : 0;
+            foreach ($rows as &$r) { unset($r['_total_groups']); }
+            unset($r);
+        } else {
+            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            $rows = $wpdb->get_results($wpdb->prepare(
+                "SELECT SQL_CALC_FOUND_ROWS h.url, h.status_code,
+                    COUNT(*) AS hits,
+                    SUM(CASE WHEN h.is_bot=0 THEN 1 ELSE 0 END) AS human_hits,
+                    SUM(CASE WHEN h.is_bot=1 THEN 1 ELSE 0 END) AS bot_hits,
+                    MAX(h.timestamp) AS last_seen,
+                    CASE WHEN h.status_code = 404 THEN ur.status_code ELSE NULL END AS recheck_status,
+                    CASE WHEN h.status_code = 404 THEN ur.final_url   ELSE NULL END AS recheck_final_url,
+                    CASE WHEN h.status_code = 404 THEN ur.checked_at  ELSE NULL END AS recheck_checked_at
+                FROM `$t` h
+                LEFT JOIN `$tr` ur ON h.status_code = 404 AND ur.url_hash = SHA2(h.url, 256)
+                $where
+                GROUP BY h.url, h.status_code
+                ORDER BY $sort $dir
+                LIMIT %d OFFSET %d",
+                array_merge($params, [$limit, $offset])
+            ), ARRAY_A);
+
+            $total = (int)$wpdb->get_var('SELECT FOUND_ROWS()');
+        }
+
+        return ['rows' => $rows ?: [], 'total' => $total];
+    }
+
+    /**
+     * Détecte si MySQL >= 8.0 (window functions supportées).
+     * Résultat mis en cache statique — appelé 1 fois par requête PHP.
+     */
+    private static function mysql_supports_window_functions(): bool {
+        static $cache = null;
+        if ($cache !== null) return $cache;
+        global $wpdb;
+        $cache = version_compare($wpdb->db_version(), '8.0', '>=');
+        return $cache;
     }
 
     public static function export_url_detail(\WP_REST_Request $req): void {
@@ -964,5 +1059,53 @@ class RestApi {
 
         AiAnalyzer::chat_stream($messages, $page_context);
         exit;
+    }
+
+    // ── Re-check URL ─────────────────────────────────────────
+
+    /**
+     * POST /spider-lens/v1/crawler/recheck-url
+     * Body JSON : { "url": "/path/to/page" }
+     * Vérifie le statut HTTP actuel de l'URL et persiste le résultat.
+     */
+    public static function recheck_url(\WP_REST_Request $req): \WP_REST_Response|\WP_Error {
+        global $wpdb;
+
+        $url = sanitize_text_field($req->get_param('url') ?: '');
+        if (empty($url)) {
+            return new \WP_Error('missing_url', 'Le paramètre url est requis.', ['status' => 400]);
+        }
+
+        // Construire l'URL absolue
+        $base     = rtrim(get_site_url(), '/');
+        $path     = '/' . ltrim($url, '/');
+        $full_url = $base . $path;
+
+        $result = Crawler::recheck_url($full_url);
+
+        $tr       = self::table('url_rechecks');
+        $url_hash = hash('sha256', $url); // Équivalent PHP de SHA2(url, 256)
+        $now      = current_time('mysql');
+
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $wpdb->query($wpdb->prepare(
+            "INSERT INTO `$tr` (url, url_hash, status_code, final_url, checked_at)
+             VALUES (%s, %s, %d, %s, %s)
+             ON DUPLICATE KEY UPDATE
+               status_code = VALUES(status_code),
+               final_url   = VALUES(final_url),
+               checked_at  = VALUES(checked_at)",
+            $url,
+            $url_hash,
+            $result['status'],
+            $result['final_url'],
+            $now
+        ));
+
+        return rest_ensure_response([
+            'status'    => $result['status'],
+            'finalUrl'  => $result['final_url'],
+            'checkedAt' => $now,
+        ]);
     }
 }

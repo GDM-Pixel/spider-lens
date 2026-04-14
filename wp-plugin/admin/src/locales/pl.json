@@ -80,6 +80,7 @@
     "csv": "CSV",
     "excel": "Excel",
     "exporting": "Eksportowanie...",
+    "refresh": "Odśwież",
     "cancel": "Anuluj",
     "save": "Zapisz",
     "saving": "Zapisywanie...",
@@ -94,7 +95,8 @@
     "url": "URL",
     "status": "Status",
     "site": "Strona",
-    "by": "Przez"
+    "by": "Przez",
+    "openInNewTab": "Otwórz w nowej karcie"
   },
   "login": {
     "subtitle": "Analizator ruchu skoncentrowany na SEO",
@@ -581,5 +583,14 @@
     "errorGeneric": "Occurred an error. Please try again.",
     "poweredBy": "wspierane przez",
     "clearChat": "Wyczyść rozmowę"
+  },
+  "recheck": {
+    "button": "Sprawdź URL ponownie",
+    "loading": "Sprawdzanie…",
+    "fixed200": "Naprawiono (200 OK) — sprawdzono {{date}}",
+    "redirected": "Przekierowano ({{code}}) → {{target}}",
+    "stillBroken": "Nadal uszkodzony ({{code}})",
+    "error": "Błąd sprawdzania",
+    "columnHeader": "Status"
   }
 }

@@ -80,6 +80,7 @@
     "csv": "CSV",
     "excel": "Excel",
     "exporting": "Dışa aktarılıyor...",
+    "refresh": "Yenile",
     "cancel": "İptal",
     "save": "Kaydet",
     "saving": "Kaydediliyor...",
@@ -94,7 +95,8 @@
     "url": "URL",
     "status": "Durum",
     "site": "Site",
-    "by": "Ölçütü"
+    "by": "Ölçütü",
+    "openInNewTab": "Yeni sekmede aç"
   },
   "login": {
     "subtitle": "SEO odaklı trafik analiz aracı",
@@ -581,5 +583,14 @@
     "errorGeneric": "Bir hata oluştu. Tekrar deneyin.",
     "poweredBy": "Destekleyen",
     "clearChat": "Sohbeti temizle"
+  },
+  "recheck": {
+    "button": "URL'yi yeniden kontrol et",
+    "loading": "Kontrol ediliyor…",
+    "fixed200": "Düzeltildi (200 OK) — kontrol edildi {{date}}",
+    "redirected": "Yönlendirildi ({{code}}) → {{target}}",
+    "stillBroken": "Hâlâ bozuk ({{code}})",
+    "error": "Kontrol hatası",
+    "columnHeader": "Durum"
   }
 }

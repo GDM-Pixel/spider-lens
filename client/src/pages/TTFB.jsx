@@ -23,6 +23,9 @@ import { useSort } from '../hooks/useSort'
 import SortableHeader from '../components/ui/SortableHeader'
 import { useSite } from '../context/SiteContext'
 import { useChat } from '../context/ChatContext'
+import { useRefresh } from '../context/RefreshContext'
+import { useDebounce } from '../hooks/useDebounce'
+import { apiGet } from '../api/client'
 import api from '../api/client'
 import dayjs from 'dayjs'
 import clsx from 'clsx'
@@ -55,6 +58,7 @@ export default function TTFB() {
   const { t } = useTranslation()
   const { activeSiteId } = useSite()
   const { setPageContext, clearPageContext } = useChat()
+  const { refreshKey, consumeFresh } = useRefresh()
   const [range, setRange]           = usePersistentRange('ttfb')
   const [threshold, setThreshold]   = useState(800)   // seuil "lent" configurable
   const [overview, setOverview]     = useState(null)
@@ -65,32 +69,31 @@ export default function TTFB() {
   const { sort: sortState, toggleSort } = useSort('avg_ms', 'desc')
   const [botFilter, setBotFilter]   = useState('all')
   const [search, setSearch]         = useState('')
-  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [onlySlow, setOnlySlow]     = useState(false)
   const [loading, setLoading]       = useState(true)
   const [loadingUrl, setLoadingUrl] = useState(false)
   const [exporting, setExporting]   = useState(false)
 
-  // Debounce search
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(search), 350)
-    return () => clearTimeout(t)
-  }, [search])
+  const debouncedSearch = useDebounce(search, 350)
 
   // Reset page
   useEffect(() => { setUrlPage(0) }, [range, threshold, sortState, botFilter, debouncedSearch, onlySlow, activeSiteId])
 
   // Charger overview + courbe
   useEffect(() => {
+    const ctrl = new AbortController()
+    const fresh = consumeFresh()
     setLoading(true)
     Promise.all([
-      api.get('/stats/ttfb/overview', { params: { ...range, threshold } }),
-      api.get('/stats/ttfb/by-day',   { params: range }),
+      apiGet('/stats/ttfb/overview', { params: { ...range, threshold }, fresh, signal: ctrl.signal }),
+      apiGet('/stats/ttfb/by-day',   { params: range, fresh, signal: ctrl.signal }),
     ]).then(([ov, bd]) => {
       setOverview(ov.data)
       setByDay(bd.data)
-    }).finally(() => setLoading(false))
-  }, [range, threshold, activeSiteId])
+    }).catch(err => { if (err.name !== 'CanceledError') console.error(err) })
+    .finally(() => setLoading(false))
+    return () => ctrl.abort()
+  }, [range, threshold, activeSiteId, refreshKey])
 
   useEffect(() => {
     if (overview) {
@@ -107,6 +110,7 @@ export default function TTFB() {
 
   // Charger tableau URLs
   useEffect(() => {
+    const ctrl = new AbortController()
     setLoadingUrl(true)
     const params = {
       ...range,
@@ -119,10 +123,12 @@ export default function TTFB() {
     if (botFilter !== 'all') params.bot = botFilter
     if (debouncedSearch)     params.search = debouncedSearch
 
-    api.get('/stats/ttfb/by-url', { params })
+    apiGet('/stats/ttfb/by-url', { params, signal: ctrl.signal })
       .then(r => { setByUrl(r.data); setUrlTotal(r.data.length + urlPage * PAGE_SIZE) })
+      .catch(err => { if (err.name !== 'CanceledError') console.error(err) })
       .finally(() => setLoadingUrl(false))
-  }, [range, threshold, sortState, botFilter, debouncedSearch, onlySlow, urlPage, activeSiteId])
+    return () => ctrl.abort()
+  }, [range, threshold, sortState, botFilter, debouncedSearch, onlySlow, urlPage, activeSiteId, refreshKey])
 
   // Export CSV
   function exportCSV() {

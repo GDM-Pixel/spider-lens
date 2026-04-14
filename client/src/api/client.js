@@ -2,7 +2,7 @@ import axios from 'axios'
 
 const api = axios.create({
   baseURL: '/api',
-  timeout: 10000,
+  timeout: 30000, // 30s — les requêtes d'agrégation peuvent être lentes sur gros datasets
 })
 
 // Injecter le token JWT + siteId actif sur chaque requête
@@ -33,3 +33,22 @@ api.interceptors.response.use(
 )
 
 export default api
+
+/**
+ * GET avec support du flag `fresh` (bypass cache serveur via ?fresh=1)
+ * et AbortController pour annulation.
+ *
+ * Usage :
+ *   const ctrl = new AbortController()
+ *   apiGet('/stats/bots', { params: { from, to }, signal: ctrl.signal })
+ *   // cleanup: ctrl.abort()
+ *
+ * @param {string} path
+ * @param {{ params?: object, fresh?: boolean, signal?: AbortSignal }} opts
+ */
+export function apiGet(path, { params, fresh, signal } = {}) {
+  return api.get(path, {
+    params: fresh ? { ...params, fresh: '1' } : params,
+    signal,
+  })
+}

@@ -3,7 +3,7 @@
  * Plugin Name:       Spider-Lens
  * Plugin URI:        https://github.com/GDM-Pixel/spider-lens
  * Description:       Analyseur de trafic WordPress — dashboard, bots, anomalies, SEO crawler, analyse IA Nova, blocklist, GeoIP. Fonctionne sans accès aux logs serveur.
- * Version:           1.1.1
+ * Version:           1.2.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            GDM-Pixel
@@ -17,7 +17,7 @@
 defined('ABSPATH') || exit;
 
 // ── Constantes ────────────────────────────────────────────
-define('SPIDER_LENS_VERSION', '1.1.1');
+define('SPIDER_LENS_VERSION', '1.2.0');
 define('SPIDER_LENS_PATH',    plugin_dir_path(__FILE__));
 define('SPIDER_LENS_URL',     plugin_dir_url(__FILE__));
 define('SPIDER_LENS_FILE',    __FILE__);

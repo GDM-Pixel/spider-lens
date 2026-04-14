@@ -22,6 +22,7 @@
     "expert": "Expert",
     "allSites": "Všechny weby",
     "openMenu": "Otevřít nabídku",
+    "refresh": "Obnovit",
     "closeMenu": "Zavřít nabídku",
     "pages": {
       "dashboard": {
@@ -94,7 +95,17 @@
     "url": "URL",
     "status": "Stav",
     "site": "Web",
-    "by": "Podle"
+    "by": "Podle",
+    "openInNewTab": "Otevřít na nové kartě"
+  },
+  "recheck": {
+    "button": "Znovu zkontrolovat URL",
+    "loading": "Kontroluji…",
+    "fixed200": "Opraveno (200 OK) — zkontrolováno {{date}}",
+    "redirected": "Přesměrováno ({{code}}) → {{target}}",
+    "stillBroken": "Stále nefunkční ({{code}})",
+    "error": "Kontrola selhala",
+    "columnHeader": "Stav"
   },
   "login": {
     "subtitle": "Analyzátor provozu zaměřený na SEO",

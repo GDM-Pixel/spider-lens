@@ -22,6 +22,7 @@
     "expert": "Ekspert",
     "allSites": "Alle websteder",
     "openMenu": "Åbn menu",
+    "refresh": "Opdater",
     "closeMenu": "Luk menu",
     "pages": {
       "dashboard": {
@@ -94,7 +95,17 @@
     "url": "URL",
     "status": "Status",
     "site": "Websted",
-    "by": "Af"
+    "by": "Af",
+    "openInNewTab": "Åbn i ny fane"
+  },
+  "recheck": {
+    "button": "Genkontroller URL",
+    "loading": "Kontrollerer…",
+    "fixed200": "Rettet (200 OK) — kontrolleret den {{date}}",
+    "redirected": "Omdirigeret ({{code}}) → {{target}}",
+    "stillBroken": "Stadig brudt ({{code}})",
+    "error": "Kontrol mislykkedes",
+    "columnHeader": "Status"
   },
   "login": {
     "subtitle": "SEO-fokuseret trafikanalysator",

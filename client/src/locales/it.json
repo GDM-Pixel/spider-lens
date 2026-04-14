@@ -22,6 +22,7 @@
     "expert": "Esperto",
     "allSites": "Tutti i siti",
     "openMenu": "Apri menu",
+    "refresh": "Aggiorna",
     "closeMenu": "Comprimi menu",
     "pages": {
       "dashboard": {
@@ -94,7 +95,17 @@
     "url": "URL",
     "status": "Stato",
     "site": "Sito",
-    "by": "Da"
+    "by": "Da",
+    "openInNewTab": "Apri in nuova scheda"
+  },
+  "recheck": {
+    "button": "Ricontrolla URL",
+    "loading": "Verifica…",
+    "fixed200": "Corretto (200 OK) — verificato il {{date}}",
+    "redirected": "Reindirizzato ({{code}}) → {{target}}",
+    "stillBroken": "Ancora rotto ({{code}})",
+    "error": "Verifica fallita",
+    "columnHeader": "Stato"
   },
   "login": {
     "subtitle": "Analizzatore del traffico orientato a SEO",

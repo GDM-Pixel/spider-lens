@@ -7,6 +7,8 @@ class Cron {
 
     public static function init(): void {
         add_action('spider_lens_flush_buffer',      [Collector::class, 'flush_buffer']);
+        // Invalidation du cache stats après chaque flush (priorité 20 → après le flush buffer)
+        add_action('spider_lens_flush_buffer',      [Cache::class, 'flush_all'], 20);
         add_action('spider_lens_detect_anomalies',  [self::class, 'detect_anomalies']);
         add_action('spider_lens_weekly_report',     [self::class, 'send_weekly_report']);
         add_action('spider_lens_purge_old_hits',    [self::class, 'purge_old_hits']);

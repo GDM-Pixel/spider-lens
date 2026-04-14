@@ -14,6 +14,8 @@ import HeatmapChart from '../components/ui/HeatmapChart'
 import { usePersistentRange } from '../hooks/usePersistentRange'
 import { useSite } from '../context/SiteContext'
 import { useChat } from '../context/ChatContext'
+import { useRefresh } from '../context/RefreshContext'
+import { apiGet } from '../api/client'
 import api from '../api/client'
 import dayjs from 'dayjs'
 
@@ -29,6 +31,7 @@ export default function Dashboard() {
   const { t } = useTranslation()
   const { activeSiteId } = useSite()
   const { setPageContext, clearPageContext } = useChat()
+  const { refreshKey, consumeFresh } = useRefresh()
   const [range, setRange] = usePersistentRange('dashboard')
   const [overview, setOverview] = useState(null)
   const [httpData, setHttpData] = useState([])
@@ -39,15 +42,17 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    const ctrl = new AbortController()
+    const fresh = consumeFresh()
     setLoading(true)
     const anomalyParams = activeSiteId ? { siteId: activeSiteId } : {}
     Promise.all([
-      api.get('/stats/overview', { params: range }),
-      api.get('/stats/http-codes', { params: range }),
-      api.get('/stats/bots', { params: range }),
-      api.get('/alerts/anomalies/recent', { params: anomalyParams }),
-      api.get('/stats/weekly-trends', { params: { weeks: 12 } }),
-      api.get('/stats/timeline', { params: range }),
+      apiGet('/stats/overview', { params: range, fresh, signal: ctrl.signal }),
+      apiGet('/stats/http-codes', { params: range, fresh, signal: ctrl.signal }),
+      apiGet('/stats/bots', { params: range, fresh, signal: ctrl.signal }),
+      api.get('/alerts/anomalies/recent', { params: anomalyParams, signal: ctrl.signal }),
+      apiGet('/stats/weekly-trends', { params: { weeks: 12 }, fresh, signal: ctrl.signal }),
+      apiGet('/stats/timeline', { params: range, fresh, signal: ctrl.signal }),
     ]).then(([ov, http, bots, anomalies, trends, timeline]) => {
       setOverview(ov.data)
       setHttpData(http.data)
@@ -55,8 +60,11 @@ export default function Dashboard() {
       setRecentAnomalies(anomalies.data)
       setWeeklyTrends(trends.data)
       setTimelineData(timeline.data)
+    }).catch(err => {
+      if (err.name !== 'CanceledError') console.error(err)
     }).finally(() => setLoading(false))
-  }, [range, activeSiteId])
+    return () => ctrl.abort()
+  }, [range, activeSiteId, refreshKey])
 
   useEffect(() => {
     if (overview) {

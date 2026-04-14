@@ -80,6 +80,7 @@
     "csv": "CSV",
     "excel": "Excel",
     "exporting": "Exportování...",
+    "refresh": "Obnovit",
     "cancel": "Zrušit",
     "save": "Uložit",
     "saving": "Ukládání...",
@@ -94,7 +95,8 @@
     "url": "URL",
     "status": "Stav",
     "site": "Web",
-    "by": "Podle"
+    "by": "Podle",
+    "openInNewTab": "Otevřít na nové kartě"
   },
   "login": {
     "subtitle": "Analyzátor provozu zaměřený na SEO",
@@ -581,5 +583,14 @@
     "errorGeneric": "Došlo k chybě. Prosím, zkuste znovu.",
     "poweredBy": "Podporován",
     "clearChat": "Vymazat chat"
+  },
+  "recheck": {
+    "button": "Znovu zkontrolovat URL",
+    "loading": "Kontroluji…",
+    "fixed200": "Opraveno (200 OK) — zkontrolováno {{date}}",
+    "redirected": "Přesměrováno ({{code}}) → {{target}}",
+    "stillBroken": "Stále nefunkční ({{code}})",
+    "error": "Chyba kontroly",
+    "columnHeader": "Stav"
   }
 }

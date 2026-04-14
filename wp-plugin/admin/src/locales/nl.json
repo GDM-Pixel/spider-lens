@@ -80,6 +80,7 @@
     "csv": "CSV",
     "excel": "Excel",
     "exporting": "Bezig met exporteren…",
+    "refresh": "Vernieuwen",
     "cancel": "Annuleren",
     "save": "Opslaan",
     "saving": "Bezig met opslaan...",
@@ -94,7 +95,8 @@
     "url": "URL",
     "status": "Status",
     "site": "Website",
-    "by": "Door"
+    "by": "Door",
+    "openInNewTab": "Openen in nieuw tabblad"
   },
   "login": {
     "subtitle": "SEO-georiënteerde verkeersanalisator",
@@ -581,5 +583,14 @@
     "errorGeneric": "Er is een fout opgetreden. Probeer het opnieuw.",
     "poweredBy": "aangedreven door",
     "clearChat": "Gesprek wissen"
+  },
+  "recheck": {
+    "button": "URL opnieuw controleren",
+    "loading": "Controleren…",
+    "fixed200": "Opgelost (200 OK) — gecontroleerd op {{date}}",
+    "redirected": "Doorgestuurd ({{code}}) → {{target}}",
+    "stillBroken": "Nog steeds kapot ({{code}})",
+    "error": "Controlefout",
+    "columnHeader": "Status"
   }
 }

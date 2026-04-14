@@ -80,6 +80,7 @@
     "csv": "CSV",
     "excel": "Excel",
     "exporting": "エクスポート中...",
+    "refresh": "更新",
     "cancel": "キャンセル",
     "save": "保存",
     "saving": "保存中...",
@@ -94,7 +95,8 @@
     "url": "URL",
     "status": "ステータス",
     "site": "サイト",
-    "by": "タイトル"
+    "by": "タイトル",
+    "openInNewTab": "新しいタブで開く"
   },
   "login": {
     "subtitle": "SEO重視のトラフィック分析ツール",
@@ -581,5 +583,14 @@
     "errorGeneric": "エラーが発生しました。もう一度お試しください。",
     "poweredBy": "開発元",
     "clearChat": "会話をクリア"
+  },
+  "recheck": {
+    "button": "URLを再確認",
+    "loading": "確認中…",
+    "fixed200": "修正済み (200 OK) — {{date}}に確認",
+    "redirected": "リダイレクト ({{code}}) → {{target}}",
+    "stillBroken": "まだ壊れています ({{code}})",
+    "error": "確認エラー",
+    "columnHeader": "ステータス"
   }
 }

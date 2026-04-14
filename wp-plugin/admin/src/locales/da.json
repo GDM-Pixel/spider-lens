@@ -80,6 +80,7 @@
     "csv": "CSV",
     "excel": "Excel",
     "exporting": "Eksporterer...",
+    "refresh": "Opdater",
     "cancel": "Annuller",
     "save": "Gem",
     "saving": "Gemmer...",
@@ -94,7 +95,8 @@
     "url": "URL",
     "status": "Status",
     "site": "Websted",
-    "by": "Af"
+    "by": "Af",
+    "openInNewTab": "Åbn i ny fane"
   },
   "login": {
     "subtitle": "SEO-fokuseret trafikanalysator",
@@ -581,5 +583,14 @@
     "errorGeneric": "Der opstod en fejl. Prøv igen.",
     "poweredBy": "Drevet af",
     "clearChat": "Rens chat"
+  },
+  "recheck": {
+    "button": "Gencheck URL",
+    "loading": "Checker…",
+    "fixed200": "Rettet (200 OK) — checket {{date}}",
+    "redirected": "Omdirigeret ({{code}}) → {{target}}",
+    "stillBroken": "Stadig ødelagt ({{code}})",
+    "error": "Checkfejl",
+    "columnHeader": "Status"
   }
 }

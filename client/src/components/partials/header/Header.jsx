@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { useBeginnerMode } from '../../../hooks/useBeginnerMode'
 import { useSite } from '../../../context/SiteContext'
+import { useRefresh } from '../../../context/RefreshContext'
 import LanguageSwitcher from '../../ui/LanguageSwitcher'
 
 export default function Header({ collapsed, onToggle }) {
@@ -15,6 +16,7 @@ export default function Header({ collapsed, onToggle }) {
   const username  = localStorage.getItem('spider_username') || 'Admin'
   const { beginner, toggle } = useBeginnerMode()
   const { sites, activeSiteId, setActiveSiteId } = useSite()
+  const { triggerRefresh } = useRefresh()
 
   return (
     <header className="h-16 bg-prussian-600 border-b border-prussian-500 px-6 flex items-center justify-between shrink-0">
@@ -91,6 +93,16 @@ export default function Header({ collapsed, onToggle }) {
           <Icon icon="ph:spider" className="text-sm" />
           v1.3.0
         </span>
+
+        {/* ── Bouton Actualiser ─────────────────────────── */}
+        <button
+          onClick={triggerRefresh}
+          className="flex items-center gap-1.5 bg-prussian-500 border border-prussian-400 hover:border-moonstone-500 hover:text-moonstone-300 text-errorgrey text-xs font-semibold px-3 py-1.5 rounded-full transition-all duration-200"
+          title={t('header.refresh')}
+        >
+          <Icon icon="ph:arrow-clockwise" className="text-base" />
+          <span className="hidden sm:block">{t('header.refresh')}</span>
+        </button>
 
         <LanguageSwitcher />
 

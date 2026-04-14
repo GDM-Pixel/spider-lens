@@ -22,6 +22,7 @@
     "expert": "Experto",
     "allSites": "Todos los sitios",
     "openMenu": "Abrir menú",
+    "refresh": "Actualizar",
     "closeMenu": "Contraer menú",
     "pages": {
       "dashboard": {
@@ -94,7 +95,17 @@
     "url": "URL",
     "status": "Estado",
     "site": "Sitio",
-    "by": "Por"
+    "by": "Por",
+    "openInNewTab": "Abrir en nueva pestaña"
+  },
+  "recheck": {
+    "button": "Reverificar URL",
+    "loading": "Verificando…",
+    "fixed200": "Corregido (200 OK) — verificado el {{date}}",
+    "redirected": "Redirigido ({{code}}) → {{target}}",
+    "stillBroken": "Sigue roto ({{code}})",
+    "error": "Error de verificación",
+    "columnHeader": "Estado"
   },
   "login": {
     "subtitle": "Analizador de tráfico orientado a SEO",

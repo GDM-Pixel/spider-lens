@@ -8,6 +8,7 @@ import api from '../api/client'
 import dayjs from 'dayjs'
 import clsx from 'clsx'
 import { usePageContext } from '../hooks/usePageContext'
+import { useRefresh } from '../context/RefreshContext'
 
 const LIMIT = 50
 
@@ -80,12 +81,15 @@ function IPsTab({ range, t }) {
   const [expandedIP, setExpandedIP] = useState(null)
   const [expandedData, setExpandedData] = useState({})
   const [blockModal, setBlockModal] = useState({ ip: null, reason: '' })
+  const { refreshKey, consumeFresh } = useRefresh()
 
   useEffect(() => {
     setLoading(true)
+    const fresh = consumeFresh()
     Promise.all([
       api.get('/network/ips', {
         params: { ...range, search, bot: botFilter !== 'all' ? botFilter : undefined, limit: LIMIT, offset },
+        fresh,
       }),
       api.get('/blocklist'),
     ])
@@ -95,7 +99,7 @@ function IPsTab({ range, t }) {
       })
       .catch(err => console.error('Erreur chargement IPs:', err))
       .finally(() => setLoading(false))
-  }, [range, search, botFilter, offset])
+  }, [range, search, botFilter, offset, refreshKey])
 
   const toggleExpand = async ip => {
     if (expandedIP === ip) {
@@ -388,6 +392,7 @@ function UserAgentsTab({ range, t }) {
   const [botFilter, setBotFilter] = useState('all')
   const [offset, setOffset] = useState(0)
   const [loading, setLoading] = useState(false)
+  const { refreshKey, consumeFresh } = useRefresh()
 
   const handleExport = async () => {
     try {
@@ -407,6 +412,7 @@ function UserAgentsTab({ range, t }) {
 
   useEffect(() => {
     setLoading(true)
+    const fresh = consumeFresh()
     api
       .get('/network/user-agents', {
         params: {
@@ -416,11 +422,12 @@ function UserAgentsTab({ range, t }) {
           limit: LIMIT,
           offset,
         },
+        fresh,
       })
       .then(res => setData(res.data || []))
       .catch(err => console.error('Erreur chargement User-Agents:', err))
       .finally(() => setLoading(false))
-  }, [range, search, botFilter, offset])
+  }, [range, search, botFilter, offset, refreshKey])
 
   return (
     <div className="flex flex-col gap-4">

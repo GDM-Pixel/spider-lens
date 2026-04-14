@@ -22,6 +22,7 @@
     "expert": "Expert",
     "allSites": "Alla webbplatser",
     "openMenu": "Öppna meny",
+    "refresh": "Uppdatera",
     "closeMenu": "Stäng meny",
     "pages": {
       "dashboard": {
@@ -94,7 +95,17 @@
     "url": "URL",
     "status": "Status",
     "site": "Webbplats",
-    "by": "Av"
+    "by": "Av",
+    "openInNewTab": "Öppna i ny flik"
+  },
+  "recheck": {
+    "button": "Kontrollera URL igen",
+    "loading": "Kontrollerar…",
+    "fixed200": "Åtgärdat (200 OK) — kontrollerat {{date}}",
+    "redirected": "Omdirigerad ({{code}}) → {{target}}",
+    "stillBroken": "Fortfarande trasig ({{code}})",
+    "error": "Kontroll misslyckades",
+    "columnHeader": "Status"
   },
   "login": {
     "subtitle": "SEO-fokuserad trafikanalysator",

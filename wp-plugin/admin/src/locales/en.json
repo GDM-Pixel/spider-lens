@@ -80,6 +80,7 @@
     "csv": "CSV",
     "excel": "Excel",
     "exporting": "Exporting…",
+    "refresh": "Refresh",
     "cancel": "Cancel",
     "save": "Save",
     "saving": "Saving...",
@@ -94,7 +95,8 @@
     "url": "URL",
     "status": "Status",
     "site": "Site",
-    "by": "By"
+    "by": "By",
+    "openInNewTab": "Open in new tab"
   },
   "login": {
     "subtitle": "SEO-oriented traffic analyser",
@@ -582,5 +584,14 @@
     "errorGeneric": "An error occurred. Please try again.",
     "poweredBy": "powered by",
     "clearChat": "Clear conversation"
+  },
+  "recheck": {
+    "button": "Re-check URL",
+    "loading": "Checking…",
+    "fixed200": "Fixed (200 OK) — checked on {{date}}",
+    "redirected": "Redirected ({{code}}) → {{target}}",
+    "stillBroken": "Still broken ({{code}})",
+    "error": "Check error",
+    "columnHeader": "Status"
   }
 }

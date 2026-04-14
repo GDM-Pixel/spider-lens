@@ -9,12 +9,14 @@ const config = window.spiderLens || {
   nonce:   '',
 }
 
-async function request(method, path, { params, body } = {}) {
+async function request(method, path, { params, body, fresh } = {}) {
   let url = config.apiBase + path
 
-  if (params) {
+  const allParams = fresh ? { ...params, fresh: '1' } : params
+
+  if (allParams) {
     const qs = new URLSearchParams(
-      Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== '')
+      Object.entries(allParams).filter(([, v]) => v !== undefined && v !== null && v !== '')
     ).toString()
     if (qs) url += '?' + qs
   }
@@ -51,6 +53,14 @@ const api = {
   get:    (path, opts = {}) => request('GET',    path, opts),
   post:   (path, body, opts = {}) => request('POST',   path, { ...opts, body }),
   delete: (path, opts = {}) => request('DELETE', path, opts),
+}
+
+/**
+ * GET avec support du flag `fresh` (bypass cache serveur via ?fresh=1).
+ * Usage : apiGet('/stats/bots', { params: range, fresh: true })
+ */
+export function apiGet(path, { params, fresh } = {}) {
+  return api.get(path, { params, fresh })
 }
 
 export default api

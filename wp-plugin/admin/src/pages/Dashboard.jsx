@@ -12,6 +12,7 @@ import BeginnerBanner from '../components/ui/BeginnerBanner'
 import api from '../api/client'
 import dayjs from 'dayjs'
 import { usePageContext } from '../hooks/usePageContext'
+import { useRefresh } from '../context/RefreshContext'
 
 const BOT_COLORS = ['#00c6e0', '#d62246', '#8b5cf6', '#f59e0b', '#10b981', '#6366f1']
 
@@ -19,6 +20,7 @@ export default function Dashboard() {
   const { t } = useTranslation()
   const [range, setRange]                 = usePersistentRange('dashboard')
   const [overview, setOverview]           = useState(null)
+  const { refreshKey, consumeFresh }      = useRefresh()
 
   usePageContext(() =>
     Promise.all([
@@ -42,13 +44,14 @@ export default function Dashboard() {
 
   useEffect(() => {
     setLoading(true)
+    const fresh = consumeFresh()
     Promise.all([
-      api.get('/stats/overview',      { params: range }),
-      api.get('/stats/http-codes',    { params: range }),
-      api.get('/stats/bots',          { params: range }),
+      api.get('/stats/overview',      { params: range, fresh }),
+      api.get('/stats/http-codes',    { params: range, fresh }),
+      api.get('/stats/bots',          { params: range, fresh }),
       api.get('/anomalies/recent'),
-      api.get('/stats/weekly-trends', { params: { weeks: 12 } }),
-      api.get('/stats/timeline',      { params: range }),
+      api.get('/stats/weekly-trends', { params: { weeks: 12 }, fresh }),
+      api.get('/stats/timeline',      { params: range, fresh }),
     ]).then(([ov, http, bots, anom, trends, timeline]) => {
       setOverview(ov.data)
       setHttpData(http.data)
@@ -57,7 +60,7 @@ export default function Dashboard() {
       setWeeklyTrends(trends.data)
       setTimelineData(timeline.data)
     }).finally(() => setLoading(false))
-  }, [range])
+  }, [range, refreshKey])
 
   const botPieData = botsData.filter(d => d.is_bot === '1' || d.is_bot === 1)
     .map(d => ({ name: d.name, value: parseInt(d.hits) }))

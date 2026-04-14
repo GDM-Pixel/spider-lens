@@ -22,6 +22,7 @@
     "expert": "Эксперт",
     "allSites": "Все сайты",
     "openMenu": "Открыть меню",
+    "refresh": "Обновить",
     "closeMenu": "Закрыть меню",
     "pages": {
       "dashboard": {
@@ -94,7 +95,17 @@
     "url": "URL",
     "status": "Статус",
     "site": "Сайт",
-    "by": "Пользователь"
+    "by": "Пользователь",
+    "openInNewTab": "Открыть в новой вкладке"
+  },
+  "recheck": {
+    "button": "Перепроверить URL",
+    "loading": "Проверка…",
+    "fixed200": "Исправлено (200 OK) — проверено {{date}}",
+    "redirected": "Перенаправлено ({{code}}) → {{target}}",
+    "stillBroken": "Всё ещё сломано ({{code}})",
+    "error": "Ошибка проверки",
+    "columnHeader": "Статус"
   },
   "login": {
     "subtitle": "Анализатор трафика с фокусом на SEO",

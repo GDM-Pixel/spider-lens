@@ -9,6 +9,9 @@ import { useSort } from '../hooks/useSort'
 import SortableHeader from '../components/ui/SortableHeader'
 import { useSite } from '../context/SiteContext'
 import { useChat } from '../context/ChatContext'
+import { useRefresh } from '../context/RefreshContext'
+import { useDebounce } from '../hooks/useDebounce'
+import { apiGet } from '../api/client'
 import api from '../api/client'
 import dayjs from 'dayjs'
 import clsx from 'clsx'
@@ -212,7 +215,7 @@ function IpUrlDetail({ ip, range, siteId }) {
 }
 
 // ── Onglet IPs ────────────────────────────────────────────
-function IpsTab({ range, siteId }) {
+function IpsTab({ range, siteId, refreshKey }) {
   const { t } = useTranslation()
   const [rows, setRows]         = useState([])
   const [total, setTotal]       = useState(0)
@@ -222,10 +225,10 @@ function IpsTab({ range, siteId }) {
   const [search, setSearch]     = useState('')
   const [botFilter, setBotFilter] = useState('')
   const [expanded, setExpanded] = useState(null)
-  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [blockedIps, setBlockedIps] = useState(new Set())
   const [blockModal, setBlockModal] = useState(null) // ip à bloquer
   const { sort: ipSort, toggleSort: toggleIpSort } = useSort('hits', 'desc')
+  const debouncedSearch = useDebounce(search, 300)
 
   // Chargement initial de la blocklist (IPs bloquées)
   useEffect(() => {
@@ -251,20 +254,20 @@ function IpsTab({ range, siteId }) {
   }
 
   useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(search), 300)
-    return () => clearTimeout(t)
-  }, [search])
-
-  const fetchData = useCallback(() => {
+    const ctrl = new AbortController()
     setLoading(true)
     const params = { ...range, limit: PAGE_SIZE, offset, sort: ipSort.by, dir: ipSort.dir }
     if (botFilter !== '') params.bot = botFilter
     if (debouncedSearch) params.search = debouncedSearch
     if (siteId) params.siteId = siteId
-    api.get('/network/ips', { params })
+    apiGet('/network/ips', { params, signal: ctrl.signal })
       .then(r => { setRows(r.data.rows); setTotal(r.data.total) })
+      .catch(err => { if (err.name !== 'CanceledError') console.error(err) })
       .finally(() => setLoading(false))
-  }, [range, offset, botFilter, debouncedSearch, siteId, ipSort])
+    return () => ctrl.abort()
+  }, [range, offset, botFilter, debouncedSearch, siteId, ipSort, refreshKey])
+
+  useEffect(() => { setOffset(0); setExpanded(null) }, [range, botFilter, debouncedSearch, siteId, ipSort])
 
   function exportCSV() {
     setExporting(true)
@@ -284,9 +287,6 @@ function IpsTab({ range, siteId }) {
       })
       .finally(() => setExporting(false))
   }
-
-  useEffect(() => { fetchData() }, [fetchData])
-  useEffect(() => { setOffset(0); setExpanded(null) }, [range, botFilter, debouncedSearch, siteId, ipSort])
 
   return (
     <div className="flex flex-col gap-4">
@@ -465,7 +465,7 @@ function IpsTab({ range, siteId }) {
 }
 
 // ── Onglet User-Agents ────────────────────────────────────
-function UserAgentsTab({ range, siteId }) {
+function UserAgentsTab({ range, siteId, refreshKey }) {
   const { t } = useTranslation()
   const [rows, setRows]           = useState([])
   const [total, setTotal]         = useState(0)
@@ -474,24 +474,24 @@ function UserAgentsTab({ range, siteId }) {
   const [exporting, setExporting] = useState(false)
   const [search, setSearch]       = useState('')
   const [botFilter, setBotFilter] = useState('')
-  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const debouncedSearch = useDebounce(search, 300)
   const { sort: uaSort, toggleSort: toggleUaSort } = useSort('hits', 'desc')
 
   useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(search), 300)
-    return () => clearTimeout(t)
-  }, [search])
-
-  const fetchData = useCallback(() => {
+    const ctrl = new AbortController()
     setLoading(true)
     const params = { ...range, limit: PAGE_SIZE, offset, sort: uaSort.by, dir: uaSort.dir }
     if (botFilter !== '') params.bot = botFilter
     if (debouncedSearch) params.search = debouncedSearch
     if (siteId) params.siteId = siteId
-    api.get('/network/user-agents', { params })
+    apiGet('/network/user-agents', { params, signal: ctrl.signal })
       .then(r => { setRows(r.data.rows); setTotal(r.data.total) })
+      .catch(err => { if (err.name !== 'CanceledError') console.error(err) })
       .finally(() => setLoading(false))
-  }, [range, offset, botFilter, debouncedSearch, siteId, uaSort])
+    return () => ctrl.abort()
+  }, [range, offset, botFilter, debouncedSearch, siteId, uaSort, refreshKey])
+
+  useEffect(() => { setOffset(0) }, [range, botFilter, debouncedSearch, siteId, uaSort])
 
   function exportCSV() {
     setExporting(true)
@@ -511,9 +511,6 @@ function UserAgentsTab({ range, siteId }) {
       })
       .finally(() => setExporting(false))
   }
-
-  useEffect(() => { fetchData() }, [fetchData])
-  useEffect(() => { setOffset(0) }, [range, botFilter, debouncedSearch, siteId, uaSort])
 
   return (
     <div className="flex flex-col gap-4">
@@ -620,6 +617,7 @@ export default function Network() {
   const { t } = useTranslation()
   const { activeSiteId } = useSite()
   const { setPageContext, clearPageContext } = useChat()
+  const { refreshKey } = useRefresh()
   const [range, setRange] = usePersistentRange('network')
   const [tab, setTab] = useState('ips')
 
@@ -672,7 +670,7 @@ export default function Network() {
         <div className="flex flex-col gap-6">
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             <div className="xl:col-span-2">
-              <IpsTab range={range} siteId={activeSiteId} />
+              <IpsTab range={range} siteId={activeSiteId} refreshKey={refreshKey} />
             </div>
             <div>
               <TopCountriesWidget range={range} siteId={activeSiteId} botFilter="" />
@@ -680,7 +678,7 @@ export default function Network() {
           </div>
         </div>
       ) : (
-        <UserAgentsTab range={range} siteId={activeSiteId} />
+        <UserAgentsTab range={range} siteId={activeSiteId} refreshKey={refreshKey} />
       )}
     </div>
   )

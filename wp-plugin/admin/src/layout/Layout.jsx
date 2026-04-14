@@ -1,11 +1,12 @@
-import React, { useState } from 'react'
-import { Outlet, useLocation, NavLink } from 'react-router-dom'
+import { useState } from 'react'
+import { Outlet, NavLink } from 'react-router-dom'
 import { Icon } from '@iconify/react'
 import clsx from 'clsx'
 import { useTranslation } from 'react-i18next'
 import { useBeginnerMode } from '../hooks/useBeginnerMode'
 import LanguageSwitcher from '../components/ui/LanguageSwitcher'
 import NovaChatBubble from '../components/chat/NovaChatBubble'
+import { RefreshProvider, useRefresh } from '../context/RefreshContext'
 
 const NAV_ITEMS = [
   { labelKey: 'nav.dashboard',      icon: 'ph:chart-pie-slice',       path: '/dashboard' },
@@ -21,11 +22,11 @@ const NAV_ITEMS = [
   { labelKey: 'nav.settings',       icon: 'ph:gear-six',              path: '/settings' },
 ]
 
-export default function Layout() {
+function LayoutInner() {
   const [collapsed, setCollapsed] = useState(false)
-  const location = useLocation()
   const { t } = useTranslation()
   const { beginner, toggle: toggleBeginner } = useBeginnerMode()
+  const { triggerRefresh } = useRefresh()
 
   return (
     <div className="flex h-screen overflow-hidden bg-prussian-700 font-sans">
@@ -107,6 +108,17 @@ export default function Layout() {
 
       {/* Main */}
       <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Top bar avec bouton Actualiser */}
+        <header className="flex items-center justify-end h-10 px-4 border-b border-prussian-500 bg-prussian-600 shrink-0 gap-2">
+          <button
+            onClick={triggerRefresh}
+            title={t('common.refresh')}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold text-errorgrey hover:text-white hover:bg-prussian-500 transition-colors"
+          >
+            <Icon icon="ph:arrow-clockwise" className="text-sm" />
+            {t('common.refresh')}
+          </button>
+        </header>
         <main className="flex-1 overflow-y-auto p-5">
           <Outlet />
         </main>
@@ -115,5 +127,13 @@ export default function Layout() {
       {/* Nova chat bubble — global */}
       <NovaChatBubble />
     </div>
+  )
+}
+
+export default function Layout() {
+  return (
+    <RefreshProvider>
+      <LayoutInner />
+    </RefreshProvider>
   )
 }

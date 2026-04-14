@@ -80,6 +80,7 @@
     "csv": "CSV",
     "excel": "Excel",
     "exporting": "Exporterar...",
+    "refresh": "Uppdatera",
     "cancel": "Avbryt",
     "save": "Spara",
     "saving": "Sparar...",
@@ -94,7 +95,8 @@
     "url": "URL",
     "status": "Status",
     "site": "Webbplats",
-    "by": "Av"
+    "by": "Av",
+    "openInNewTab": "Öppna i ny flik"
   },
   "login": {
     "subtitle": "SEO-fokuserad trafikanalysator",
@@ -581,5 +583,14 @@
     "errorGeneric": "Ett fel uppstod. Försök igen.",
     "poweredBy": "Driven av",
     "clearChat": "Rensa konversation"
+  },
+  "recheck": {
+    "button": "Kontrollera URL igen",
+    "loading": "Kontrollerar…",
+    "fixed200": "Åtgärdat (200 OK) — kontrollerat {{date}}",
+    "redirected": "Omdirigerat ({{code}}) → {{target}}",
+    "stillBroken": "Fortfarande trasigt ({{code}})",
+    "error": "Kontrollfel",
+    "columnHeader": "Status"
   }
 }

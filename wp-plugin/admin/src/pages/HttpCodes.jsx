@@ -12,6 +12,10 @@ import api from '../api/client'
 import dayjs from 'dayjs'
 import clsx from 'clsx'
 import { usePageContext } from '../hooks/usePageContext'
+import { useRefresh } from '../context/RefreshContext'
+import { useDebounce } from '../hooks/useDebounce'
+import UrlCell from '../components/ui/UrlCell'
+import RecheckButton from '../components/ui/RecheckButton'
 
 export default function HttpCodes() {
   const { t } = useTranslation()
@@ -35,10 +39,12 @@ export default function HttpCodes() {
   const [statusFilter, setStatusFilter] = useState('')
   const [botFilter, setBotFilter] = useState('')
   const [search, setSearch] = useState('')
+  const debouncedSearch = useDebounce(search, 500)
   const [detailOffset, setDetailOffset] = useState(0)
   const [detail, setDetail] = useState({ rows: [], total: 0 })
   const [detailLoading, setDetailLoading] = useState(false)
   const { sort, toggleSort } = useSort('hits', 'desc')
+  const { refreshKey, consumeFresh } = useRefresh()
   const DETAIL_LIMIT = 50
 
   const handleExportCsv = async () => {
@@ -61,32 +67,35 @@ export default function HttpCodes() {
 
   useEffect(() => {
     setDetailOffset(0)
-  }, [range, statusFilter, botFilter, search, sort])
+  }, [range, statusFilter, botFilter, debouncedSearch, sort])
 
   useEffect(() => {
     setDetailLoading(true)
+    const fresh = consumeFresh()
     api.get('/stats/url-detail', {
       params: {
         ...range,
         status: statusFilter || undefined,
         bot: botFilter || undefined,
-        search: search || undefined,
+        search: debouncedSearch || undefined,
         sort: sort.by,
         dir: sort.dir,
         limit: DETAIL_LIMIT,
         offset: detailOffset,
       },
+      fresh,
     })
       .then(res => setDetail(res.data || { rows: [], total: 0 }))
       .catch(err => console.error('Erreur drill-down:', err))
       .finally(() => setDetailLoading(false))
-  }, [range, statusFilter, botFilter, search, sort, detailOffset])
+  }, [range, statusFilter, botFilter, debouncedSearch, sort, detailOffset, refreshKey])
 
   useEffect(() => {
     setLoading(true)
+    const fresh = consumeFresh()
     Promise.all([
-      api.get('/stats/http-codes', { params: range }),
-      api.get('/stats/overview', { params: range }),
+      api.get('/stats/http-codes', { params: range, fresh }),
+      api.get('/stats/overview', { params: range, fresh }),
     ])
       .then(([httpRes, overRes]) => {
         setHttpData(httpRes.data)
@@ -94,7 +103,7 @@ export default function HttpCodes() {
       })
       .catch(err => console.error('Erreur chargement HTTP codes:', err))
       .finally(() => setLoading(false))
-  }, [range])
+  }, [range, refreshKey])
 
   return (
     <div className="flex flex-col gap-6">
@@ -230,12 +239,15 @@ export default function HttpCodes() {
                         <SortableHeader col="human_hits" sort={sort} onSort={toggleSort}>{t('common.humans')}</SortableHeader>
                         <SortableHeader col="bot_hits" sort={sort} onSort={toggleSort}>{t('common.bots')}</SortableHeader>
                         <SortableHeader col="last_seen" sort={sort} onSort={toggleSort}>{t('common.lastSeen')}</SortableHeader>
+                        <th className="px-3 py-2 text-right text-errorgrey text-xs font-semibold">{t('recheck.columnHeader')}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {detail.rows.map((row, i) => (
                         <tr key={i} className="border-b border-prussian-600 hover:bg-prussian-400/30 transition-colors">
-                          <td className="px-3 py-2 text-moonstone-400 text-xs truncate max-w-sm">{row.url}</td>
+                          <td className="px-3 py-2 max-w-sm">
+                            <UrlCell path={row.url} siteUrl={window?.spiderLens?.siteUrl || null} />
+                          </td>
                           <td className="px-3 py-2 text-right">
                             <span className={clsx('text-xs font-bold px-1.5 py-0.5 rounded', {
                               'text-green-400': row.status_code >= 200 && row.status_code < 300,
@@ -249,6 +261,14 @@ export default function HttpCodes() {
                           <td className="px-3 py-2 text-right text-lightgrey text-xs">{parseInt(row.human_hits).toLocaleString('fr-FR')}</td>
                           <td className="px-3 py-2 text-right text-lightgrey text-xs">{parseInt(row.bot_hits).toLocaleString('fr-FR')}</td>
                           <td className="px-3 py-2 text-right text-errorgrey text-xs">{row.last_seen ? dayjs(row.last_seen).format('DD/MM/YY') : '—'}</td>
+                          <td className="px-3 py-2">
+                            {row.status_code === 404 && (
+                              <RecheckButton
+                                url={row.url}
+                                initialRecheck={row.recheck_status ? { recheck_status: row.recheck_status, recheck_final_url: row.recheck_final_url, recheck_checked_at: row.recheck_checked_at } : null}
+                              />
+                            )}
+                          </td>
                         </tr>
                       ))}
                     </tbody>

@@ -80,6 +80,7 @@
     "csv": "CSV",
     "excel": "Excel",
     "exporting": "Export…",
+    "refresh": "Actualiser",
     "cancel": "Annuler",
     "save": "Enregistrer",
     "saving": "Sauvegarde...",
@@ -94,7 +95,8 @@
     "url": "URL",
     "status": "Statut",
     "site": "Site",
-    "by": "Par"
+    "by": "Par",
+    "openInNewTab": "Ouvrir dans un nouvel onglet"
   },
   "login": {
     "subtitle": "Analyseur de trafic orienté SEO",
@@ -582,5 +584,14 @@
     "errorGeneric": "Une erreur s'est produite. Veuillez réessayer.",
     "poweredBy": "propulsé par",
     "clearChat": "Effacer la conversation"
+  },
+  "recheck": {
+    "button": "Re-vérifier l'URL",
+    "loading": "Vérification…",
+    "fixed200": "Fixé (200 OK) — vérifié le {{date}}",
+    "redirected": "Redirigé ({{code}}) → {{target}}",
+    "stillBroken": "Toujours cassé ({{code}})",
+    "error": "Erreur de vérification",
+    "columnHeader": "État"
   }
 }

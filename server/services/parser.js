@@ -1,6 +1,7 @@
 import { createReadStream, statSync } from 'fs'
 import { createInterface } from 'readline'
 import { getDb } from '../db/database.js'
+import { flushSite } from './cache.js'
 
 // ─────────────────────────────────────────────────────────
 // Regex formats de logs
@@ -198,6 +199,11 @@ export async function parseLogFile(logFilePath, siteId = null) {
       last_inode = excluded.last_inode,
       last_parsed_at = excluded.last_parsed_at
   `).run(logFilePath, fileSize, currentInode)
+
+  // Invalider le cache pour ce site si des entrées ont été insérées
+  if (parsed > 0 && siteId) {
+    flushSite(siteId)
+  }
 
   console.log(`[parser] ${parsed} entrées parsées, ${errors} erreurs`)
   return { parsed, errors }

@@ -9,11 +9,13 @@ import BeginnerBanner from '../components/ui/BeginnerBanner'
 import api from '../api/client'
 import dayjs from 'dayjs'
 import { usePageContext } from '../hooks/usePageContext'
+import { useRefresh } from '../context/RefreshContext'
 
 export default function TTFB() {
   const { t } = useTranslation()
   const [range, setRange] = usePersistentRange('ttfb')
   const [data, setData] = useState([])
+  const { refreshKey, consumeFresh } = useRefresh()
 
   usePageContext(() =>
     api.get('/stats/ttfb', { params: range }).then(r => {
@@ -47,8 +49,9 @@ export default function TTFB() {
 
   useEffect(() => {
     setLoading(true)
+    const fresh = consumeFresh()
     api
-      .get('/stats/ttfb', { params: range })
+      .get('/stats/ttfb', { params: range, fresh })
       .then(res => {
         const ttfbData = res.data || []
         setData(ttfbData)
@@ -66,7 +69,7 @@ export default function TTFB() {
       })
       .catch(err => console.error('Erreur chargement TTFB:', err))
       .finally(() => setLoading(false))
-  }, [range])
+  }, [range, refreshKey])
 
   const getColor = ttfb => {
     if (ttfb < 200) return '#10b981'

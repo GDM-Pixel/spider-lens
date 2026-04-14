@@ -8,8 +8,11 @@ import { usePersistentRange } from '../hooks/usePersistentRange'
 import { useSort } from '../hooks/useSort'
 import SortableHeader from '../components/ui/SortableHeader'
 import { useSite } from '../context/SiteContext'
+import UrlCell from '../components/ui/UrlCell'
+import RecheckButton from '../components/ui/RecheckButton'
 import { useChat } from '../context/ChatContext'
-import api from '../api/client'
+import { useRefresh } from '../context/RefreshContext'
+import { apiGet } from '../api/client'
 import dayjs from 'dayjs'
 import clsx from 'clsx'
 
@@ -22,7 +25,7 @@ function EmptyTable({ message }) {
   )
 }
 
-function Table404({ data }) {
+function Table404({ data, siteUrl, siteId }) {
   const { t } = useTranslation()
   const { sort, toggleSort } = useSort('hits', 'desc')
 
@@ -58,18 +61,28 @@ function Table404({ data }) {
                 <SortableHeader col="hits" sort={sort} onSort={toggleSort} className="px-5">{t('topPages.headerHits')}</SortableHeader>
                 <SortableHeader col="bot_hits" sort={sort} onSort={toggleSort} className="px-5">{t('topPages.headerBots')}</SortableHeader>
                 <SortableHeader col="last_seen" sort={sort} onSort={toggleSort} className="px-5">{t('topPages.headerLastSeen')}</SortableHeader>
+                <th className="px-5 py-3 text-right text-xs text-errorgrey font-semibold uppercase tracking-wide">{t('recheck.columnHeader')}</th>
               </tr>
             </thead>
             <tbody>
               {sorted.map((row, i) => (
                 <tr key={i} className={clsx('border-b border-prussian-400/50 hover:bg-prussian-400/30 transition-colors', i % 2 === 0 ? 'bg-prussian-500' : 'bg-prussian-600/30')}>
-                  <td className="px-5 py-3 text-sm text-moonstone-400 font-mono max-w-xs truncate">{row.url}</td>
+                  <td className="px-5 py-3 text-sm max-w-xs">
+                    <UrlCell path={row.url} siteUrl={siteUrl} />
+                  </td>
                   <td className="px-5 py-3 text-right">
                     <span className="text-dustyred-400 font-bold text-sm">{row.hits.toLocaleString('fr-FR')}</span>
                   </td>
                   <td className="px-5 py-3 text-right text-sm text-errorgrey">{row.bot_hits?.toLocaleString('fr-FR') || 0}</td>
                   <td className="px-5 py-3 text-right text-xs text-errorgrey">
                     {dayjs(row.last_seen).format('DD/MM/YYYY HH:mm')}
+                  </td>
+                  <td className="px-5 py-3">
+                    <RecheckButton
+                      url={row.url}
+                      siteId={siteId}
+                      initialRecheck={row.recheck_status ? { status_code: row.recheck_status, recheck_final_url: row.recheck_final_url, recheck_checked_at: row.recheck_checked_at } : null}
+                    />
                   </td>
                 </tr>
               ))}
@@ -81,7 +94,7 @@ function Table404({ data }) {
   )
 }
 
-function TablePages({ data }) {
+function TablePages({ data, siteUrl }) {
   const { t } = useTranslation()
   const { sort, toggleSort } = useSort('hits', 'desc')
 
@@ -114,7 +127,9 @@ function TablePages({ data }) {
             <tbody>
               {sorted.map((row, i) => (
                 <tr key={i} className={clsx('border-b border-prussian-400/50 hover:bg-prussian-400/30 transition-colors', i % 2 === 0 ? 'bg-prussian-500' : 'bg-prussian-600/30')}>
-                  <td className="px-5 py-3 text-sm text-moonstone-400 font-mono max-w-xs truncate">{row.url}</td>
+                  <td className="px-5 py-3 text-sm max-w-xs">
+                    <UrlCell path={row.url} siteUrl={siteUrl} />
+                  </td>
                   <td className="px-5 py-3 text-right text-sm text-white font-semibold">{row.human_hits?.toLocaleString('fr-FR') || 0}</td>
                   <td className="px-5 py-3 text-right text-sm text-errorgrey">{row.bot_hits?.toLocaleString('fr-FR') || 0}</td>
                   <td className="px-5 py-3 text-right">
@@ -132,8 +147,10 @@ function TablePages({ data }) {
 
 export default function TopPages() {
   const { t } = useTranslation()
-  const { activeSiteId } = useSite()
+  const { activeSiteId, activeSite } = useSite()
+  const siteUrl = activeSite?.url || activeSite?.site_url || null
   const { setPageContext, clearPageContext } = useChat()
+  const { refreshKey, consumeFresh } = useRefresh()
   const [range, setRange] = usePersistentRange('top-pages')
   const [tab, setTab] = useState('404') // '404' | 'pages'
   const [data404, setData404] = useState([])
@@ -142,15 +159,19 @@ export default function TopPages() {
   const [exporting, setExporting] = useState(false)
 
   useEffect(() => {
+    const ctrl = new AbortController()
+    const fresh = consumeFresh()
     setLoading(true)
     Promise.all([
-      api.get('/stats/top-404', { params: { ...range, limit: 30 } }),
-      api.get('/stats/top-pages', { params: { ...range, limit: 30 } }),
+      apiGet('/stats/top-404', { params: { ...range, limit: 30 }, fresh, signal: ctrl.signal }),
+      apiGet('/stats/top-pages', { params: { ...range, limit: 30 }, fresh, signal: ctrl.signal }),
     ]).then(([r404, rpages]) => {
       setData404(r404.data)
       setDataPages(rpages.data)
-    }).finally(() => setLoading(false))
-  }, [range, activeSiteId])
+    }).catch(err => { if (err.name !== 'CanceledError') console.error(err) })
+    .finally(() => setLoading(false))
+    return () => ctrl.abort()
+  }, [range, activeSiteId, refreshKey])
 
   useEffect(() => {
     const activeData = tab === '404' ? data404 : dataPages
@@ -245,9 +266,9 @@ export default function TopPages() {
       ) : (
         <div className="bg-prussian-500 rounded-xl border border-prussian-400 overflow-hidden">
           {tab === '404' ? (
-            <Table404 data={data404} />
+            <Table404 data={data404} siteUrl={siteUrl} siteId={activeSiteId} />
           ) : (
-            <TablePages data={dataPages} />
+            <TablePages data={dataPages} siteUrl={siteUrl} />
           )}
         </div>
       )}

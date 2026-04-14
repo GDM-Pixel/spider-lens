@@ -22,6 +22,7 @@
     "expert": "Uzman",
     "allSites": "Tüm siteler",
     "openMenu": "Menüyü aç",
+    "refresh": "Yenile",
     "closeMenu": "Menüyü kapat",
     "pages": {
       "dashboard": {
@@ -94,7 +95,17 @@
     "url": "URL",
     "status": "Durum",
     "site": "Site",
-    "by": "Ölçütü"
+    "by": "Ölçütü",
+    "openInNewTab": "Yeni sekmede aç"
+  },
+  "recheck": {
+    "button": "URL'yi yeniden kontrol et",
+    "loading": "Kontrol ediliyor…",
+    "fixed200": "Düzeltildi (200 OK) — {{date}} tarihinde kontrol edildi",
+    "redirected": "Yönlendirildi ({{code}}) → {{target}}",
+    "stillBroken": "Hâlâ bozuk ({{code}})",
+    "error": "Kontrol başarısız",
+    "columnHeader": "Durum"
   },
   "login": {
     "subtitle": "SEO odaklı trafik analiz aracı",

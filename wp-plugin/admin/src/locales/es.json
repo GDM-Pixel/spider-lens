@@ -80,6 +80,7 @@
     "csv": "CSV",
     "excel": "Excel",
     "exporting": "Exportando…",
+    "refresh": "Actualizar",
     "cancel": "Cancelar",
     "save": "Guardar",
     "saving": "Guardando...",
@@ -94,7 +95,8 @@
     "url": "URL",
     "status": "Estado",
     "site": "Sitio",
-    "by": "Por"
+    "by": "Por",
+    "openInNewTab": "Abrir en nueva pestaña"
   },
   "login": {
     "subtitle": "Analizador de tráfico orientado a SEO",
@@ -581,5 +583,14 @@
     "errorGeneric": "Se produjo un error. Por favor, inténtalo de nuevo.",
     "poweredBy": "desarrollado por",
     "clearChat": "Limpiar conversación"
+  },
+  "recheck": {
+    "button": "Re-verificar URL",
+    "loading": "Verificando…",
+    "fixed200": "Solucionado (200 OK) — verificado el {{date}}",
+    "redirected": "Redirigido ({{code}}) → {{target}}",
+    "stillBroken": "Sigue roto ({{code}})",
+    "error": "Error de verificación",
+    "columnHeader": "Estado"
   }
 }

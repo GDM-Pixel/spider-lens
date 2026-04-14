@@ -100,6 +100,30 @@ function applyMigrations() {
     console.log('[db] Migration V0.7 appliquée (sitemap crawler)')
   }
 
+  // V0.8 — performance indexes for cache-aware queries
+  const hasIndexSts = db.prepare("SELECT name FROM sqlite_master WHERE type='index' AND name='idx_log_site_ts_status'").get()
+  if (!hasIndexSts) {
+    const migration = readFileSync(join(__dirname, 'migration_v08.sql'), 'utf8')
+    for (const stmt of migration.split(';').map(s => s.trim()).filter(Boolean)) {
+      try { run(stmt) } catch (e) {
+        if (!e.message.includes('already exists')) throw e
+      }
+    }
+    console.log('[db] Migration V0.8 appliquée (performance indexes)')
+  }
+
+  // V0.9 — site_url + url_rechecks
+  const hasUrlRechecks = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='url_rechecks'").get()
+  if (!hasUrlRechecks) {
+    const migration = readFileSync(join(__dirname, 'migration_v09.sql'), 'utf8')
+    for (const stmt of migration.split(';').map(s => s.trim()).filter(Boolean)) {
+      try { run(stmt) } catch (e) {
+        if (!e.message.includes('duplicate column') && !e.message.includes('already exists')) throw e
+      }
+    }
+    console.log('[db] Migration V0.9 appliquée (site_url + url_rechecks)')
+  }
+
   // Backfill : créer le site par défaut depuis LOG_FILE_PATH si défini et pas encore de site
   const siteCount = db.prepare('SELECT COUNT(*) as cnt FROM sites').get()?.cnt || 0
   if (siteCount === 0) {

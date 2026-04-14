@@ -80,6 +80,7 @@
     "csv": "CSV",
     "excel": "Excel",
     "exporting": "Esportazione…",
+    "refresh": "Aggiorna",
     "cancel": "Annulla",
     "save": "Salva",
     "saving": "Salvataggio...",
@@ -94,7 +95,8 @@
     "url": "URL",
     "status": "Stato",
     "site": "Sito",
-    "by": "Da"
+    "by": "Da",
+    "openInNewTab": "Apri in una nuova scheda"
   },
   "login": {
     "subtitle": "Analizzatore del traffico orientato a SEO",
@@ -581,5 +583,14 @@
     "errorGeneric": "Si è verificato un errore. Riprova.",
     "poweredBy": "sviluppato da",
     "clearChat": "Cancella conversazione"
+  },
+  "recheck": {
+    "button": "Ri-verifica URL",
+    "loading": "Verifica in corso…",
+    "fixed200": "Risolto (200 OK) — verificato il {{date}}",
+    "redirected": "Reindirizzato ({{code}}) → {{target}}",
+    "stillBroken": "Ancora rotto ({{code}})",
+    "error": "Errore di verifica",
+    "columnHeader": "Stato"
   }
 }

@@ -5,7 +5,7 @@ defined('ABSPATH') || exit;
 
 class Database {
 
-    const DB_VERSION = '1.2';
+    const DB_VERSION = '1.4';
     const DB_VERSION_OPTION = 'spider_lens_db_version';
 
     public static function install(): void {
@@ -35,7 +35,10 @@ class Database {
             KEY idx_ip         (ip(20)),
             KEY idx_status     (status_code),
             KEY idx_is_bot     (is_bot),
-            KEY idx_url        (url(255))
+            KEY idx_url        (url(255)),
+            KEY idx_ts_isbot   (timestamp, is_bot),
+            KEY idx_ts_status  (timestamp, status_code),
+            KEY idx_bot_name   (bot_name)
         ) $charset;";
 
         // Table anomalies
@@ -102,12 +105,27 @@ class Database {
             KEY idx_url (url(255))
         ) $charset;";
 
+        // Table url_rechecks (v1.4) — stocke le dernier re-check d'une URL 404
+        // url_hash = SHA2(url, 256) car MySQL UNIQUE sur TEXT dépasse la limite d'index
+        $sql_url_rechecks = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}spiderlens_url_rechecks (
+            id           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            url          TEXT            NOT NULL,
+            url_hash     CHAR(64)        NOT NULL,
+            status_code  SMALLINT        NOT NULL,
+            final_url    VARCHAR(2048)   DEFAULT NULL,
+            checked_at   DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            UNIQUE KEY uniq_url_hash (url_hash),
+            KEY idx_checked_at (checked_at)
+        ) $charset;";
+
         dbDelta($sql_hits);
         dbDelta($sql_anomalies);
         dbDelta($sql_blocklist);
         dbDelta($sql_sitemaps);
         dbDelta($sql_crawl_runs);
         dbDelta($sql_crawl_pages);
+        dbDelta($sql_url_rechecks);
 
         update_option(self::DB_VERSION_OPTION, self::DB_VERSION);
     }
@@ -116,6 +134,32 @@ class Database {
         $installed = get_option(self::DB_VERSION_OPTION, '0');
         if (version_compare($installed, self::DB_VERSION, '<')) {
             self::install();
+            self::ensure_indexes();
+        }
+    }
+
+    /**
+     * Safety net : vérifie et crée les index composites si dbDelta les a ratés.
+     * dbDelta est capricieux sur les index composites — on vérifie via SHOW INDEX.
+     */
+    private static function ensure_indexes(): void {
+        global $wpdb;
+        $t = $wpdb->prefix . 'spiderlens_hits';
+
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $existing = $wpdb->get_col("SHOW INDEX FROM `$t`", 2); // colonne 2 = Key_name
+
+        $needed = [
+            'idx_ts_isbot'  => '(timestamp, is_bot)',
+            'idx_ts_status' => '(timestamp, status_code)',
+            'idx_bot_name'  => '(bot_name)',
+        ];
+
+        foreach ($needed as $name => $cols) {
+            if (!in_array($name, $existing, true)) {
+                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                $wpdb->query("ALTER TABLE `$t` ADD INDEX `$name` $cols");
+            }
         }
     }
 
@@ -127,6 +171,7 @@ class Database {
         $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}spiderlens_sitemaps");
         $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}spiderlens_crawl_runs");
         $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}spiderlens_crawl_pages");
+        $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}spiderlens_url_rechecks");
         delete_option(self::DB_VERSION_OPTION);
         delete_option('spider_lens_settings');
         delete_option('spider_lens_crawl_queue');

@@ -382,6 +382,30 @@ class Crawler {
     // ---------------------------------------------------------------------------
 
     /**
+     * Re-vérifie le statut HTTP actuel d'une URL (pour vérifier si une 404 est fixée).
+     * Utilise redirection=0 pour capturer explicitement 301/302 sans les suivre.
+     *
+     * @param string $url URL absolue à vérifier.
+     * @return array{ status: int, final_url: string|null }
+     */
+    public static function recheck_url(string $url): array {
+        $response = wp_remote_get($url, [
+            'timeout'     => self::FETCH_TIMEOUT,
+            'user-agent'  => self::CRAWLER_UA,
+            'redirection' => 0, // ne pas suivre les redirections
+        ]);
+
+        if (is_wp_error($response)) {
+            return ['status' => 0, 'final_url' => null];
+        }
+
+        $status    = (int) wp_remote_retrieve_response_code($response);
+        $final_url = wp_remote_retrieve_header($response, 'location') ?: null;
+
+        return ['status' => $status, 'final_url' => $final_url];
+    }
+
+    /**
      * Fetche une URL et extrait les données on-page.
      * Retourne un tableau compatible avec spiderlens_crawl_pages.
      * La clé 'html' est ajoutée temporairement pour extract_internal_links.

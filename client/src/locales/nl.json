@@ -22,6 +22,7 @@
     "expert": "Expert",
     "allSites": "Alle websites",
     "openMenu": "Menu openen",
+    "refresh": "Vernieuwen",
     "closeMenu": "Menu samenklappen",
     "pages": {
       "dashboard": {
@@ -94,7 +95,17 @@
     "url": "URL",
     "status": "Status",
     "site": "Website",
-    "by": "Door"
+    "by": "Door",
+    "openInNewTab": "Openen in nieuw tabblad"
+  },
+  "recheck": {
+    "button": "URL hercontroleren",
+    "loading": "Controleren…",
+    "fixed200": "Opgelost (200 OK) — gecontroleerd op {{date}}",
+    "redirected": "Omgeleid ({{code}}) → {{target}}",
+    "stillBroken": "Nog steeds stuk ({{code}})",
+    "error": "Controle mislukt",
+    "columnHeader": "Status"
   },
   "login": {
     "subtitle": "SEO-georiënteerde verkeersanalisator",

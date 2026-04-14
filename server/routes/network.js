@@ -2,6 +2,7 @@ import { Router } from 'express'
 import geoip from 'geoip-lite'
 import { getDb } from '../db/database.js'
 import { requireAuth } from '../middleware/auth.js'
+import { cacheKey, ttlForRange, remember, shouldBypass } from '../services/cache.js'
 
 const router = Router()
 router.use(requireAuth)
@@ -33,49 +34,58 @@ function getSiteFilter(req) {
 
 // GET /api/network/ips — top IPs
 router.get('/ips', (req, res) => {
-  const db = getDb()
+  const siteId = req.query.siteId ? parseInt(req.query.siteId, 10) : (req.user?.siteId || 0)
   const { from, to } = getDateRange(req)
-  const { clause: sf, params: sp } = getSiteFilter(req)
-  const botFilter = req.query.bot
-  const search    = req.query.search
-  const limit     = Math.min(parseInt(req.query.limit  || '100', 10), 1000)
-  const offset    = parseInt(req.query.offset || '0', 10)
-  const sortBy    = ['hits','bot_hits','human_hits','last_seen','bot_name','ip'].includes(req.query.sort) ? req.query.sort : 'hits'
-  const sortDir   = req.query.dir === 'asc' ? 'ASC' : 'DESC'
+  const bypass = shouldBypass(req)
+  const key = cacheKey('network-ips', siteId, req.query)
+  const ttl = ttlForRange(to)
 
-  const botWhere    = botFilter !== undefined ? `AND is_bot = ${botFilter === '1' ? 1 : 0}` : ''
-  const searchWhere = search ? 'AND ip LIKE ?' : ''
-  const searchParams = search ? [`%${search}%`] : []
+  const result = remember(key, ttl, bypass, () => {
+    const db = getDb()
+    const { clause: sf, params: sp } = getSiteFilter(req)
+    const botFilter = req.query.bot
+    const search    = req.query.search
+    const limit     = Math.min(parseInt(req.query.limit  || '100', 10), 1000)
+    const offset    = parseInt(req.query.offset || '0', 10)
+    const sortBy    = ['hits','bot_hits','human_hits','last_seen','bot_name','ip'].includes(req.query.sort) ? req.query.sort : 'hits'
+    const sortDir   = req.query.dir === 'asc' ? 'ASC' : 'DESC'
 
-  const where = `timestamp BETWEEN ? AND ? ${sf} ${botWhere} ${searchWhere}`
-  const params = [from, to, ...sp, ...searchParams]
+    const botWhere    = botFilter !== undefined ? `AND is_bot = ${botFilter === '1' ? 1 : 0}` : ''
+    const searchWhere = search ? 'AND ip LIKE ?' : ''
+    const searchParams = search ? [`%${search}%`] : []
 
-  const rows = db.prepare(`
-    SELECT
-      ip,
-      COUNT(*)                                                  AS hits,
-      SUM(CASE WHEN is_bot = 1  THEN 1 ELSE 0 END)             AS bot_hits,
-      SUM(CASE WHEN is_bot = 0  THEN 1 ELSE 0 END)             AS human_hits,
-      SUM(CASE WHEN status_code BETWEEN 200 AND 299 THEN 1 ELSE 0 END) AS s2xx,
-      SUM(CASE WHEN status_code BETWEEN 300 AND 399 THEN 1 ELSE 0 END) AS s3xx,
-      SUM(CASE WHEN status_code BETWEEN 400 AND 499 THEN 1 ELSE 0 END) AS s4xx,
-      SUM(CASE WHEN status_code BETWEEN 500 AND 599 THEN 1 ELSE 0 END) AS s5xx,
-      MAX(timestamp)                                            AS last_seen,
-      MAX(CASE WHEN is_bot = 1 THEN bot_name END)               AS bot_name
-    FROM log_entries
-    WHERE ${where}
-    GROUP BY ip
-    ORDER BY ${sortBy} ${sortDir}
-    LIMIT ? OFFSET ?
-  `).all(...params, limit, offset)
+    const where = `timestamp BETWEEN ? AND ? ${sf} ${botWhere} ${searchWhere}`
+    const params = [from, to, ...sp, ...searchParams]
 
-  const total = db.prepare(`
-    SELECT COUNT(DISTINCT ip) AS cnt FROM log_entries WHERE ${where}
-  `).get(...params)?.cnt || 0
+    const rows = db.prepare(`
+      SELECT
+        ip,
+        COUNT(*)                                                  AS hits,
+        SUM(CASE WHEN is_bot = 1  THEN 1 ELSE 0 END)             AS bot_hits,
+        SUM(CASE WHEN is_bot = 0  THEN 1 ELSE 0 END)             AS human_hits,
+        SUM(CASE WHEN status_code BETWEEN 200 AND 299 THEN 1 ELSE 0 END) AS s2xx,
+        SUM(CASE WHEN status_code BETWEEN 300 AND 399 THEN 1 ELSE 0 END) AS s3xx,
+        SUM(CASE WHEN status_code BETWEEN 400 AND 499 THEN 1 ELSE 0 END) AS s4xx,
+        SUM(CASE WHEN status_code BETWEEN 500 AND 599 THEN 1 ELSE 0 END) AS s5xx,
+        MAX(timestamp)                                            AS last_seen,
+        MAX(CASE WHEN is_bot = 1 THEN bot_name END)               AS bot_name
+      FROM log_entries
+      WHERE ${where}
+      GROUP BY ip
+      ORDER BY ${sortBy} ${sortDir}
+      LIMIT ? OFFSET ?
+    `).all(...params, limit, offset)
 
-  const enriched = rows.map(r => ({ ...r, ...geoLookup(r.ip) }))
+    const total = db.prepare(`
+      SELECT COUNT(DISTINCT ip) AS cnt FROM log_entries WHERE ${where}
+    `).get(...params)?.cnt || 0
 
-  res.json({ rows: enriched, total, limit, offset })
+    const enriched = rows.map(r => ({ ...r, ...geoLookup(r.ip) }))
+
+    return { rows: enriched, total, limit, offset }
+  })
+
+  res.json(result)
 })
 
 // GET /api/network/ips/:ip/urls — détail des URLs visitées par une IP
@@ -234,42 +244,51 @@ router.get('/user-agents/export', (req, res) => {
 
 // GET /api/network/user-agents — top user-agents
 router.get('/user-agents', (req, res) => {
-  const db = getDb()
+  const siteId = req.query.siteId ? parseInt(req.query.siteId, 10) : (req.user?.siteId || 0)
   const { from, to } = getDateRange(req)
-  const { clause: sf, params: sp } = getSiteFilter(req)
-  const botFilter = req.query.bot
-  const search    = req.query.search
-  const limit     = Math.min(parseInt(req.query.limit  || '100', 10), 1000)
-  const offset    = parseInt(req.query.offset || '0', 10)
-  const sortBy    = ['hits','last_seen','bot_name'].includes(req.query.sort) ? req.query.sort : 'hits'
-  const sortDir   = req.query.dir === 'asc' ? 'ASC' : 'DESC'
+  const bypass = shouldBypass(req)
+  const key = cacheKey('network-user-agents', siteId, req.query)
+  const ttl = ttlForRange(to)
 
-  const botWhere    = botFilter !== undefined ? `AND is_bot = ${botFilter === '1' ? 1 : 0}` : ''
-  const searchWhere = search ? 'AND user_agent LIKE ?' : ''
-  const searchParams = search ? [`%${search}%`] : []
+  const result = remember(key, ttl, bypass, () => {
+    const db = getDb()
+    const { clause: sf, params: sp } = getSiteFilter(req)
+    const botFilter = req.query.bot
+    const search    = req.query.search
+    const limit     = Math.min(parseInt(req.query.limit  || '100', 10), 1000)
+    const offset    = parseInt(req.query.offset || '0', 10)
+    const sortBy    = ['hits','last_seen','bot_name'].includes(req.query.sort) ? req.query.sort : 'hits'
+    const sortDir   = req.query.dir === 'asc' ? 'ASC' : 'DESC'
 
-  const where = `timestamp BETWEEN ? AND ? AND user_agent IS NOT NULL ${sf} ${botWhere} ${searchWhere}`
-  const params = [from, to, ...sp, ...searchParams]
+    const botWhere    = botFilter !== undefined ? `AND is_bot = ${botFilter === '1' ? 1 : 0}` : ''
+    const searchWhere = search ? 'AND user_agent LIKE ?' : ''
+    const searchParams = search ? [`%${search}%`] : []
 
-  const rows = db.prepare(`
-    SELECT
-      user_agent,
-      is_bot,
-      MAX(bot_name)  AS bot_name,
-      COUNT(*)       AS hits,
-      MAX(timestamp) AS last_seen
-    FROM log_entries
-    WHERE ${where}
-    GROUP BY user_agent, is_bot
-    ORDER BY ${sortBy} ${sortDir}
-    LIMIT ? OFFSET ?
-  `).all(...params, limit, offset)
+    const where = `timestamp BETWEEN ? AND ? AND user_agent IS NOT NULL ${sf} ${botWhere} ${searchWhere}`
+    const params = [from, to, ...sp, ...searchParams]
 
-  const total = db.prepare(`
-    SELECT COUNT(DISTINCT user_agent) AS cnt FROM log_entries WHERE ${where}
-  `).get(...params)?.cnt || 0
+    const rows = db.prepare(`
+      SELECT
+        user_agent,
+        is_bot,
+        MAX(bot_name)  AS bot_name,
+        COUNT(*)       AS hits,
+        MAX(timestamp) AS last_seen
+      FROM log_entries
+      WHERE ${where}
+      GROUP BY user_agent, is_bot
+      ORDER BY ${sortBy} ${sortDir}
+      LIMIT ? OFFSET ?
+    `).all(...params, limit, offset)
 
-  res.json({ rows, total, limit, offset })
+    const total = db.prepare(`
+      SELECT COUNT(DISTINCT user_agent) AS cnt FROM log_entries WHERE ${where}
+    `).get(...params)?.cnt || 0
+
+    return { rows, total, limit, offset }
+  })
+
+  res.json(result)
 })
 
 export default router

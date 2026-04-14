@@ -1,10 +1,19 @@
 import React, { useState, useEffect, Suspense } from 'react'
-import { Outlet, Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { Outlet, Navigate, useNavigate } from 'react-router-dom'
 import Sidebar from '../components/partials/sidebar/Sidebar'
 import Header from '../components/partials/header/Header'
 import NovaChatBubble from '../components/chat/NovaChatBubble'
+import { RefreshProvider } from '../context/RefreshContext'
 
 export default function Layout() {
+  return (
+    <RefreshProvider>
+      <LayoutInner />
+    </RefreshProvider>
+  )
+}
+
+function LayoutInner() {
   const token = localStorage.getItem('spider_token')
   const [collapsed, setCollapsed] = useState(false)
   const navigate = useNavigate()

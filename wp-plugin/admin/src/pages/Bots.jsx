@@ -8,6 +8,7 @@ import BeginnerBanner from '../components/ui/BeginnerBanner'
 import api from '../api/client'
 import dayjs from 'dayjs'
 import { usePageContext } from '../hooks/usePageContext'
+import { useRefresh } from '../context/RefreshContext'
 
 const BOT_COLORS = ['#00c6e0', '#d62246', '#8b5cf6', '#f59e0b', '#10b981', '#6366f1', '#ec4899', '#06b6d4']
 
@@ -15,6 +16,7 @@ export default function Bots() {
   const { t } = useTranslation()
   const [range, setRange] = usePersistentRange('bots')
   const [data, setData] = useState([])
+  const { refreshKey, consumeFresh } = useRefresh()
 
   usePageContext(() =>
     api.get('/stats/bots', { params: range }).then(r => ({
@@ -27,12 +29,13 @@ export default function Bots() {
 
   useEffect(() => {
     setLoading(true)
+    const fresh = consumeFresh()
     api
-      .get('/stats/bots', { params: range })
+      .get('/stats/bots', { params: range, fresh })
       .then(res => setData(res.data || []))
       .catch(err => console.error('Erreur chargement bots:', err))
       .finally(() => setLoading(false))
-  }, [range])
+  }, [range, refreshKey])
 
   const botData = data.filter(d => d.is_bot === '1' || d.is_bot === 1)
   const pieData = botData.map(d => ({

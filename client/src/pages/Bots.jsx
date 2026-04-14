@@ -11,6 +11,8 @@ import KPICard from '../components/ui/KPICard'
 import ChartTooltip from '../components/ui/ChartTooltip'
 import { usePersistentRange } from '../hooks/usePersistentRange'
 import { useSite } from '../context/SiteContext'
+import { useRefresh } from '../context/RefreshContext'
+import { apiGet } from '../api/client'
 import api from '../api/client'
 import dayjs from 'dayjs'
 import clsx from 'clsx'
@@ -20,17 +22,22 @@ const BOT_COLORS = ['#00c6e0', '#d62246', '#8b5cf6', '#f59e0b', '#10b981', '#636
 export default function Bots() {
   const { t } = useTranslation()
   const { activeSiteId } = useSite()
+  const { refreshKey, consumeFresh } = useRefresh()
   const [range, setRange] = usePersistentRange('bots')
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
   const [exporting, setExporting] = useState(false)
 
   useEffect(() => {
+    const ctrl = new AbortController()
+    const fresh = consumeFresh()
     setLoading(true)
-    api.get('/stats/bots', { params: range })
+    apiGet('/stats/bots', { params: range, fresh, signal: ctrl.signal })
       .then(r => setData(r.data))
+      .catch(err => { if (err.name !== 'CanceledError') console.error(err) })
       .finally(() => setLoading(false))
-  }, [range, activeSiteId])
+    return () => ctrl.abort()
+  }, [range, activeSiteId, refreshKey])
 
   function exportCSV() {
     setExporting(true)

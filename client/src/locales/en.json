@@ -22,6 +22,7 @@
     "expert": "Expert",
     "allSites": "All sites",
     "openMenu": "Open menu",
+    "refresh": "Refresh",
     "closeMenu": "Collapse menu",
     "pages": {
       "dashboard": {
@@ -94,7 +95,17 @@
     "url": "URL",
     "status": "Status",
     "site": "Site",
-    "by": "By"
+    "by": "By",
+    "openInNewTab": "Open in new tab"
+  },
+  "recheck": {
+    "button": "Re-check URL",
+    "loading": "Checking…",
+    "fixed200": "Fixed (200 OK) — checked on {{date}}",
+    "redirected": "Redirected ({{code}}) → {{target}}",
+    "stillBroken": "Still broken ({{code}})",
+    "error": "Check failed",
+    "columnHeader": "Status"
   },
   "login": {
     "subtitle": "SEO-oriented traffic analyser",

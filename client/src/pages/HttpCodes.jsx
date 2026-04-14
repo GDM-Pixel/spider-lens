@@ -24,7 +24,12 @@ import { usePersistentRange } from "../hooks/usePersistentRange";
 import { useSort } from "../hooks/useSort";
 import SortableHeader from "../components/ui/SortableHeader";
 import { useSite } from "../context/SiteContext";
+import UrlCell from "../components/ui/UrlCell";
+import RecheckButton from "../components/ui/RecheckButton";
 import { useChat } from "../context/ChatContext";
+import { useRefresh } from "../context/RefreshContext";
+import { useDebounce } from "../hooks/useDebounce";
+import { apiGet } from "../api/client";
 import { motion } from "framer-motion";
 import { kpiVariants } from "../components/ui/KPICard";
 import api from "../api/client";
@@ -71,8 +76,10 @@ const PAGE_SIZE = 50;
 
 export default function HttpCodes() {
   const { t } = useTranslation();
-  const { activeSiteId } = useSite();
+  const { activeSiteId, activeSite } = useSite();
+  const siteUrl = activeSite?.url || activeSite?.site_url || null;
   const { setPageContext, clearPageContext } = useChat();
+  const { refreshKey, consumeFresh } = useRefresh();
   const [range, setRange] = usePersistentRange("http-codes");
   const [chartData, setChartData] = useState([]);
   const [overview, setOverview] = useState(null);
@@ -85,19 +92,13 @@ export default function HttpCodes() {
   const [uaFilter, setUaFilter] = useState("");
   const [topUAs, setTopUAs] = useState([]);
   const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 350);
   const { sort, toggleSort } = useSort("hits", "desc");
   const [drillRows, setDrillRows] = useState([]);
   const [drillTotal, setDrillTotal] = useState(0);
   const [drillPage, setDrillPage] = useState(0);
   const [loadingDrill, setLoadingDrill] = useState(false);
   const [exporting, setExporting] = useState(false);
-
-  // Debounce search
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(search), 350);
-    return () => clearTimeout(t);
-  }, [search]);
 
   // Reset page quand filtre change
   useEffect(() => {
@@ -114,8 +115,8 @@ export default function HttpCodes() {
 
   // Charger le top 50 des User-Agents pour le select (Googlebot en premier, reste trié alpha)
   useEffect(() => {
-    api
-      .get("/stats/top-user-agents", { params: range })
+    const ctrl = new AbortController();
+    apiGet("/stats/top-user-agents", { params: range, signal: ctrl.signal })
       .then((r) => {
         const data = r.data;
         // Fusionner toutes les variantes Googlebot en une seule entrée
@@ -130,24 +131,29 @@ export default function HttpCodes() {
           .sort((a, b) => a.user_agent.localeCompare(b.user_agent));
         setTopUAs([...googlebotEntry, ...others]);
       })
-      .catch(() => {});
-  }, [range, activeSiteId]);
+      .catch((err) => { if (err.name !== 'CanceledError') console.error(err); });
+    return () => ctrl.abort();
+  }, [range, activeSiteId, refreshKey]);
 
   // ── Charger graphe + KPIs ────────────────────────────
   useEffect(() => {
+    const ctrl = new AbortController();
+    const fresh = consumeFresh();
     setLoadingChart(true);
     const params = { ...range };
     if (uaFilter) params.ua = uaFilter;
     Promise.all([
-      api.get("/stats/http-codes", { params }),
-      api.get("/stats/overview", { params }),
+      apiGet("/stats/http-codes", { params, fresh, signal: ctrl.signal }),
+      apiGet("/stats/overview", { params, fresh, signal: ctrl.signal }),
     ])
       .then(([http, ov]) => {
         setChartData(http.data);
         setOverview(ov.data);
       })
+      .catch((err) => { if (err.name !== 'CanceledError') console.error(err); })
       .finally(() => setLoadingChart(false));
-  }, [range, activeSiteId, uaFilter]);
+    return () => ctrl.abort();
+  }, [range, activeSiteId, uaFilter, refreshKey]);
 
   useEffect(() => {
     if (overview) {
@@ -165,6 +171,7 @@ export default function HttpCodes() {
 
   // ── Charger tableau drill-down ────────────────────────
   useEffect(() => {
+    const ctrl = new AbortController();
     setLoadingDrill(true);
     const group = STATUS_GROUPS.find((g) => g.key === activeFilter);
     const params = {
@@ -179,13 +186,14 @@ export default function HttpCodes() {
     if (debouncedSearch) params.search = debouncedSearch;
     if (uaFilter) params.ua = uaFilter;
 
-    api
-      .get("/stats/url-detail", { params })
+    apiGet("/stats/url-detail", { params, signal: ctrl.signal })
       .then((r) => {
         setDrillRows(r.data.rows);
         setDrillTotal(r.data.total);
       })
+      .catch((err) => { if (err.name !== 'CanceledError') console.error(err); })
       .finally(() => setLoadingDrill(false));
+    return () => ctrl.abort();
   }, [
     range,
     activeFilter,
@@ -195,6 +203,7 @@ export default function HttpCodes() {
     sort,
     drillPage,
     activeSiteId,
+    refreshKey,
   ]);
 
   // ── Export CSV (via endpoint backend) ────────────────
@@ -734,13 +743,16 @@ export default function HttpCodes() {
                     <th className="text-left text-xs font-semibold text-errorgrey px-5 py-3">
                       Referer
                     </th>
+                    <th className="text-right text-xs font-semibold text-errorgrey px-5 py-3">
+                      {t("recheck.columnHeader")}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {drillRows.length === 0 && !loadingDrill ? (
                     <tr>
                       <td
-                        colSpan={7}
+                        colSpan={9}
                         className="text-center text-errorgrey text-sm py-16"
                       >
                         <Icon
@@ -760,9 +772,7 @@ export default function HttpCodes() {
                         )}
                       >
                         <td className="px-5 py-2.5">
-                          <span className="text-moonstone-400 text-xs font-mono break-all">
-                            {row.url}
-                          </span>
+                          <UrlCell path={row.url} siteUrl={siteUrl} />
                         </td>
                         <td className="px-3 py-2.5 text-center">
                           {statusBadge(row.status_code)}
@@ -789,6 +799,15 @@ export default function HttpCodes() {
                             </span>
                           ) : (
                             <span className="text-errorgrey/40 text-xs">—</span>
+                          )}
+                        </td>
+                        <td className="px-5 py-2.5">
+                          {row.status_code === 404 && (
+                            <RecheckButton
+                              url={row.url}
+                              siteId={activeSiteId}
+                              initialRecheck={row.recheck_status ? { status_code: row.recheck_status, recheck_final_url: row.recheck_final_url, recheck_checked_at: row.recheck_checked_at } : null}
+                            />
                           )}
                         </td>
                       </tr>

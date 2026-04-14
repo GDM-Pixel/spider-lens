@@ -341,3 +341,21 @@ export function getCrawlStatus(siteId) {
     finishedAt:   run.finished_at,
   }
 }
+
+// ── Re-check d'une URL (vérification statut actuel) ───────
+// Utilisé par POST /api/crawler/recheck-url
+// redirect: 'manual' pour capturer explicitement 301/302 sans les suivre
+export async function fetchUrlStatus(url) {
+  try {
+    const timeoutSignal = AbortSignal.timeout(FETCH_TIMEOUT_MS)
+    const res = await fetch(url, {
+      signal:   timeoutSignal,
+      redirect: 'manual',
+      headers:  { 'User-Agent': CRAWLER_UA },
+    })
+    const location = res.headers.get('location') || null
+    return { status: res.status, finalUrl: location }
+  } catch {
+    return { status: 0, finalUrl: null }
+  }
+}

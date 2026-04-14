@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { requireAuth } from '../middleware/auth.js'
 import { getDb } from '../db/database.js'
-import { startCrawl, cancelCrawl, getCrawlStatus } from '../services/crawler.js'
+import { startCrawl, cancelCrawl, getCrawlStatus, fetchUrlStatus } from '../services/crawler.js'
 
 const router = Router()
 router.use(requireAuth)
@@ -153,6 +153,45 @@ router.get('/:siteId/summary', (req, res) => {
   const lastCrawl    = db.prepare("SELECT MAX(crawled_at) as dt FROM crawled_pages WHERE site_id = ?").get(siteId)?.dt
 
   res.json({ total, missingTitle, missingH1, noindex, errors, avgWordCount: avgWc, thinContent, lastCrawl })
+})
+
+// ── Re-check URL (vérification statut actuel d'une URL 404) ──
+// POST /api/crawler/recheck-url
+// Body: { url: '/path/to/page', siteId: 1 }
+router.post('/recheck-url', async (req, res) => {
+  const { url, siteId } = req.body
+  if (!url || typeof url !== 'string' || !siteId) {
+    return res.status(400).json({ error: 'url (string) et siteId requis' })
+  }
+
+  const db = getDb()
+  const site = db.prepare('SELECT id, site_url FROM sites WHERE id = ?').get(parseInt(siteId, 10))
+  if (!site) return res.status(404).json({ error: 'Site introuvable' })
+
+  // Construire l'URL absolue
+  const base = (site.site_url || '').replace(/\/$/, '')
+  const path = url.startsWith('/') ? url : '/' + url
+  const fullUrl = base ? base + path : null
+
+  if (!fullUrl) {
+    return res.status(422).json({ error: 'site_url non configuré pour ce site — impossible de vérifier l\'URL' })
+  }
+
+  const { status, finalUrl } = await fetchUrlStatus(fullUrl)
+
+  // UPSERT : on ne garde que le dernier check par (site_id, url)
+  db.prepare(`
+    INSERT INTO url_rechecks (site_id, url, status_code, final_url, checked_at)
+    VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+    ON CONFLICT(site_id, url) DO UPDATE SET
+      status_code = excluded.status_code,
+      final_url   = excluded.final_url,
+      checked_at  = excluded.checked_at
+  `).run(site.id, url, status, finalUrl)
+
+  const row = db.prepare('SELECT checked_at FROM url_rechecks WHERE site_id = ? AND url = ?').get(site.id, url)
+
+  res.json({ status, finalUrl, checkedAt: row?.checked_at })
 })
 
 export default router

@@ -22,6 +22,7 @@
     "expert": "Ekspert",
     "allSites": "Wszystkie strony",
     "openMenu": "Otwórz menu",
+    "refresh": "Odśwież",
     "closeMenu": "Zamknij menu",
     "pages": {
       "dashboard": {
@@ -94,7 +95,17 @@
     "url": "URL",
     "status": "Status",
     "site": "Strona",
-    "by": "Przez"
+    "by": "Przez",
+    "openInNewTab": "Otwórz w nowej karcie"
+  },
+  "recheck": {
+    "button": "Sprawdź URL ponownie",
+    "loading": "Sprawdzanie…",
+    "fixed200": "Naprawione (200 OK) — sprawdzono {{date}}",
+    "redirected": "Przekierowane ({{code}}) → {{target}}",
+    "stillBroken": "Nadal uszkodzone ({{code}})",
+    "error": "Sprawdzenie nie powiodło się",
+    "columnHeader": "Status"
   },
   "login": {
     "subtitle": "Analizator ruchu skoncentrowany na SEO",

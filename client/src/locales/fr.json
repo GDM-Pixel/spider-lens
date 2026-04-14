@@ -23,6 +23,7 @@
     "allSites": "Tous les sites",
     "openMenu": "Ouvrir le menu",
     "closeMenu": "Réduire le menu",
+    "refresh": "Actualiser",
     "pages": {
       "dashboard": {
         "title": "Dashboard",
@@ -94,7 +95,17 @@
     "url": "URL",
     "status": "Statut",
     "site": "Site",
-    "by": "Par"
+    "by": "Par",
+    "openInNewTab": "Ouvrir dans un nouvel onglet"
+  },
+  "recheck": {
+    "button": "Re-vérifier l'URL",
+    "loading": "Vérification…",
+    "fixed200": "Fixé (200 OK) — vérifié le {{date}}",
+    "redirected": "Redirigé ({{code}}) → {{target}}",
+    "stillBroken": "Toujours cassé ({{code}})",
+    "error": "Erreur de vérification",
+    "columnHeader": "État"
   },
   "login": {
     "subtitle": "Analyseur de trafic orienté SEO",
