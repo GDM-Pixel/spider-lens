@@ -55,8 +55,8 @@ Spider-Lens reads your Apache/Nginx log files and gives you a comprehensive dash
 | View | Description |
 |------|-------------|
 | **Dashboard** | Summary KPIs: total requests, human visits, bots, error rate — HTTP evolution chart, bot distribution pie chart, 12-week trends |
-| **HTTP Codes** | Full breakdown by status code (2xx/3xx/4xx/5xx) — filterable by code, user-agent, humans/bots — CSV & Excel export |
-| **Top Pages** | Most visited pages (top 200) + 404 list with Googlebot exposure — sortable columns |
+| **HTTP Codes** | Full breakdown by status code (2xx/3xx/4xx/5xx) — filterable by code, user-agent, humans/bots — clickable URLs — live 404 re-check — CSV & Excel export |
+| **Top Pages** | Most visited pages (top 200) + 404 list — clickable URLs, sortable columns, live 404 re-check with persistent status badge |
 | **Bots & Crawlers** | Detection of 16+ bots (Googlebot, AhrefsBot, SemrushBot, ClaudeBot…) — crawl budget pie chart + volume bar chart |
 | **Load Time (TTFB)** | Time To First Byte per URL — configurable slow threshold — fast/acceptable/slow breakdown — CSV & Excel export |
 | **Network** | IP and user-agent analysis — countries, bot/human split, HTTP code badges, one-click block action |
@@ -73,6 +73,7 @@ Spider-Lens reads your Apache/Nginx log files and gives you a comprehensive dash
 - 🔒 **JWT authentication** — 7-day token, secure session
 - 📧 **Email alerts** — 404 spikes, 5xx errors, missing Googlebot (configurable SMTP + optional webhook for Discord/Slack)
 - 📊 **Incremental parsing** — Resume from offset, log rotation detection
+- 🔍 **Live 404 re-check** — One-click HTTP re-check on any 404 URL. Badge shows fixed (200), redirected (301/302), or still broken. Result persists across sessions.
 - 🌱 **Beginner mode** — Contextual help banners and tooltips, dismissible
 - 🌐 **Multi-site** — Monitor multiple sites from a single interface
 - 🗄️ **Database management** — Real-time stats (size, rows, date range), configurable retention policy, manual purge + VACUUM
@@ -446,10 +447,12 @@ cd client && npm run dev
 - [x] **Mon Compte page** — Dedicated `/account` route for username and password changes, accessible from sidebar
 - [x] **Origin & Referer** — Origin badge and Referer column added to HTTP Codes table
 
-### v1.4.0 (planned)
-- [ ] Advanced filters by IP and user-agent
-- [ ] Webhook API for external integrations
-- [ ] Customizable dashboard (widgets)
+### v1.4.0 ✅
+- [x] **URL clickable + open in new tab** — Every URL in HTTP Codes and Top Pages is now a clickable link with a `↗` icon to open the page in a new tab (component `UrlCell`, both Node.js app and WP plugin)
+- [x] **Live 404 re-check with persistent badge** — A `↻` button next to each 404 code triggers a live HTTP check. The result is shown inline (green = 200, blue = 301/302, red = still broken) and **persists after page refresh** via the `url_rechecks` table
+- [x] **Responsive HTTP Codes table** — URL column auto-truncates on narrow screens; re-check button is inline next to the HTTP code badge (no separate column)
+- [x] **DB migration V0.9** — `url_rechecks` table (Node) + `spiderlens_url_rechecks` with SHA2 hash (WP); `site_url` column on `sites` with auto-backfill from `SITE_URL` env var
+- [x] **i18n** — `common.openInNewTab` + full `recheck.*` section added in all 32 locale files (16 languages × 2 stacks)
 
 ---
 
