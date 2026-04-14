@@ -135,7 +135,7 @@ router.get('/top-404', (req, res) => {
         ur.checked_at  as recheck_checked_at
       FROM log_entries l
       LEFT JOIN url_rechecks ur ON ur.site_id = l.site_id AND ur.url = l.url
-      WHERE l.status_code = 404 AND l.timestamp BETWEEN ? AND ? ${sf}
+      WHERE l.status_code = 404 AND l.timestamp BETWEEN ? AND ? ${sf.replace('site_id', 'l.site_id')}
       GROUP BY l.url
       ORDER BY ${sortBy} ${sortDir}
       LIMIT ?
@@ -250,7 +250,8 @@ router.get('/url-detail', (req, res) => {
     const ipParams    = ipFilter ? [ipFilter] : []
     const { clause: uaWhere, params: uaParams } = getUaFilter(req.query.ua)
 
-    const where = `timestamp BETWEEN ? AND ? ${statusWhere} ${botWhere} ${searchWhere} ${ipWhere} ${uaWhere} ${sf}`
+    const sfAliased = sf.replace('site_id', 'l.site_id')
+    const where = `l.timestamp BETWEEN ? AND ? ${statusWhere} ${botWhere} ${searchWhere} ${ipWhere} ${uaWhere} ${sfAliased}`
     const params = [from, to, ...statusParams, ...searchParams, ...ipParams, ...uaParams, ...sp]
 
     const rows = db.prepare(`
