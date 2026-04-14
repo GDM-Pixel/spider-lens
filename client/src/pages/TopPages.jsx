@@ -147,8 +147,10 @@ function TablePages({ data, siteUrl }) {
 
 export default function TopPages() {
   const { t } = useTranslation()
-  const { activeSiteId, activeSite } = useSite()
-  const siteUrl = activeSite?.url || activeSite?.site_url || null
+  const { activeSiteId, activeSite, sites } = useSite()
+  const effectiveSiteId = activeSiteId || (sites?.length === 1 ? sites[0].id : null)
+  const effectiveSite = activeSite || (sites?.length === 1 ? sites[0] : null)
+  const siteUrl = effectiveSite?.url || effectiveSite?.site_url || null
   const { setPageContext, clearPageContext } = useChat()
   const { refreshKey, consumeFresh } = useRefresh()
   const [range, setRange] = usePersistentRange('top-pages')
@@ -266,7 +268,7 @@ export default function TopPages() {
       ) : (
         <div className="bg-prussian-500 rounded-xl border border-prussian-400 overflow-hidden">
           {tab === '404' ? (
-            <Table404 data={data404} siteUrl={siteUrl} siteId={activeSiteId} />
+            <Table404 data={data404} siteUrl={siteUrl} siteId={effectiveSiteId} />
           ) : (
             <TablePages data={dataPages} siteUrl={siteUrl} />
           )}

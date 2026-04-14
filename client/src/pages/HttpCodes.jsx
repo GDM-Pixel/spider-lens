@@ -76,8 +76,10 @@ const PAGE_SIZE = 50;
 
 export default function HttpCodes() {
   const { t } = useTranslation();
-  const { activeSiteId, activeSite } = useSite();
-  const siteUrl = activeSite?.url || activeSite?.site_url || null;
+  const { activeSiteId, activeSite, sites } = useSite();
+  const effectiveSiteId = activeSiteId || (sites?.length === 1 ? sites[0].id : null);
+  const effectiveSite = activeSite || (sites?.length === 1 ? sites[0] : null);
+  const siteUrl = effectiveSite?.url || effectiveSite?.site_url || null;
   const { setPageContext, clearPageContext } = useChat();
   const { refreshKey, consumeFresh } = useRefresh();
   const [range, setRange] = usePersistentRange("http-codes");
@@ -805,7 +807,7 @@ export default function HttpCodes() {
                           {row.status_code === 404 && (
                             <RecheckButton
                               url={row.url}
-                              siteId={activeSiteId}
+                              siteId={effectiveSiteId}
                               initialRecheck={row.recheck_status ? { status_code: row.recheck_status, recheck_final_url: row.recheck_final_url, recheck_checked_at: row.recheck_checked_at } : null}
                             />
                           )}
