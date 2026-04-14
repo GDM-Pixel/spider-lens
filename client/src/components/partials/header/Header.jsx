@@ -91,7 +91,7 @@ export default function Header({ collapsed, onToggle }) {
         {/* Badge version */}
         <span className="hidden md:inline-flex items-center gap-1 bg-prussian-500 text-moonstone-400 text-xs font-semibold px-2.5 py-1 rounded-full border border-prussian-400">
           <Icon icon="ph:spider" className="text-sm" />
-          v1.3.0
+          v1.4.0
         </span>
 
         {/* ── Bouton Actualiser ─────────────────────────── */}
