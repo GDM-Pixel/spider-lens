@@ -5,7 +5,7 @@
 
   **SEO-focused server log analyzer — open-source, self-hosted**
 
-  [![Version](https://img.shields.io/badge/version-1.3.0-blue)](#)
+  [![Version](https://img.shields.io/badge/version-1.4.0-blue)](#)
   [![Node.js](https://img.shields.io/badge/node-%3E%3D18-green)](#)
   [![License](https://img.shields.io/badge/license-MIT-lightgrey)](#)
   [![i18n](https://img.shields.io/badge/i18n-16%20languages-orange)](#)

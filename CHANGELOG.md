@@ -6,6 +6,27 @@ Format: [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [1.4.0] — 2026-04-14
+
+### Added
+- **URL clickable + ouverture nouvel onglet** — Sur les vues HTTP Codes et Top Pages (client SaaS + wp-plugin), chaque URL est désormais un lien cliquable avec icône `↗` pour ouvrir la page cible dans un nouvel onglet (composant `UrlCell`).
+- **Re-check 404 avec persistance** — Bouton `↻` à droite de chaque code 404 pour relancer une vérification HTTP live de l'URL. Le résultat s'affiche inline à côté du code (vert si 200, bleu si 301/302, rouge si toujours cassé) et **persiste après refresh** grâce à une nouvelle table `url_rechecks` (Node) / `spiderlens_url_rechecks` (WP).
+- **Composant `RecheckButton`** — Réutilisable, gère les 3 états (idle / loading / checked) avec tooltips i18n et badges couleur.
+- **Route `POST /api/crawler/recheck-url`** (Node + WP REST) — Authentifiée (JWT côté Node, `manage_options` côté WP), UPSERT par `(site_id, url)` pour ne garder que le dernier check. Cache in-memory invalidé automatiquement après chaque recheck pour garantir la persistance immédiate.
+- **Migration DB V0.9** — Table `url_rechecks` + colonne `sites.site_url` (Node) ; table `spiderlens_url_rechecks` avec `url_hash` SHA2 pour l'unicité (WP, contournement limite index MySQL sur VARCHAR(2048)).
+- **i18n** — Clés `common.openInNewTab` + section `recheck.*` (button / loading / fixed200 / redirected / stillBroken / error / columnHeader) ajoutées dans **les 32 fichiers locales** (16 langues × 2 stacks).
+
+### Fixed
+- **Colonnes ambiguës après LEFT JOIN** — Préfixage de toutes les colonnes (`site_id`, `status_code`, `is_bot`, `url`, `ip`, `user_agent`) avec l'alias `l.` dans les routes `GET /stats/top-404` et `GET /stats/url-detail` pour éviter les erreurs SQLite `ambiguous column name`.
+- **Mono-site : `site_url` null** — Backfill auto du champ `site_url` depuis la variable d'environnement `SITE_URL` au démarrage, pour que les installations mono-site (via `.env`) aient des URLs cliquables sans passer par l'UI de gestion des sites.
+- **Mono-site : `activeSiteId` null** — Fallback `effectiveSiteId` → `sites[0].id` quand un seul site est présent, pour que le bouton recheck envoie toujours un `siteId` valide au backend.
+- **Persistance recheck après refresh** — Appel de `flushSite(siteId)` après UPSERT dans la route recheck pour invalider le cache `node-cache` qui servait des données stale au rechargement de page.
+
+### Improved
+- **Responsive HTTP Codes** — URL truncate + colonne contrainte à `max-w-[280px]` pour éviter le débordement horizontal sur écrans étroits. Bouton recheck déplacé inline dans la cellule du code HTTP (plus de colonne séparée).
+
+---
+
 ## [1.1.1] — 2026-04-07
 
 ### Added
