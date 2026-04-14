@@ -225,33 +225,34 @@ router.get('/url-detail', (req, res) => {
     const sortBy       = ['hits','last_seen','url','status_code','bot_hits','human_hits'].includes(req.query.sort) ? req.query.sort : 'hits'
     const sortDir      = req.query.dir === 'asc' ? 'ASC' : 'DESC'
 
-    // Construction dynamique du WHERE sur status_code
+    // Construction dynamique du WHERE sur status_code (préfixé l. car LEFT JOIN url_rechecks a aussi status_code)
     let statusWhere = ''
     let statusParams = []
     if (statusFilter) {
       if (/^\d{3}$/.test(statusFilter)) {
         // Code exact : 404, 301, 500…
-        statusWhere = 'AND status_code = ?'
+        statusWhere = 'AND l.status_code = ?'
         statusParams = [parseInt(statusFilter, 10)]
       } else if (/^\dxx$/i.test(statusFilter)) {
         // Famille : 2xx, 3xx, 4xx, 5xx
         const base = parseInt(statusFilter[0], 10) * 100
-        statusWhere = 'AND status_code BETWEEN ? AND ?'
+        statusWhere = 'AND l.status_code BETWEEN ? AND ?'
         statusParams = [base, base + 99]
       }
     }
 
     const { clause: sf, params: sp } = getSiteFilter(req)
-    const botWhere    = botFilter !== undefined ? `AND is_bot = ${botFilter === '1' ? 1 : 0}` : ''
-    const searchWhere = search ? 'AND url LIKE ?' : ''
+    const botWhere    = botFilter !== undefined ? `AND l.is_bot = ${botFilter === '1' ? 1 : 0}` : ''
+    const searchWhere = search ? 'AND l.url LIKE ?' : ''
     const searchParams = search ? [`%${search}%`] : []
     const ipFilter    = req.query.ip
-    const ipWhere     = ipFilter ? 'AND ip = ?' : ''
+    const ipWhere     = ipFilter ? 'AND l.ip = ?' : ''
     const ipParams    = ipFilter ? [ipFilter] : []
     const { clause: uaWhere, params: uaParams } = getUaFilter(req.query.ua)
+    const uaWhereAliased = uaWhere.replace('user_agent', 'l.user_agent')
 
     const sfAliased = sf.replace('site_id', 'l.site_id')
-    const where = `l.timestamp BETWEEN ? AND ? ${statusWhere} ${botWhere} ${searchWhere} ${ipWhere} ${uaWhere} ${sfAliased}`
+    const where = `l.timestamp BETWEEN ? AND ? ${statusWhere} ${botWhere} ${searchWhere} ${ipWhere} ${uaWhereAliased} ${sfAliased}`
     const params = [from, to, ...statusParams, ...searchParams, ...ipParams, ...uaParams, ...sp]
 
     const rows = db.prepare(`
