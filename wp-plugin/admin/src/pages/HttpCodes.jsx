@@ -262,7 +262,7 @@ export default function HttpCodes() {
                           <td className="px-3 py-2 text-right text-lightgrey text-xs">{parseInt(row.bot_hits).toLocaleString('fr-FR')}</td>
                           <td className="px-3 py-2 text-right text-errorgrey text-xs">{row.last_seen ? dayjs(row.last_seen).format('DD/MM/YY') : '—'}</td>
                           <td className="px-3 py-2">
-                            {row.status_code === 404 && (
+                            {parseInt(row.status_code) !== 200 && (
                               <RecheckButton
                                 url={row.url}
                                 initialRecheck={row.recheck_status ? { recheck_status: row.recheck_status, recheck_final_url: row.recheck_final_url, recheck_checked_at: row.recheck_checked_at } : null}

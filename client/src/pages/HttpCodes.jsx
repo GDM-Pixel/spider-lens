@@ -776,7 +776,7 @@ export default function HttpCodes() {
                         <td className="px-3 py-2.5 whitespace-nowrap">
                           <div className="flex items-center gap-1.5">
                             {statusBadge(row.status_code)}
-                            {row.status_code === 404 && (
+                            {row.status_code !== 200 && (
                               <RecheckButton
                                 url={row.url}
                                 siteId={effectiveSiteId}
