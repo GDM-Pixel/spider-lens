@@ -718,10 +718,10 @@ export default function HttpCodes() {
 
             {/* Tableau */}
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[700px]">
+              <table className="w-full min-w-[600px]">
                 <thead>
                   <tr className="border-b border-prussian-400 bg-prussian-600/20">
-                    <SortableHeader col="url" sort={sort} onSort={toggleSort} align="left" className="px-5 w-[40%]">
+                    <SortableHeader col="url" sort={sort} onSort={toggleSort} align="left" className="px-5 w-[35%] max-w-[300px]">
                       {t("httpCodes.headerUrl")}
                     </SortableHeader>
                     <SortableHeader col="status_code" sort={sort} onSort={toggleSort} align="center">
@@ -745,16 +745,13 @@ export default function HttpCodes() {
                     <th className="text-left text-xs font-semibold text-errorgrey px-5 py-3">
                       Referer
                     </th>
-                    <th className="text-right text-xs font-semibold text-errorgrey px-5 py-3">
-                      {t("recheck.columnHeader")}
-                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {drillRows.length === 0 && !loadingDrill ? (
                     <tr>
                       <td
-                        colSpan={9}
+                        colSpan={8}
                         className="text-center text-errorgrey text-sm py-16"
                       >
                         <Icon
@@ -773,11 +770,20 @@ export default function HttpCodes() {
                           i % 2 === 0 ? "" : "bg-prussian-600/20",
                         )}
                       >
-                        <td className="px-5 py-2.5">
+                        <td className="px-5 py-2.5 max-w-[280px] w-[35%]">
                           <UrlCell path={row.url} siteUrl={siteUrl} />
                         </td>
                         <td className="px-3 py-2.5 text-center">
-                          {statusBadge(row.status_code)}
+                          <div className="flex flex-col items-center gap-1">
+                            {statusBadge(row.status_code)}
+                            {row.status_code === 404 && (
+                              <RecheckButton
+                                url={row.url}
+                                siteId={effectiveSiteId}
+                                initialRecheck={row.recheck_status ? { status_code: row.recheck_status, recheck_final_url: row.recheck_final_url, recheck_checked_at: row.recheck_checked_at } : null}
+                              />
+                            )}
+                          </div>
                         </td>
                         <td className="px-3 py-2.5 text-right text-white font-bold text-sm">
                           {row.hits.toLocaleString("fr-FR")}
@@ -801,15 +807,6 @@ export default function HttpCodes() {
                             </span>
                           ) : (
                             <span className="text-errorgrey/40 text-xs">—</span>
-                          )}
-                        </td>
-                        <td className="px-5 py-2.5">
-                          {row.status_code === 404 && (
-                            <RecheckButton
-                              url={row.url}
-                              siteId={effectiveSiteId}
-                              initialRecheck={row.recheck_status ? { status_code: row.recheck_status, recheck_final_url: row.recheck_final_url, recheck_checked_at: row.recheck_checked_at } : null}
-                            />
                           )}
                         </td>
                       </tr>
