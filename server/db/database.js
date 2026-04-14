@@ -130,7 +130,8 @@ function applyMigrations() {
     const logPath = process.env.LOG_FILE_PATH
     if (logPath) {
       const siteName = process.env.SITE_NAME || 'Site principal'
-      db.prepare('INSERT OR IGNORE INTO sites (name, log_file_path) VALUES (?, ?)').run(siteName, logPath)
+      const siteUrl  = process.env.SITE_URL   || null
+      db.prepare('INSERT OR IGNORE INTO sites (name, log_file_path, site_url) VALUES (?, ?, ?)').run(siteName, logPath, siteUrl)
       const siteId = db.prepare('SELECT id FROM sites WHERE log_file_path = ?').get(logPath)?.id
       if (siteId) {
         db.prepare('UPDATE log_entries SET site_id = ? WHERE site_id IS NULL').run(siteId)
@@ -138,6 +139,12 @@ function applyMigrations() {
         console.log(`[db] Site par défaut créé : "${siteName}" (id=${siteId})`)
       }
     }
+  }
+
+  // Backfill site_url depuis SITE_URL si la colonne est NULL
+  if (process.env.SITE_URL) {
+    db.prepare('UPDATE sites SET site_url = ? WHERE site_url IS NULL AND log_file_path = ?')
+      .run(process.env.SITE_URL, process.env.LOG_FILE_PATH)
   }
 }
 
