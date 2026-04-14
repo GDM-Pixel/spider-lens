@@ -264,11 +264,11 @@ router.get('/url-detail', (req, res) => {
         SUM(CASE WHEN l.is_bot = 0 THEN 1 ELSE 0 END)          AS human_hits,
         MAX(l.timestamp)                                        AS last_seen,
         COUNT(*) OVER()                                         AS _total,
-        CASE WHEN l.status_code = 404 THEN ur.status_code  ELSE NULL END AS recheck_status,
-        CASE WHEN l.status_code = 404 THEN ur.final_url    ELSE NULL END AS recheck_final_url,
-        CASE WHEN l.status_code = 404 THEN ur.checked_at   ELSE NULL END AS recheck_checked_at
+        ur.status_code AS recheck_status,
+        ur.final_url   AS recheck_final_url,
+        ur.checked_at  AS recheck_checked_at
       FROM log_entries l
-      LEFT JOIN url_rechecks ur ON ur.site_id = l.site_id AND ur.url = l.url AND l.status_code = 404
+      LEFT JOIN url_rechecks ur ON ur.site_id = l.site_id AND ur.url = l.url
       WHERE ${where}
       GROUP BY l.url, l.status_code
       ORDER BY ${sortBy} ${sortDir}

@@ -703,11 +703,11 @@ class RestApi {
                     SUM(CASE WHEN h.is_bot=1 THEN 1 ELSE 0 END) AS bot_hits,
                     MAX(h.timestamp) AS last_seen,
                     COUNT(*) OVER() AS _total_groups,
-                    CASE WHEN h.status_code = 404 THEN ur.status_code ELSE NULL END AS recheck_status,
-                    CASE WHEN h.status_code = 404 THEN ur.final_url   ELSE NULL END AS recheck_final_url,
-                    CASE WHEN h.status_code = 404 THEN ur.checked_at  ELSE NULL END AS recheck_checked_at
+                    ur.status_code AS recheck_status,
+                    ur.final_url   AS recheck_final_url,
+                    ur.checked_at  AS recheck_checked_at
                 FROM `$t` h
-                LEFT JOIN `$tr` ur ON h.status_code = 404 AND ur.url_hash = SHA2(h.url, 256)
+                LEFT JOIN `$tr` ur ON ur.url_hash = SHA2(h.url, 256)
                 $where
                 GROUP BY h.url, h.status_code
                 ORDER BY $sort $dir
@@ -726,11 +726,11 @@ class RestApi {
                     SUM(CASE WHEN h.is_bot=0 THEN 1 ELSE 0 END) AS human_hits,
                     SUM(CASE WHEN h.is_bot=1 THEN 1 ELSE 0 END) AS bot_hits,
                     MAX(h.timestamp) AS last_seen,
-                    CASE WHEN h.status_code = 404 THEN ur.status_code ELSE NULL END AS recheck_status,
-                    CASE WHEN h.status_code = 404 THEN ur.final_url   ELSE NULL END AS recheck_final_url,
-                    CASE WHEN h.status_code = 404 THEN ur.checked_at  ELSE NULL END AS recheck_checked_at
+                    ur.status_code AS recheck_status,
+                    ur.final_url   AS recheck_final_url,
+                    ur.checked_at  AS recheck_checked_at
                 FROM `$t` h
-                LEFT JOIN `$tr` ur ON h.status_code = 404 AND ur.url_hash = SHA2(h.url, 256)
+                LEFT JOIN `$tr` ur ON ur.url_hash = SHA2(h.url, 256)
                 $where
                 GROUP BY h.url, h.status_code
                 ORDER BY $sort $dir
