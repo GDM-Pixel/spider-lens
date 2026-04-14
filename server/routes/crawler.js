@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { requireAuth } from '../middleware/auth.js'
 import { getDb } from '../db/database.js'
 import { startCrawl, cancelCrawl, getCrawlStatus, fetchUrlStatus } from '../services/crawler.js'
+import { flushSite } from '../services/cache.js'
 
 const router = Router()
 router.use(requireAuth)
@@ -190,6 +191,9 @@ router.post('/recheck-url', async (req, res) => {
   `).run(site.id, url, status, finalUrl)
 
   const row = db.prepare('SELECT checked_at FROM url_rechecks WHERE site_id = ? AND url = ?').get(site.id, url)
+
+  // Invalider le cache pour que le prochain chargement reflète le nouveau statut
+  flushSite(site.id)
 
   res.json({ status, finalUrl, checkedAt: row?.checked_at })
 })

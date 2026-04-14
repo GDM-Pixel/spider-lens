@@ -773,8 +773,8 @@ export default function HttpCodes() {
                         <td className="px-5 py-2.5 max-w-[280px] w-[35%]">
                           <UrlCell path={row.url} siteUrl={siteUrl} />
                         </td>
-                        <td className="px-3 py-2.5 text-center">
-                          <div className="flex flex-col items-center gap-1">
+                        <td className="px-3 py-2.5 whitespace-nowrap">
+                          <div className="flex items-center gap-1.5">
                             {statusBadge(row.status_code)}
                             {row.status_code === 404 && (
                               <RecheckButton
