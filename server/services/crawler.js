@@ -3,7 +3,7 @@ import { getDb } from '../db/database.js'
 
 // ── Constantes ────────────────────────────────────────────
 const DEFAULT_MAX_DEPTH  = 3
-const DEFAULT_MAX_PAGES  = 500
+const DEFAULT_MAX_PAGES  = Infinity
 const DEFAULT_DELAY_MS   = 1000
 const FETCH_TIMEOUT_MS   = 10000
 const MAX_BODY_BYTES     = 2 * 1024 * 1024 // 2 MB
