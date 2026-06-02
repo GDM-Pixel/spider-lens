@@ -91,6 +91,7 @@ export default function HttpCodes() {
   // ── Drill-down state ──────────────────────────────────
   const [activeFilter, setActiveFilter] = useState("all");
   const [botFilter, setBotFilter] = useState("all"); // 'all' | '0' | '1'
+  const [typeFilter, setTypeFilter] = useState("all"); // 'all' | 'page' | 'asset' | 'image'
   const [uaFilter, setUaFilter] = useState("");
   const [topUAs, setTopUAs] = useState([]);
   const [search, setSearch] = useState("");
@@ -108,6 +109,7 @@ export default function HttpCodes() {
   }, [
     activeFilter,
     botFilter,
+    typeFilter,
     uaFilter,
     debouncedSearch,
     range,
@@ -185,6 +187,7 @@ export default function HttpCodes() {
     };
     if (group?.query) params.status = group.query;
     if (botFilter !== "all") params.bot = botFilter;
+    if (typeFilter !== "all") params.type = typeFilter;
     if (debouncedSearch) params.search = debouncedSearch;
     if (uaFilter) params.ua = uaFilter;
 
@@ -200,6 +203,7 @@ export default function HttpCodes() {
     range,
     activeFilter,
     botFilter,
+    typeFilter,
     uaFilter,
     debouncedSearch,
     sort,
@@ -214,6 +218,7 @@ export default function HttpCodes() {
     const params = new URLSearchParams({ from: range.from, to: range.to });
     if (group?.query) params.set("status", group.query);
     if (botFilter !== "all") params.set("bot", botFilter);
+    if (typeFilter !== "all") params.set("type", typeFilter);
     if (debouncedSearch) params.set("search", debouncedSearch);
     if (uaFilter) params.set("ua", uaFilter);
 
@@ -247,6 +252,7 @@ export default function HttpCodes() {
     };
     if (group?.query) params.status = group.query;
     if (botFilter !== "all") params.bot = botFilter;
+    if (typeFilter !== "all") params.type = typeFilter;
     if (debouncedSearch) params.search = debouncedSearch;
     if (uaFilter) params.ua = uaFilter;
 
@@ -360,6 +366,31 @@ export default function HttpCodes() {
               />
             </div>
           )}
+          <div className="relative">
+            <Icon
+              icon="ph:file-css"
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-errorgrey text-sm pointer-events-none"
+            />
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              className={clsx(
+                "border rounded-lg pl-7 pr-6 py-1.5 text-xs focus:outline-none transition-colors appearance-none cursor-pointer",
+                typeFilter !== "all"
+                  ? "bg-moonstone-900/40 border-moonstone-600 text-moonstone-300 focus:border-moonstone-400"
+                  : "bg-prussian-600 border-prussian-400 text-errorgrey focus:border-moonstone-600",
+              )}
+            >
+              <option value="all">{t("httpCodes.filterAllTypes")}</option>
+              <option value="page">{t("httpCodes.filterTypePage")}</option>
+              <option value="asset">{t("httpCodes.filterTypeAsset")}</option>
+              <option value="image">{t("httpCodes.filterTypeImage")}</option>
+            </select>
+            <Icon
+              icon="ph:caret-down"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-errorgrey text-xs pointer-events-none"
+            />
+          </div>
           <DateRangePicker
             from={range.from}
             to={range.to}

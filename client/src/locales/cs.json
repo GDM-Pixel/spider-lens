@@ -201,7 +201,11 @@
     "headerBots": "Boti",
     "headerHumans": "Lidé",
     "headerLastSeen": "Naposledy viděno",
-    "headerUserAgent": "Dominantní User-Agent"
+    "headerUserAgent": "Dominantní User-Agent",
+    "filterAllTypes": "All types",
+    "filterTypePage": "Pages (HTML)",
+    "filterTypeAsset": "Resources (CSS/JS)",
+    "filterTypeImage": "Images"
   },
   "topPages": {
     "welcomeTitle": "Top stránky a chyby 404",

@@ -201,7 +201,11 @@
     "headerBots": "Bots",
     "headerHumans": "Mennesker",
     "headerLastSeen": "Sidst set",
-    "headerUserAgent": "Dominerende User-Agent"
+    "headerUserAgent": "Dominerende User-Agent",
+    "filterAllTypes": "All types",
+    "filterTypePage": "Pages (HTML)",
+    "filterTypeAsset": "Resources (CSS/JS)",
+    "filterTypeImage": "Images"
   },
   "topPages": {
     "welcomeTitle": "Top sider og 404-fejl",

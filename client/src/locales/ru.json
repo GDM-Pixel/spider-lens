@@ -201,7 +201,11 @@
     "headerBots": "Боты",
     "headerHumans": "Люди",
     "headerLastSeen": "Последний раз виден",
-    "headerUserAgent": "Доминирующий User-Agent"
+    "headerUserAgent": "Доминирующий User-Agent",
+    "filterAllTypes": "All types",
+    "filterTypePage": "Pages (HTML)",
+    "filterTypeAsset": "Resources (CSS/JS)",
+    "filterTypeImage": "Images"
   },
   "topPages": {
     "welcomeTitle": "Топ страницы и ошибки 404",
