@@ -152,12 +152,20 @@ describe('parseLine() — format Nginx default', () => {
 // parseLine — avec TTFB (response_time_ms)
 // ─────────────────────────────────────────────────────────
 describe('parseLine() — avec TTFB', () => {
-  test('parse le temps de réponse en fin de ligne', () => {
+  test('parse le temps de réponse en fin de ligne (nginx $request_time en secondes → ms)', () => {
+    // nginx logge $request_time en SECONDES (résolution ms) : 1.250 s = 1250 ms
     const line =
-      '10.0.0.1 - - [15/Jan/2024:10:30:00 +0100] "GET /slow-page HTTP/1.1" 200 8192 "-" "Mozilla/5.0" 1250'
+      '10.0.0.1 - - [15/Jan/2024:10:30:00 +0100] "GET /slow-page HTTP/1.1" 200 8192 "-" "Mozilla/5.0" 1.250'
     const result = parseLine(line)
     expect(result).not.toBeNull()
     expect(result.response_time_ms).toBe(1250)
+  })
+
+  test('convertit un temps court en millisecondes (0.052 s → 52 ms)', () => {
+    const line =
+      '10.0.0.1 - - [15/Jan/2024:10:30:00 +0100] "GET /fast HTTP/1.1" 200 100 "-" "Mozilla/5.0" 0.052'
+    const result = parseLine(line)
+    expect(result.response_time_ms).toBe(52)
   })
 
   test('retourne null pour response_time_ms si absent', () => {

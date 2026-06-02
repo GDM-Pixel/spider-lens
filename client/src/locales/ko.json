@@ -201,7 +201,11 @@
     "headerBots": "봇",
     "headerHumans": "인간",
     "headerLastSeen": "마지막으로 본 시간",
-    "headerUserAgent": "우세한 User-Agent"
+    "headerUserAgent": "우세한 User-Agent",
+    "filterAllTypes": "All types",
+    "filterTypePage": "Pages (HTML)",
+    "filterTypeAsset": "Resources (CSS/JS)",
+    "filterTypeImage": "Images"
   },
   "topPages": {
     "welcomeTitle": "상위 페이지 및 404 오류",

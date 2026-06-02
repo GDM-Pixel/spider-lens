@@ -201,7 +201,11 @@
     "headerBots": "Bots",
     "headerHumans": "Menschen",
     "headerLastSeen": "Zuletzt gesehen",
-    "headerUserAgent": "Dominanter User-Agent"
+    "headerUserAgent": "Dominanter User-Agent",
+    "filterAllTypes": "All types",
+    "filterTypePage": "Pages (HTML)",
+    "filterTypeAsset": "Resources (CSS/JS)",
+    "filterTypeImage": "Images"
   },
   "topPages": {
     "welcomeTitle": "Top-Seiten & 404-Fehler",

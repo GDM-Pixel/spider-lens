@@ -201,7 +201,11 @@
     "headerBots": "Botlar",
     "headerHumans": "İnsanlar",
     "headerLastSeen": "Son görülme",
-    "headerUserAgent": "Baskın User-Agent"
+    "headerUserAgent": "Baskın User-Agent",
+    "filterAllTypes": "All types",
+    "filterTypePage": "Pages (HTML)",
+    "filterTypeAsset": "Resources (CSS/JS)",
+    "filterTypeImage": "Images"
   },
   "topPages": {
     "welcomeTitle": "En İyi Sayfalar ve 404 Hataları",

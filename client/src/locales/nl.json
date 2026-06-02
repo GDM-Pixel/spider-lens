@@ -201,7 +201,11 @@
     "headerBots": "Bots",
     "headerHumans": "Mensen",
     "headerLastSeen": "Laatst gezien",
-    "headerUserAgent": "Dominante User-Agent"
+    "headerUserAgent": "Dominante User-Agent",
+    "filterAllTypes": "All types",
+    "filterTypePage": "Pages (HTML)",
+    "filterTypeAsset": "Resources (CSS/JS)",
+    "filterTypeImage": "Images"
   },
   "topPages": {
     "welcomeTitle": "Topbladzijden & 404-fouten",

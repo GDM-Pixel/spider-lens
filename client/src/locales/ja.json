@@ -201,7 +201,11 @@
     "headerBots": "ボット",
     "headerHumans": "人間",
     "headerLastSeen": "最終閲覧",
-    "headerUserAgent": "優先User-Agent"
+    "headerUserAgent": "優先User-Agent",
+    "filterAllTypes": "All types",
+    "filterTypePage": "Pages (HTML)",
+    "filterTypeAsset": "Resources (CSS/JS)",
+    "filterTypeImage": "Images"
   },
   "topPages": {
     "welcomeTitle": "トップページと404エラー",

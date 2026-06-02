@@ -201,7 +201,11 @@
     "headerBots": "Robotar",
     "headerHumans": "Människor",
     "headerLastSeen": "Senast sedd",
-    "headerUserAgent": "Dominerande User-Agent"
+    "headerUserAgent": "Dominerande User-Agent",
+    "filterAllTypes": "All types",
+    "filterTypePage": "Pages (HTML)",
+    "filterTypeAsset": "Resources (CSS/JS)",
+    "filterTypeImage": "Images"
   },
   "topPages": {
     "welcomeTitle": "Topsidor & 404-fel",

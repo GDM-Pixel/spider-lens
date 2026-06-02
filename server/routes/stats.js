@@ -27,6 +27,18 @@ function getUaFilter(ua) {
   return { clause: 'AND user_agent = ?', params: [ua] }
 }
 
+// Filtre type de ressource — classe l'URL par extension du pathname.
+// 'asset' = CSS+JS (ressources de rendu), 'image' = images, 'page' = ni asset ni image.
+const ASSET_LIKE = "(url LIKE '%.css%' OR url LIKE '%.js%')"
+const IMAGE_LIKE = "(url LIKE '%.png%' OR url LIKE '%.jpg%' OR url LIKE '%.jpeg%' OR url LIKE '%.webp%' OR url LIKE '%.svg%' OR url LIKE '%.gif%' OR url LIKE '%.ico%')"
+const FONT_LIKE  = "(url LIKE '%.woff%' OR url LIKE '%.ttf%')"
+function getTypeFilter(type) {
+  if (type === 'asset') return { clause: `AND ${ASSET_LIKE}`, params: [] }
+  if (type === 'image') return { clause: `AND ${IMAGE_LIKE}`, params: [] }
+  if (type === 'page')  return { clause: `AND NOT ${ASSET_LIKE} AND NOT ${IMAGE_LIKE} AND NOT ${FONT_LIKE}`, params: [] }
+  return { clause: '', params: [] }
+}
+
 // GET /api/stats/overview — KPIs globaux
 router.get('/overview', (req, res) => {
   const siteId = req.query.siteId ? parseInt(req.query.siteId, 10) : (req.user?.siteId || 0)
@@ -250,9 +262,11 @@ router.get('/url-detail', (req, res) => {
     const ipParams    = ipFilter ? [ipFilter] : []
     const { clause: uaWhere, params: uaParams } = getUaFilter(req.query.ua)
     const uaWhereAliased = uaWhere.replace('user_agent', 'l.user_agent')
+    const { clause: typeWhere } = getTypeFilter(req.query.type)
+    const typeWhereAliased = typeWhere.replaceAll('url ', 'l.url ')
 
     const sfAliased = sf.replace('site_id', 'l.site_id')
-    const where = `l.timestamp BETWEEN ? AND ? ${statusWhere} ${botWhere} ${searchWhere} ${ipWhere} ${uaWhereAliased} ${sfAliased}`
+    const where = `l.timestamp BETWEEN ? AND ? ${statusWhere} ${botWhere} ${searchWhere} ${ipWhere} ${uaWhereAliased} ${typeWhereAliased} ${sfAliased}`
     const params = [from, to, ...statusParams, ...searchParams, ...ipParams, ...uaParams, ...sp]
 
     const rows = db.prepare(`
@@ -361,6 +375,7 @@ router.get('/url-detail/export', (req, res) => {
   const botWhere    = botFilter !== undefined ? `AND is_bot = ${botFilter === '1' ? 1 : 0}` : ''
   const searchWhere = search ? 'AND url LIKE ?' : ''
   const searchParams = search ? [`%${search}%`] : []
+  const { clause: typeWhere } = getTypeFilter(req.query.type)
   const params = [from, to, ...statusParams, ...searchParams, ...sp]
 
   const rows = db.prepare(`
@@ -376,7 +391,7 @@ router.get('/url-detail/export', (req, res) => {
          AND le2.timestamp BETWEEN ? AND ? ${sf}
        GROUP BY user_agent ORDER BY COUNT(*) DESC LIMIT 1)  AS top_ua
     FROM log_entries le
-    WHERE timestamp BETWEEN ? AND ? ${statusWhere} ${botWhere} ${searchWhere} ${sf}
+    WHERE timestamp BETWEEN ? AND ? ${statusWhere} ${botWhere} ${searchWhere} ${typeWhere} ${sf}
     GROUP BY url, status_code
     ORDER BY hits DESC
     LIMIT 10000
