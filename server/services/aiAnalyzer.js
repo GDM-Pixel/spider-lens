@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import geoip from 'geoip-lite'
+import { sqlUrlComplete } from './urls.js'
 import { getDb } from '../db/database.js'
 
 // ── Modèle Gemini ─────────────────────────────────────────
@@ -149,10 +150,10 @@ export function buildSiteSummary(siteId) {
   `).get(from, to, ...sp)
 
   const googlebotTop404 = db.prepare(`
-    SELECT url, COUNT(*) AS hits
+    SELECT ${sqlUrlComplete()} AS url, COUNT(*) AS hits
     FROM log_entries
     WHERE timestamp BETWEEN ? AND ? AND user_agent LIKE '%Googlebot%' AND status_code = 404 ${sc}
-    GROUP BY url ORDER BY hits DESC LIMIT 5
+    GROUP BY ${sqlUrlComplete()} ORDER BY hits DESC LIMIT 5
   `).all(from, to, ...sp).map(r => ({ url: trunc(r.url), hits: r.hits }))
 
   // -- Bots SEO tiers (Bingbot, AhrefsBot, SemrushBot, MJ12bot, ClaudeBot, etc.)

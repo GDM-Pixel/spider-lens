@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer'
+import { sqlUrlComplete, escapeHtml } from './urls.js'
 import { getDb } from '../db/database.js'
 
 function getConfig() {
@@ -66,12 +67,12 @@ export async function checkAndSendAlerts() {
 
     if (count404 >= config.alert_404_threshold && !wasAlertSentRecently('404_spike')) {
       const top404 = db.prepare(`
-        SELECT url, COUNT(*) as cnt FROM log_entries
+        SELECT ${sqlUrlComplete()} AS url, COUNT(*) as cnt FROM log_entries
         WHERE status_code = 404 AND timestamp > ?
-        GROUP BY url ORDER BY cnt DESC LIMIT 5
+        GROUP BY ${sqlUrlComplete()} ORDER BY cnt DESC LIMIT 5
       `).all(oneHourAgo)
 
-      const rows = top404.map(r => `<tr><td>${r.url}</td><td>${r.cnt}</td></tr>`).join('')
+      const rows = top404.map(r => `<tr><td>${escapeHtml(r.url)}</td><td>${r.cnt}</td></tr>`).join('')
       await sendAlert(
         `⚠️ Spike 404 détecté — ${count404} erreurs en 1h`,
         `<h2>Spike de 404 sur ${config.site_name || 'votre site'}</h2>

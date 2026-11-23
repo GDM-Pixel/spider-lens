@@ -21,7 +21,7 @@ testDb.exec(schema)
 
 // Applique les migrations (tables/colonnes ajoutées après schema.sql, ex: url_rechecks en v09).
 // Les ALTER/CREATE déjà couverts par schema.sql sont ignorés sans bloquer.
-for (const v of ['02','03','04','05','06','07','08','09']) {
+for (const v of ['02','03','04','05','06','07','08','09','10']) {
   const sql = readFileSync(join(__dirname, `../db/migration_v${v}.sql`), 'utf8')
   for (const stmt of sql.split(';').map(s => s.trim()).filter(Boolean)) {
     try { testDb.exec(stmt) } catch { /* colonne/table déjà présente */ }
@@ -254,5 +254,77 @@ describe('GET /api/health', () => {
     const res = await request(app).get('/api/health')
     expect(res.status).toBe(200)
     expect(res.body.status).toBe('ok')
+  })
+})
+
+// ── Paramètres d'URL : listes d'erreurs à l'adresse complète ─────
+describe('Paramètres d\'URL dans les listes d\'erreurs', () => {
+  async function getToken() {
+    const { username, password } = seedUser()
+    const res = await request(app).post('/api/auth/login').send({ username, password })
+    return res.body.token
+  }
+  const range = () => ({
+    from: new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10),
+    to:   new Date(Date.now() + 86400000).toISOString().slice(0, 10),
+  })
+  const GBOT = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
+  function seedParams() {
+    const ins = testDb.prepare(`INSERT INTO log_entries (timestamp, ip, method, url, query, status_code, response_size, is_bot, bot_name, user_agent)
+      VALUES (?, '66.249.66.98', 'GET', ?, ?, ?, 100, 1, 'Googlebot', ?)`)
+    const now = new Date().toISOString()
+    ins.run(now, '/', null, 200, GBOT)
+    ins.run(now, '/', null, 200, GBOT)
+    ins.run(now, '/', 'controller=module-payplug', 404, GBOT)
+    ins.run(now, '/cat', 'page=12', 404, GBOT)
+    ins.run(now, '/cat', null, 301, GBOT)
+    ins.run(now, '/cat', 'utm_source=x', 200, GBOT)
+  }
+
+  test('top-404 montre l\'adresse complète, pas « / »', async () => {
+    const token = await getToken(); seedParams()
+    const res = await request(app).get('/api/stats/top-404')
+      .set('Authorization', `Bearer ${token}`).query({ ...range(), fresh: 1 })
+    expect(res.status).toBe(200)
+    expect(res.body.map(r => r.url).sort()).toEqual(['/?controller=module-payplug', '/cat?page=12'])
+  })
+
+  test('url-detail : erreurs à l\'adresse complète, 200 groupés par chemin', async () => {
+    const token = await getToken(); seedParams()
+    const res = await request(app).get('/api/stats/url-detail')
+      .set('Authorization', `Bearer ${token}`).query({ ...range(), fresh: 1 })
+    const rows = res.body.rows.map(r => `${r.status_code} ${r.url} ${r.hits}`).sort()
+    expect(rows).toEqual(['200 / 2', '200 /cat 1', '301 /cat 1', '404 /?controller=module-payplug 1', '404 /cat?page=12 1'])
+  })
+
+  test('url-detail : la recherche trouve un paramètre', async () => {
+    const token = await getToken(); seedParams()
+    const res = await request(app).get('/api/stats/url-detail')
+      .set('Authorization', `Bearer ${token}`).query({ ...range(), search: 'payplug', fresh: 1 })
+    expect(res.body.rows.map(r => r.url)).toEqual(['/?controller=module-payplug'])
+  })
+
+  test('url-detail/enrich retrouve une adresse complète', async () => {
+    const token = await getToken(); seedParams()
+    const res = await request(app).get('/api/stats/url-detail/enrich')
+      .set('Authorization', `Bearer ${token}`).query({ ...range(), url: '/cat?page=12', status: 404, fresh: 1 })
+    expect(res.body.top_ua).toBe(GBOT)
+  })
+
+  test('exports CSV : adresse complète', async () => {
+    const token = await getToken(); seedParams()
+    const a = await request(app).get('/api/stats/top-404/export')
+      .set('Authorization', `Bearer ${token}`).query(range())
+    expect(a.text).toContain('"/cat?page=12"')
+    const b = await request(app).get('/api/stats/url-detail/export')
+      .set('Authorization', `Bearer ${token}`).query({ ...range(), status: '404' })
+    expect(b.text).toContain('/?controller=module-payplug')
+  })
+
+  test('top-pages reste groupé par chemin', async () => {
+    const token = await getToken(); seedParams()
+    const res = await request(app).get('/api/stats/top-pages')
+      .set('Authorization', `Bearer ${token}`).query({ ...range(), fresh: 1 })
+    expect(res.body.map(r => r.url).sort()).toEqual(['/', '/cat'])
   })
 })

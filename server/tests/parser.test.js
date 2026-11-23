@@ -92,12 +92,35 @@ describe('parseLine() — format Apache Combined', () => {
     expect(result.url).toBe('/page-inconnue')
   })
 
-  test('normalise les URLs avec query string', () => {
+  test('sépare le chemin et les paramètres de l\'URL', () => {
     const line =
       '10.0.0.1 - - [15/Jan/2024:10:30:00 +0100] "GET /search?q=seo&page=2 HTTP/1.1" 200 1024 "-" "curl/7.68"'
     const result = parseLine(line)
     expect(result).not.toBeNull()
     expect(result.url).toBe('/search')
+    expect(result.query).toBe('q=seo&page=2')
+  })
+
+  test('garde les paramètres tels quels (pas de réencodage)', () => {
+    const line =
+      '66.249.66.98 - - [18/Nov/2026:07:50:47 +0100] "GET /?controller=module-payplug-AdminPayPlugInstallment&x=%2F HTTP/1.1" 404 73254 "-" "Googlebot/2.1"'
+    const result = parseLine(line)
+    expect(result.url).toBe('/')
+    expect(result.query).toBe('controller=module-payplug-AdminPayPlugInstallment&x=%2F')
+  })
+
+  test('query vaut null sans paramètres (et avec un ? vide)', () => {
+    const sans = parseLine('10.0.0.1 - - [15/Jan/2024:10:30:00 +0100] "GET /page HTTP/1.1" 200 1 "-" "x"')
+    const vide = parseLine('10.0.0.1 - - [15/Jan/2024:10:30:00 +0100] "GET /page? HTTP/1.1" 200 1 "-" "x"')
+    expect(sans.query).toBeNull()
+    expect(vide.url).toBe('/page')
+    expect(vide.query).toBeNull()
+  })
+
+  test('URL absolue (proxy) : chemin et paramètres', () => {
+    const r = parseLine('10.0.0.1 - - [15/Jan/2024:10:30:00 +0100] "GET http://exemple.fr/a?b=1 HTTP/1.1" 200 1 "-" "x"')
+    expect(r.url).toBe('/a')
+    expect(r.query).toBe('b=1')
   })
 
   test('gère le tiret comme referrer absent', () => {
@@ -128,6 +151,16 @@ describe('parseLine() — format Apache Combined', () => {
     const result = parseLine(line)
     expect(result).not.toBeNull()
     expect(result.timestamp).toBe('2024-01-01T00:00:00.000Z')
+  })
+
+  test('applique le décalage horaire du journal (+0100 = heure de Paris en hiver)', () => {
+    const r = parseLine('10.0.0.1 - - [18/Nov/2026:08:50:47 +0100] "GET / HTTP/1.1" 200 1 "-" "x"')
+    expect(r.timestamp).toBe('2026-11-18T07:50:47.000Z')
+  })
+
+  test('applique un décalage négatif et un changement de jour', () => {
+    const r = parseLine('10.0.0.1 - - [31/Dec/2023:20:15:00 -0700] "GET / HTTP/1.1" 200 1 "-" "x"')
+    expect(r.timestamp).toBe('2024-01-01T03:15:00.000Z')
   })
 })
 

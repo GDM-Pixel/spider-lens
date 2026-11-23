@@ -103,12 +103,14 @@ export function parseLine(line) {
   if (!timestamp) return null
 
   const { isBot, botName } = detectBot(userAgent)
+  const { path, query } = splitUrl(url)
 
   return {
     timestamp: timestamp.toISOString(),
     ip: ip === '-' ? null : ip,
     method: method || null,
-    url: normalizeUrl(url),
+    url: path,
+    query,
     status_code: parseInt(statusStr, 10),
     response_size: sizeStr === '-' ? 0 : parseInt(sizeStr, 10),
     referrer: referrer === '-' || !referrer ? null : referrer,
@@ -123,17 +125,33 @@ function parseDate(dateStr) {
   const m = /(\d{2})\/(\w{3})\/(\d{4}):(\d{2}):(\d{2}):(\d{2})\s+([\+\-]\d{4})/.exec(dateStr)
   if (!m) return null
   const months = { Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11 }
-  const [, day, mon, year, hh, mm, ss] = m
-  return new Date(Date.UTC(+year, months[mon], +day, +hh, +mm, +ss))
+  const [, day, mon, year, hh, mm, ss, tz] = m
+  // Le journal donne l'heure locale du serveur et son décalage (+0100) : on revient en UTC.
+  const sign = tz[0] === '-' ? -1 : 1
+  const offsetMin = sign * (parseInt(tz.slice(1, 3), 10) * 60 + parseInt(tz.slice(3, 5), 10))
+  return new Date(Date.UTC(+year, months[mon], +day, +hh, +mm, +ss) - offsetMin * 60000)
 }
 
-function normalizeUrl(url) {
-  try {
-    const u = url.startsWith('http') ? new URL(url) : new URL('http://x' + url)
-    return u.pathname
-  } catch {
-    return url.split('?')[0]
+// Sépare le chemin (url, pour grouper les statistiques de pages) et les paramètres
+// (query, ce qui suit le « ? », gardé tel qu'écrit dans le journal, NULL s'il n'y en a pas).
+function splitUrl(url) {
+  let target = url
+  if (/^https?:\/\//i.test(target)) {
+    const slash = target.indexOf('/', target.indexOf('//') + 2)
+    target = slash === -1 ? '/' : target.slice(slash)
   }
+  const hash = target.indexOf('#')
+  if (hash !== -1) target = target.slice(0, hash)
+  const q = target.indexOf('?')
+  const rawPath = q === -1 ? target : target.slice(0, q)
+  const query = q === -1 ? null : (target.slice(q + 1) || null)
+  let path
+  try {
+    path = new URL('http://x' + (rawPath.startsWith('/') ? rawPath : '/' + rawPath)).pathname
+  } catch {
+    path = rawPath
+  }
+  return { path, query }
 }
 
 // ─────────────────────────────────────────────────────────
@@ -160,9 +178,9 @@ export async function parseLogFile(logFilePath, siteId = null) {
 
   const insertEntry = db.prepare(`
     INSERT INTO log_entries
-      (timestamp, ip, method, url, status_code, response_size, referrer, user_agent, response_time_ms, is_bot, bot_name, site_id)
+      (timestamp, ip, method, url, query, status_code, response_size, referrer, user_agent, response_time_ms, is_bot, bot_name, site_id)
     VALUES
-      (@timestamp, @ip, @method, @url, @status_code, @response_size, @referrer, @user_agent, @response_time_ms, @is_bot, @bot_name, @site_id)
+      (@timestamp, @ip, @method, @url, @query, @status_code, @response_size, @referrer, @user_agent, @response_time_ms, @is_bot, @bot_name, @site_id)
   `)
   const insertMany = db.transaction((entries) => { for (const e of entries) insertEntry.run(e) })
 

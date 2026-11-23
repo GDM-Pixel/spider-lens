@@ -6,6 +6,19 @@ Format: [Semantic Versioning](https://semver.org/)
 
 ---
 
+## [1.5.0] — 2026-11-23
+
+### Fixed
+- **Paramètres d'URL perdus** — Le parseur ne gardait que le chemin (`/?controller=module-x` devenait `/`). Deux adresses différentes se confondaient : l'accueil semblait renvoyer des 404, une redirection 301 semblait « tantôt 301, tantôt 404 ». Les paramètres sont maintenant gardés dans une nouvelle colonne `log_entries.query`.
+- **Fuseau horaire des journaux** — Le décalage (`+0100`) était ignoré : l'heure locale du serveur était enregistrée comme heure UTC (une heure d'écart à Paris en hiver). Il est maintenant appliqué.
+
+### Changed
+- **Listes d'erreurs à l'adresse exacte** — Top 404, détail des codes HTTP (codes ≥ 300), recherche, exports CSV, URLs par IP, alerte 404 par mail, rapport hebdomadaire et analyse IA (404 de Googlebot) montrent l'adresse avec ses paramètres. Les pages servies (2xx) restent groupées par chemin.
+- **Mails** — Les adresses sont échappées avant d'être écrites dans les mails HTML.
+- **Migration DB V1.0** — Colonne `log_entries.query`, ajoutée au démarrage. Les lignes déjà en base n'ont pas de paramètres ni la bonne heure : relire les journaux bruts pour les reconstruire.
+
+---
+
 ## [1.4.0] — 2026-04-14
 
 ### Added

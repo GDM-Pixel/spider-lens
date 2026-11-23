@@ -2,6 +2,7 @@ import { Router } from 'express'
 import geoip from 'geoip-lite'
 import { getDb } from '../db/database.js'
 import { requireAuth } from '../middleware/auth.js'
+import { sqlUrlAffichee } from '../services/urls.js'
 import { cacheKey, ttlForRange, remember, shouldBypass } from '../services/cache.js'
 
 const router = Router()
@@ -97,13 +98,13 @@ router.get('/ips/:ip/urls', (req, res) => {
 
   const rows = db.prepare(`
     SELECT
-      url,
+      ${sqlUrlAffichee()} AS url,
       status_code,
       COUNT(*)       AS hits,
       MAX(timestamp) AS last_seen
     FROM log_entries
     WHERE ip = ? AND timestamp BETWEEN ? AND ? ${sf}
-    GROUP BY url, status_code
+    GROUP BY ${sqlUrlAffichee()}, status_code
     ORDER BY hits DESC
     LIMIT 50
   `).all(ip, from, to, ...sp)

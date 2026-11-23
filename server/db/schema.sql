@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS log_entries (
   ip               TEXT,
   method           TEXT,
   url              TEXT NOT NULL,
+  query            TEXT,               -- paramètres après le « ? » (NULL sans paramètres)
   status_code      INTEGER NOT NULL,
   response_size    INTEGER,
   referrer         TEXT,

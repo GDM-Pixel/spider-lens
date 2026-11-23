@@ -124,6 +124,18 @@ function applyMigrations() {
     console.log('[db] Migration V0.9 appliquée (site_url + url_rechecks)')
   }
 
+  // V1.0 — paramètres d'URL (log_entries.query)
+  const hasQuery = db.prepare("SELECT 1 FROM pragma_table_info('log_entries') WHERE name = 'query'").get()
+  if (!hasQuery) {
+    const migration = readFileSync(join(__dirname, 'migration_v10.sql'), 'utf8')
+    for (const stmt of migration.split(';').map(s => s.trim()).filter(Boolean)) {
+      try { run(stmt) } catch (e) {
+        if (!e.message.includes('duplicate column')) throw e
+      }
+    }
+    console.log('[db] Migration V1.0 appliquée (paramètres d\'URL)')
+  }
+
   // Backfill : créer le site par défaut depuis LOG_FILE_PATH si défini et pas encore de site
   const siteCount = db.prepare('SELECT COUNT(*) as cnt FROM sites').get()?.cnt || 0
   if (siteCount === 0) {

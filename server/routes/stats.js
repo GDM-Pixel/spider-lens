@@ -1,3 +1,4 @@
+import { sqlUrlComplete, sqlUrlAffichee } from '../services/urls.js'
 import { Router } from 'express'
 import { getDb } from '../db/database.js'
 import { requireAuth } from '../middleware/auth.js'
@@ -138,7 +139,7 @@ router.get('/top-404', (req, res) => {
 
     return db.prepare(`
       SELECT
-        l.url,
+        ${sqlUrlComplete('l.')} as url,
         COUNT(*) as hits,
         SUM(CASE WHEN l.is_bot = 1 THEN 1 ELSE 0 END) as bot_hits,
         MAX(l.timestamp) as last_seen,
@@ -146,9 +147,9 @@ router.get('/top-404', (req, res) => {
         ur.final_url   as recheck_final_url,
         ur.checked_at  as recheck_checked_at
       FROM log_entries l
-      LEFT JOIN url_rechecks ur ON ur.site_id = l.site_id AND ur.url = l.url
+      LEFT JOIN url_rechecks ur ON ur.site_id = l.site_id AND ur.url = ${sqlUrlComplete('l.')}
       WHERE l.status_code = 404 AND l.timestamp BETWEEN ? AND ? ${sf.replace('site_id', 'l.site_id')}
-      GROUP BY l.url
+      GROUP BY ${sqlUrlComplete('l.')}
       ORDER BY ${sortBy} ${sortDir}
       LIMIT ?
     `).all(from, to, ...sp, limit)
@@ -255,7 +256,7 @@ router.get('/url-detail', (req, res) => {
 
     const { clause: sf, params: sp } = getSiteFilter(req)
     const botWhere    = botFilter !== undefined ? `AND l.is_bot = ${botFilter === '1' ? 1 : 0}` : ''
-    const searchWhere = search ? 'AND l.url LIKE ?' : ''
+    const searchWhere = search ? `AND ${sqlUrlComplete('l.')} LIKE ?` : ''
     const searchParams = search ? [`%${search}%`] : []
     const ipFilter    = req.query.ip
     const ipWhere     = ipFilter ? 'AND l.ip = ?' : ''
@@ -271,7 +272,7 @@ router.get('/url-detail', (req, res) => {
 
     const rows = db.prepare(`
       SELECT
-        l.url,
+        ${sqlUrlAffichee('l.')} AS url,
         l.status_code,
         COUNT(*)                                                AS hits,
         SUM(CASE WHEN l.is_bot = 1 THEN 1 ELSE 0 END)          AS bot_hits,
@@ -282,9 +283,9 @@ router.get('/url-detail', (req, res) => {
         ur.final_url   AS recheck_final_url,
         ur.checked_at  AS recheck_checked_at
       FROM log_entries l
-      LEFT JOIN url_rechecks ur ON ur.site_id = l.site_id AND ur.url = l.url
+      LEFT JOIN url_rechecks ur ON ur.site_id = l.site_id AND ur.url = ${sqlUrlAffichee('l.')}
       WHERE ${where}
-      GROUP BY l.url, l.status_code
+      GROUP BY ${sqlUrlAffichee('l.')}, l.status_code
       ORDER BY ${sortBy} ${sortDir}
       LIMIT ? OFFSET ?
     `).all(...params, limit, offset)
@@ -324,7 +325,7 @@ router.get('/url-detail/enrich', (req, res) => {
     // Top UA
     const topUa = db.prepare(`
       SELECT user_agent FROM log_entries
-      WHERE url = ? AND status_code = ? AND timestamp BETWEEN ? AND ? ${sf} ${uaWhere}
+      WHERE ${sqlUrlAffichee()} = ? AND status_code = ? AND timestamp BETWEEN ? AND ? ${sf} ${uaWhere}
       GROUP BY user_agent
       ORDER BY COUNT(*) DESC
       LIMIT 1
@@ -333,7 +334,7 @@ router.get('/url-detail/enrich', (req, res) => {
     // Top referrer
     const topRef = db.prepare(`
       SELECT referrer FROM log_entries
-      WHERE url = ? AND status_code = ? AND timestamp BETWEEN ? AND ? ${sf}
+      WHERE ${sqlUrlAffichee()} = ? AND status_code = ? AND timestamp BETWEEN ? AND ? ${sf}
         AND referrer IS NOT NULL AND referrer != '-'
       GROUP BY referrer
       ORDER BY COUNT(*) DESC
@@ -373,26 +374,26 @@ router.get('/url-detail/export', (req, res) => {
     }
   }
   const botWhere    = botFilter !== undefined ? `AND is_bot = ${botFilter === '1' ? 1 : 0}` : ''
-  const searchWhere = search ? 'AND url LIKE ?' : ''
+  const searchWhere = search ? `AND ${sqlUrlComplete()} LIKE ?` : ''
   const searchParams = search ? [`%${search}%`] : []
   const { clause: typeWhere } = getTypeFilter(req.query.type)
   const params = [from, to, ...statusParams, ...searchParams, ...sp]
 
   const rows = db.prepare(`
     SELECT
-      url,
+      ${sqlUrlAffichee('le.')} AS url,
       status_code,
       COUNT(*)                                              AS hits,
       SUM(CASE WHEN is_bot = 1 THEN 1 ELSE 0 END)          AS bot_hits,
       SUM(CASE WHEN is_bot = 0 THEN 1 ELSE 0 END)          AS human_hits,
       MAX(timestamp)                                        AS last_seen,
       (SELECT user_agent FROM log_entries le2
-       WHERE le2.url = le.url AND le2.status_code = le.status_code
+       WHERE ${sqlUrlAffichee('le2.')} = ${sqlUrlAffichee('le.')} AND le2.status_code = le.status_code
          AND le2.timestamp BETWEEN ? AND ? ${sf}
        GROUP BY user_agent ORDER BY COUNT(*) DESC LIMIT 1)  AS top_ua
     FROM log_entries le
     WHERE timestamp BETWEEN ? AND ? ${statusWhere} ${botWhere} ${searchWhere} ${typeWhere} ${sf}
-    GROUP BY url, status_code
+    GROUP BY ${sqlUrlAffichee('le.')}, status_code
     ORDER BY hits DESC
     LIMIT 10000
   `).all(from, to, ...sp, ...params)
@@ -672,14 +673,14 @@ router.get('/top-404/export', (req, res) => {
 
   const rows = db.prepare(`
     SELECT
-      url,
+      ${sqlUrlComplete()} AS url,
       COUNT(*) as hits,
       SUM(CASE WHEN is_bot = 1 THEN 1 ELSE 0 END) as bot_hits,
       SUM(CASE WHEN is_bot = 0 THEN 1 ELSE 0 END) as human_hits,
       MAX(timestamp) as last_seen
     FROM log_entries
     WHERE status_code = 404 AND timestamp BETWEEN ? AND ? ${sf}
-    GROUP BY url
+    GROUP BY ${sqlUrlComplete()}
     ORDER BY hits DESC
     LIMIT 10000
   `).all(from, to, ...sp)

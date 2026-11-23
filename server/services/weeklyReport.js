@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer'
 import geoip from 'geoip-lite'
+import { sqlUrlComplete, escapeHtml } from './urls.js'
 import { getDb } from '../db/database.js'
 import { sendWebhook } from './webhook.js'
 
@@ -59,10 +60,10 @@ function collectWeekData(siteId, weekStart, weekEnd) {
   `).all(weekStart, weekEnd, ...sp)
 
   const top3_404 = db.prepare(`
-    SELECT url, COUNT(*) AS hits
+    SELECT ${sqlUrlComplete()} AS url, COUNT(*) AS hits
     FROM log_entries
     WHERE timestamp BETWEEN ? AND ? AND status_code = 404 ${sc}
-    GROUP BY url ORDER BY hits DESC LIMIT 3
+    GROUP BY ${sqlUrlComplete()} ORDER BY hits DESC LIMIT 3
   `).all(weekStart, weekEnd, ...sp)
 
   const topBots = db.prepare(`
@@ -120,7 +121,7 @@ function buildHtmlReport(siteName, weekLabel, current, previous) {
 
   const tableRow = (label, hits, total) => `
     <tr>
-      <td style="padding:6px 0;font-size:12px;color:#d1d1d1;max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${label}</td>
+      <td style="padding:6px 0;font-size:12px;color:#d1d1d1;max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(label)}</td>
       <td style="padding:6px 0;font-size:12px;color:#ffffff;font-weight:700;text-align:right;">${fmt(hits)}</td>
       ${total ? `<td style="padding:6px 0;font-size:12px;color:#898989;text-align:right;padding-left:8px;">${pct(hits, total)}</td>` : ''}
     </tr>`
